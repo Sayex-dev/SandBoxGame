@@ -2,9 +2,18 @@ extends Node
 
 class_name Chunk
 
+var normals = [
+	Vector3i(1, 0, 0), 
+	Vector3i(-1, 0, 0), 
+	Vector3i(0, 1, 0), 
+	Vector3i(0, -1, 0),
+	Vector3i(0, 0, 1), 
+	Vector3i(0, 0, -1)
+]
+
 class Surface:
-	var vertices: PackedVector3Array = PackedVector3Array()
-	var uvs: PackedVector2Array = PackedVector2Array()
+	var vertices: Array[Vector3] = []
+	var uvs: Array[Vector2] = []
 	
 	func _init(_vertices: PackedVector3Array, _uvs: PackedVector2Array):
 		vertices = _vertices
@@ -13,14 +22,6 @@ class Surface:
 var _mesh: MeshInstance3D
 var _chunk_size: Vector3i
 var _blocks: Array[int]
-
-var normals = [
-	Vector3i(1, 0, 0), 
-	Vector3i(-1, 0, 0), 
-	Vector3i(0, 1, 0), 
-	Vector3i(0, -1, 0),
-	Vector3i(0, 0, 1), 
-	Vector3i(0, 0, -1)]
 
 func _init(chunk_size: Vector3i) -> void:
 	_chunk_size = chunk_size
@@ -74,7 +75,6 @@ func find_block_surfaces(
 		z_pos_chunk,
 		z_neg_chunk
 	]
-	
 	for z in range(_chunk_size.z):
 		for y in range(_chunk_size.y):
 			for x in range(_chunk_size.x):
@@ -111,62 +111,79 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 	
 	var max_dim: int = max(_chunk_size.x, _chunk_size.y, _chunk_size.z)
 	var surface_vector_dict: Array[Surface] = []
-	var normal: Vector3i
 	while len(block_surfaces) > 0:
-		var rand_pos: Vector3i = block_surfaces.keys()[0]
-		
-		# Find the first surface direction of the block
+		# Find a surface on a block
+		# Example:
+		# [ ][ ][ ]
+		#    [X][ ]
+		# [ ][ ][ ]
+		var start_pos: Vector3i = block_surfaces.keys()[0]
 		var dir_i: int
+		var normal: Vector3i
 		for normal_i in range(6):
-			if block_surfaces[rand_pos][normal_i]:
-				block_surfaces[rand_pos][normal_i] = false
+			if block_surfaces[start_pos][normal_i]:
+				block_surfaces[start_pos][normal_i] = false
 				normal = normals[normal_i]
 				dir_i = normal_i
 				break
 		
+		# Compute the step directions depending on the view of the surface
 		var loc_x_move: Vector3i = Vector3i(embed_2d_in_plane(Vector2(1, 0), normal))
 		var loc_y_move: Vector3i = Vector3i(embed_2d_in_plane(Vector2(0, 1), normal))
 		
-		var min_pos: Vector3i = rand_pos
-		# Find min pos
+		# Find min pos by alternating between moving in -x and -y directions
+		# until both steps fail.
+		# Example:
+		# [ ][ ][ ]
+		#    [ ][ ]
+		# [X][ ][ ]
+		var min_pos: Vector3i = start_pos
+		var move_x: bool = true
+		var failed_last: bool = false
+		for i in range(max_dim * max_dim):
+			var new_pos: Vector3i
+			if move_x:
+				new_pos = min_pos - loc_x_move
+			else:
+				new_pos = min_pos - loc_y_move
+			var has_surface = new_pos in block_surfaces and block_surfaces[new_pos][dir_i]
+			if has_surface:
+				min_pos = new_pos
+				failed_last = false
+			elif not failed_last:
+				failed_last = true
+				move_x = not move_x
+			else:
+				# Found min pos
+				break
 		
-		
-		# Greedy iterate over the square surface
+		# Greedy iterate over the square surface to find max_pos
+		# Example:
+		# [ ][ ][ ]
+		#    [ ][ ]
+		# [X][X][X]
 		var max_x: int = -1
 		var max_pos: Vector3i
-		for y in range(max_dim):
+		for y in range(max_dim + 1):
 			var has_full_row: bool = false
-			for x in range(max_dim):
+			for x in range(max_dim + 1):
 				var new_pos = min_pos + loc_x_move * x + loc_y_move * y
-				var does_extend_surface = new_pos in block_surfaces and block_surfaces[new_pos][dir_i]
+				var has_surface = new_pos in block_surfaces and block_surfaces[new_pos][dir_i]
 				var is_first_row = max_x == -1
-				var is_in_rectangle = x <= max_x
-				# Grab case
-				if does_extend_surface and (is_in_rectangle or is_first_row):
-					# Remove visited block surfaces
-					if not block_surfaces[new_pos].any():
-						block_surfaces.erase(new_pos)
-					else:
-						block_surfaces[new_pos][dir_i] = false
-					
-					# Exit if is last x
-					if x + 1 == max_dim:
-						if is_first_row:
-							max_x = x - 1
-						has_full_row = true
-						max_pos = new_pos - loc_x_move
-						break
-					else:
+				var is_last_in_rectangle = x == max_x
+				# Skip surfaces that are ok
+				if has_surface and not is_last_in_rectangle:
+					continue
 				# End first row case overstepped surface in x
-				elif not does_extend_surface and is_first_row:
+				elif not has_surface and is_first_row:
 					max_x = x - 1
 					has_full_row = true
 					max_pos = new_pos - loc_x_move
 					break
-				# End row in square if overstepped x_max
-				elif does_extend_surface and not is_in_rectangle:
+				# End row in square if x is at x_max
+				elif has_surface and is_last_in_rectangle:
 					has_full_row = true
-					max_pos = new_pos - loc_x_move
+					max_pos = new_pos
 					break
 				# End row with not enough squares
 				else:
@@ -174,14 +191,46 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 					break
 			
 			# Terminate if row is not extending rectangle
-			if has_full_row: 
-				continue
-			
-			# Compute vertices
-			var vertices: PackedVector3Array = PackedVector3Array()
-			var uvs: PackedVector2Array = PackedVector2Array()
-			
-			var surface: Surface = Surface.new(vertices, uvs)
+			if not has_full_row:
+				break
+		
+		# Remove surfaces that have been used up
+		for z in range(min_pos.z, max_pos.z + 1):
+			for y in range(min_pos.y, max_pos.y + 1):
+				for x in range(min_pos.x, max_pos.x + 1):
+					var remove_pos = Vector3i(x, y, z)
+					block_surfaces[remove_pos][dir_i] = false
+		
+		# Find corner vectors of surface
+		# This vector converts the block coordinate min pos to world coordinate of the surface
+		var min_conversion_vectors = [
+			Vector3i(1, 0, 0),
+			Vector3i(0, 0, 0),
+			Vector3i(0, 1, 0),
+			Vector3i(0, 0, 0),
+			Vector3i(0, 0, 1),
+			Vector3i(0, 0, 0),
+		] 
+		# This vector converts the block coordinate max pos to world coordinate of the surface
+		var max_conversion_vectors = [
+			Vector3i(1, 1, 1),
+			Vector3i(0, 1, 1),
+			Vector3i(1, 1, 1),
+			Vector3i(1, 0, 1),
+			Vector3i(1, 1, 1),
+			Vector3i(1, 1, 0),
+		] 
+		var min_world_pos = min_pos + min_conversion_vectors[dir_i]
+		var max_world_pos = max_pos + min_conversion_vectors[dir_i]
+		
+		# Find the corner vertices
+		# TODO: Find the corner vertices
+		
+		# Compute vertices
+		var vertices: PackedVector3Array = PackedVector3Array()
+		var uvs: PackedVector2Array = PackedVector2Array()
+		
+		var surface: Surface = Surface.new(vertices, uvs)
 	return surface_vector_dict
 
 func embed_2d_in_plane(v: Vector2, n: Vector3) -> Vector3:

@@ -1,36 +1,6 @@
 extends Node
 class_name WorldController
 
-class Chunk:
-	var _chunk_size: Vector3i
-	var _blocks: Array[int]
-	
-	func _init(chunk_size: Vector3i) -> void:
-		_chunk_size = chunk_size
-		_blocks = []
-		var block_count = _chunk_size.x * _chunk_size.y * _chunk_size.z
-		_blocks.resize(block_count)
-		_blocks.fill(-1)
-	
-	func get_block(chunk_pos: Vector3i) -> int:
-		var index: int = chunk_to_array_pos(chunk_pos)
-		return _blocks[index]
-	
-	func set_block(chunk_pos: Vector3i, block_id: int):
-		var index: int = chunk_to_array_pos(chunk_pos)
-		_blocks[index] = block_id
-		
-	func chunk_to_array_pos(chunk_pos: Vector3i) -> int:
-		var index: int = chunk_pos.x + chunk_pos.y * _chunk_size.x + chunk_pos.z * _chunk_size.x * _chunk_size.y
-		assert (index > _chunk_size.x * _chunk_size.y * _chunk_size.z, "Position not inside chunk bounds.")
-		return index
-	
-	func array_to_chunk_pos(index: int) -> Vector3i:
-		assert (index > _chunk_size.x * _chunk_size.y * _chunk_size.z, "Position not inside chunk bounds.")
-		var x = index % _chunk_size.x
-		var y = floori(index / _chunk_size.x) % _chunk_size.y
-		var z = floori(index / _chunk_size.x * chunk_size.y)
-		return Vector3i(x, y, z)
 
 class BlockWorld:
 	var loaded_chunks: Dictionary
