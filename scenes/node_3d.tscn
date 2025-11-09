@@ -1,5 +1,18 @@
-[gd_scene format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=3 format=3 uid="uid://u3l3grnkbtg6"]
+
+[ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_pcywu"]
 
 [node name="Node3D" type="Node3D"]
 
-[node name="Node" type="Node" parent="."]
+[node name="WorldController" type="Node" parent="."]
+script = ExtResource("1_wwmw1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.621134, 0, 0.783704, 0, 1, 0, -0.783704, 0, 0.621134, 3.33122, 0, 3.96703)
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
+mesh = SubResource("BoxMesh_pcywu")
