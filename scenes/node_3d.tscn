@@ -1,18 +1,90 @@
-[gd_scene load_steps=3 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=5 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_pcywu"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oe76q"]
+albedo_color = Color(1, 0, 1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_r62xh"]
+radius = 0.2
+height = 0.4
+
 [node name="Node3D" type="Node3D"]
 
-[node name="WorldController" type="Node" parent="."]
-script = ExtResource("1_wwmw1")
-
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.621134, 0, 0.783704, 0, 1, 0, -0.783704, 0, 0.621134, 3.33122, 0, 3.96703)
+transform = Transform3D(0.957702, -0.169479, 0.232561, -0.00986669, 0.788352, 0.615145, -0.287594, -0.59142, 0.753334, 1.22097, 1.87738, 2.33332)
+fov = 60.0
 
 [node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(0.98, 0, 0, 0, 0.98, 0, 0, 0, 0.98, 0.5, 0.5, 0.5)
+visible = false
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
 mesh = SubResource("BoxMesh_pcywu")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="WorldController" type="Node3D" parent="."]
+script = ExtResource("1_wwmw1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -4.67124e-08, 0.621134, 3.33122, 1.39225, 3.96703)
+
+[node name="CubeCorners" type="Node3D" parent="."]
+
+[node name="Node3D2" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D2"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D3" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D3"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D4" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 1, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D4"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D5" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1, 1, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D5"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D6" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D6"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D7" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1, 0, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D7"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D8" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 1, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D8"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")
+
+[node name="Node3D9" type="Node3D" parent="CubeCorners"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 1, 1, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CubeCorners/Node3D9"]
+mesh = SubResource("SphereMesh_r62xh")
+surface_material_override/0 = SubResource("StandardMaterial3D_oe76q")

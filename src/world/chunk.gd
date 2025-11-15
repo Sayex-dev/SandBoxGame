@@ -3,11 +3,10 @@ extends MeshInstance3D
 class_name Chunk 
 
 class Surface:
-	var vertices: Array[Vector3] = []
-	var indices: Array[int] = []
+	var vertices: Array[Vector3i] = []
 	var normal: Vector3
 	
-	func _init(_vertices: Array[Vector3], _indices: Array[int], _normal: Vector3):
+	func _init(_vertices: Array[Vector3i], _normal: Vector3):
 		vertices = _vertices
 		normal = _normal
 
@@ -96,7 +95,7 @@ func find_block_surfaces(
 							adjacent_block = adjacent_chunks[i].get_block(adjacent_chunk_pos)
 						else:
 							adjacent_block = -1
-					if adjacent_block != -1:
+					if adjacent_block == -1:
 						has_exposed_surfaces = true
 						exposed_surfaces[i] = true
 				if has_exposed_surfaces:
@@ -119,9 +118,8 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 		var start_pos: Vector3i = block_surfaces.keys()[0]
 		var dir_i: int
 		var normal: Vector3i
-		for normal_i in range(6):
+		for normal_i in range(len(normals)):
 			if block_surfaces[start_pos][normal_i]:
-				block_surfaces[start_pos][normal_i] = false
 				normal = normals[normal_i]
 				dir_i = normal_i
 				break
@@ -162,6 +160,7 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 		#    [ ][ ]
 		# [X][X][X]
 		var max_x: int = -1
+		var max_y: int = -1
 		var max_pos: Vector3i
 		for y in range(max_dim + 1):
 			var has_full_row: bool = false
@@ -191,6 +190,7 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 			
 			# Terminate if row is not extending rectangle
 			if not has_full_row:
+				max_y = y - 1
 				break
 		
 		# Remove surfaces that have been used up
@@ -199,24 +199,30 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 				for x in range(min_pos.x, max_pos.x + 1):
 					var remove_pos = Vector3i(x, y, z)
 					block_surfaces[remove_pos][dir_i] = false
+					if not block_surfaces[remove_pos].has(true):
+						block_surfaces.erase(remove_pos)
 		
 		# Find corner vectors of surface in world space
-		var vertices: PackedVector3Array = PackedVector3Array()
-		var indices: PackedInt32Array = PackedInt32Array()
+		var vertices: Array[Vector3i] = []
 		
-		var surface_displace: Vector3i = Vector3i(dir_i == 0, dir_i == 2, dir_i == 0 or dir_i == 2 or dir_i == 4)
-		var corner_1: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, 0), normal)) + min_pos + surface_displace
-		var corner_2: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, 1), normal)) + surface_displace
-		var corner_3: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(1, 1), normal)) + max_pos + surface_displace
-		var corner_4: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(1, 0), normal)) + surface_displace
+		var displacement: Vector3i = (Vector3(normal) * 0.5) + (Vector3(normal.abs()) * 0.5)
+		var base_pos: Vector3i = min_pos + displacement
+		var corner_1: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, 0), normal)) + base_pos
+		var corner_2: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, max_y + 1), normal)) + base_pos
+		var corner_3: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(max_x + 1, max_y + 1), normal)) + base_pos
+		var corner_4: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(max_x + 1, 0), normal)) + base_pos
 		
+		# Triangle 1
 		vertices.append(corner_1)
 		vertices.append(corner_2)
 		vertices.append(corner_3)
-		vertices.append(corner_4)
-		indices.append_array([0, 1, 2, 1, 3, 2])
 		
-		var surface: Surface = Surface.new(vertices, indices, normal)
+		# Triangle 2
+		vertices.append(corner_3)
+		vertices.append(corner_4)
+		vertices.append(corner_1)
+		
+		var surface: Surface = Surface.new(vertices, normal)
 		surfaces.append(surface)
 	return surfaces
 
@@ -229,7 +235,7 @@ func embed_2d_in_plane(v: Vector2, n: Vector3) -> Vector3:
 		a = Vector3(0, 1, 0)
 	var t1 = (a - n.dot(a) * n).normalized()
 	var t2 = n.cross(t1)
-	return a.x * t1 + a.y * t2
+	return v.x * t1 + v.y * t2
 
 func build_chunk_mesh(
 	x_pos_chunk: Chunk = null,
@@ -259,9 +265,6 @@ func build_chunk_mesh(
 		# Add vertices
 		for vertex in surface.vertices:
 			st.add_vertex(vertex)
-		# Add indexes
-		for index in surface.indices:
-			st.add_index(index + (i * 4))
-		
-	var tmp_mesh: Mesh = st.commit()
-	mesh = tmp_mesh
+	st.index()
+	
+	mesh = st.commit()
