@@ -49,7 +49,7 @@ func array_to_chunk_pos(index: int) -> Vector3i:
 	return Vector3i(x, y, z)
 
 func is_in_chunk(index: int) -> bool:
-	return 0 >= index and index < (chunk_size.x * chunk_size.y * chunk_size.z)
+	return 0 <= index and index < (chunk_size.x * chunk_size.y * chunk_size.z)
 
 func find_block_surfaces(
 	x_pos_chunk: Chunk = null,
@@ -82,6 +82,7 @@ func find_block_surfaces(
 				# Find exposed block surfaces
 				var exposed_surfaces = []
 				exposed_surfaces.resize(len(normals))
+				exposed_surfaces.fill(false)
 				var has_exposed_surfaces = false
 				for i in len(normals):
 					var dir = normals[i]
@@ -194,18 +195,21 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 				break
 		
 		# Remove surfaces that have been used up
-		for z in range(min_pos.z, max_pos.z + 1):
-			for y in range(min_pos.y, max_pos.y + 1):
-				for x in range(min_pos.x, max_pos.x + 1):
-					var remove_pos = Vector3i(x, y, z)
-					block_surfaces[remove_pos][dir_i] = false
-					if not block_surfaces[remove_pos].has(true):
-						block_surfaces.erase(remove_pos)
+		for x in range(max_x + 1):
+			for y in range(max_y + 1):
+				var remove_pos = min_pos + loc_x_move * x + loc_y_move * y
+				block_surfaces[remove_pos][dir_i] = false
+				if not block_surfaces[remove_pos].has(true):
+					block_surfaces.erase(remove_pos)
 		
 		# Find corner vectors of surface in world space
 		var vertices: Array[Vector3i] = []
 		
 		var displacement: Vector3i = (Vector3(normal) * 0.5) + (Vector3(normal.abs()) * 0.5)
+		if dir_i == 0:
+			displacement += Vector3i(0, 1, 0)
+		elif dir_i == 3 or dir_i == 4:
+			displacement += Vector3i(1, 0, 0)
 		var base_pos: Vector3i = min_pos + displacement
 		var corner_1: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, 0), normal)) + base_pos
 		var corner_2: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(0, max_y + 1), normal)) + base_pos
