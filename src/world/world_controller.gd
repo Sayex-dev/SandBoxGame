@@ -18,7 +18,9 @@ var world_mesh: MeshInstance3D
 func _ready():
 	var chunk_size = Vector3i(4, 4, 4)
 	var world_gen = WorldGenerator.new(chunk_size)
-	var chunk = world_gen.generate_chunk(Vector3i.ZERO)
+	#var chunk = world_gen.generate_chunk(Vector3i.ZERO)
+	var chunk = Chunk.new(chunk_size)
+	chunk.set_block(Vector3i.ZERO, 1)
 	block_world = BlockWorld.new()
-	block_world.add_chunk(Vector3i(0, 0, 0), chunk)
+	block_world.add_chunk(Vector3i.ZERO, chunk)
 	add_child(chunk)
