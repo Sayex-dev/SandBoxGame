@@ -43,13 +43,16 @@ func chunk_to_array_pos(chunk_pos: Vector3i) -> int:
 func array_to_chunk_pos(index: int) -> Vector3i:
 	var x = index % chunk_size.x
 	@warning_ignore("integer_division")
-	var y = int(index / chunk_size.x) % chunk_size.y
+	var y = int((index / chunk_size.x) % chunk_size.y)
 	@warning_ignore("integer_division")
-	var z = int(index / chunk_size.x) * chunk_size.y
+	var z = int(index / (chunk_size.x * chunk_size.y))
 	return Vector3i(x, y, z)
 
-func is_in_chunk(index: int) -> bool:
-	return 0 <= index and index < (chunk_size.x * chunk_size.y * chunk_size.z)
+func is_in_chunk(pos: Vector3i) -> bool:
+	var correct_x = 0 <= pos.x and pos.x < chunk_size.x
+	var correct_y = 0 <= pos.y and pos.y < chunk_size.y
+	var correct_z = 0 <= pos.z and pos.z < chunk_size.z
+	return correct_x and correct_y and correct_z
 
 func find_block_surfaces(
 	x_pos_chunk: Chunk = null,
@@ -88,10 +91,10 @@ func find_block_surfaces(
 					var dir = normals[i]
 					var adjacent_pos = block_pos + dir
 					var adjacent_block
-					if is_in_chunk(chunk_to_array_pos(adjacent_pos)):
+					if is_in_chunk(adjacent_pos):
 						adjacent_block = get_block(adjacent_pos)
 					else:
-						var adjacent_chunk_pos = adjacent_pos % chunk_size
+						var adjacent_chunk_pos = wrap_to_chunk(adjacent_pos)
 						if adjacent_chunks[i]:
 							adjacent_block = adjacent_chunks[i].get_block(adjacent_chunk_pos)
 						else:
@@ -102,6 +105,13 @@ func find_block_surfaces(
 				if has_exposed_surfaces:
 					exposed_blocks[block_pos] = exposed_surfaces
 	return exposed_blocks
+
+func wrap_to_chunk(p: Vector3i) -> Vector3i:
+	return Vector3i(
+		(p.x + chunk_size.x) % chunk_size.x,
+		(p.y + chunk_size.y) % chunk_size.y,
+		(p.z + chunk_size.z) % chunk_size.z
+	)
 
 func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 	var block_surfaces = {}
@@ -257,6 +267,13 @@ func build_chunk_mesh(
 		z_pos_chunk,
 		z_neg_chunk
 	)
+	
+	if true:
+		print("===== Chunk =====")
+		for pos in exposed_block_surfaces:
+			var surfaces = exposed_block_surfaces[pos]
+			print(str(pos) + ": " + str(surfaces))
+	
 	var surfaces: Array[Surface] = get_surface_vectors(exposed_block_surfaces)
 	
 	var st = SurfaceTool.new()

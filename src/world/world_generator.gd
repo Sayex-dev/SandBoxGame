@@ -21,5 +21,4 @@ func _set_ground(chunk: Chunk, chunk_pos: Vector3i):
 			var noise_height = int(noise.get_noise_2d(x_pos, z_pos) * 100)
 			for y in range(min(noise_height - chunk_pos.y * chunk_size.y, chunk_size.y)):
 				var in_chunk_pos = Vector3i(x, y, z)
-				print("Added block at: " + str(in_chunk_pos))
 				chunk.set_block(in_chunk_pos, 1)
