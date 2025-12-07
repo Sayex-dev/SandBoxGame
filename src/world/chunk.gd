@@ -268,13 +268,6 @@ func build_chunk_mesh(
 		z_neg_chunk
 	)
 	
-	if true:
-		print("===== Chunk =====")
-		print("Number of blocks: " + str(len(exposed_block_surfaces)))
-		for pos in exposed_block_surfaces:
-			var surfaces = exposed_block_surfaces[pos]
-			print(str(pos) + ": " + str(surfaces))
-	
 	var surfaces: Array[Surface] = get_surface_vectors(exposed_block_surfaces)
 	
 	var st = SurfaceTool.new()

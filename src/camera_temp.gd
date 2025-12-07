@@ -1,7 +1,7 @@
 extends Node3D
 
-var speed: float = 3
-var sprint_speed: float = 10
+var speed: float = 5
+var sprint_speed: float = 50
 var rotation_speed: float = 0.0001
 
 func _physics_process(delta):

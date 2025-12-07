@@ -44,16 +44,26 @@ var world_mesh: MeshInstance3D
 func _ready():
 	RenderingServer.set_debug_generate_wireframes(true)
 	var vp = get_viewport()
-	vp.debug_draw = 4
+	vp.debug_draw = 0
 	
-	var chunk_size = Vector3i(4, 4, 4)
+	var chunk_size = Vector3i(32, 32, 32)
 	var world_gen = WorldGenerator.new(chunk_size)
 	block_world = BlockWorld.new()
 	
-	var load_positions = [Vector3i(0, 0, 0)]
+	var world_size = Vector3i(10, 2, 10)
+	var offset = Vector3i(0, 0, 0)
+	var load_positions = []
+	for x in range(-int(world_size.x / 2) + offset.x, world_size.x + offset.x):
+		for y in range(-int(world_size.y / 2) + offset.y, world_size.y + offset.y):
+			for z in range(-int(world_size.z / 2) + offset.z, world_size.z + offset.z):
+				load_positions.append(Vector3i(x, y, z))
+	
 	var chunks: Dictionary
 	for chunk_pos in load_positions:
 		var chunk = world_gen.generate_chunk(chunk_pos)
 		block_world.add_chunk(chunk_pos, chunk, false)
+		add_child(chunk)
+		chunk.position = chunk_size * chunk_pos
 	
 	block_world.rebuild_world_mesh()
+

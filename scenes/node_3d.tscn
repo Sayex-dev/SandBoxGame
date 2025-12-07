@@ -1,14 +1,12 @@
-[gd_scene load_steps=4 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=3 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" path="res://src/camera_temp.gd" id="1_3x0up"]
 [ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_lr1ql"]
-
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.166183, -0.337264, 0.926626, -2.5545e-08, 0.939693, 0.34202, -0.986095, -0.056838, 0.156161, 16.9159, 6.38104, -12.8367)
+transform = Transform3D(0.166183, -0.337264, 0.926626, -2.5545e-08, 0.939693, 0.34202, -0.986095, -0.0568379, 0.156161, 12.4395, 6.38104, 0.734708)
 fov = 60.0
 script = ExtResource("1_3x0up")
 
@@ -17,6 +15,3 @@ script = ExtResource("1_wwmw1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_lr1ql")
