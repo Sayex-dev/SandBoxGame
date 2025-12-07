@@ -6,7 +6,7 @@
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.166183, -0.337264, 0.926626, -2.5545e-08, 0.939693, 0.34202, -0.986095, -0.0568379, 0.156161, 12.4395, 6.38104, 0.734708)
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 10, 0)
 fov = 60.0
 script = ExtResource("1_3x0up")
 

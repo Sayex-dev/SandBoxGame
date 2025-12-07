@@ -94,7 +94,7 @@ func find_block_surfaces(
 					if is_in_chunk(adjacent_pos):
 						adjacent_block = get_block(adjacent_pos)
 					else:
-						var adjacent_chunk_pos = wrap_to_chunk(adjacent_pos)
+						var adjacent_chunk_pos = wrap_to_chunk(adjacent_pos, chunk_size)
 						if adjacent_chunks[i]:
 							adjacent_block = adjacent_chunks[i].get_block(adjacent_chunk_pos)
 						else:
@@ -106,7 +106,7 @@ func find_block_surfaces(
 					exposed_blocks[block_pos] = exposed_surfaces
 	return exposed_blocks
 
-func wrap_to_chunk(p: Vector3i) -> Vector3i:
+static func wrap_to_chunk(p: Vector3i, chunk_size: Vector3i) -> Vector3i:
 	return Vector3i(
 		(p.x + chunk_size.x) % chunk_size.x,
 		(p.y + chunk_size.y) % chunk_size.y,
