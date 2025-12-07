@@ -45,6 +45,7 @@ func _ready():
 	RenderingServer.set_debug_generate_wireframes(true)
 	var vp = get_viewport()
 	vp.debug_draw = 4
+	
 	var chunk_size = Vector3i(4, 4, 4)
 	var world_gen = WorldGenerator.new(chunk_size)
 	block_world = BlockWorld.new()
@@ -52,7 +53,7 @@ func _ready():
 	var load_positions = [Vector3i(0, 0, 0)]
 	var chunks: Dictionary
 	for chunk_pos in load_positions:
-		var chunk = world_gen.generate_chunk(Vector3i.ZERO)
+		var chunk = world_gen.generate_chunk(chunk_pos)
 		block_world.add_chunk(chunk_pos, chunk, false)
 	
 	block_world.rebuild_world_mesh()
