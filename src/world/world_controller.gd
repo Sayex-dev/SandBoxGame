@@ -23,11 +23,11 @@ class BlockWorld:
 				adjacent_chunks[i] = adjacent_chunk
 			
 		chunk.build_chunk_mesh(
-			adjacent_chunks[0], 
-			adjacent_chunks[1], 
+			adjacent_chunks[0],
+			adjacent_chunks[1],
 			adjacent_chunks[2],
-			adjacent_chunks[3], 
-			adjacent_chunks[4], 
+			adjacent_chunks[3],
+			adjacent_chunks[4],
 			adjacent_chunks[5]
 		)
 
@@ -44,7 +44,7 @@ var block_world: BlockWorld
 var world_mesh: MeshInstance3D
 var world_gen: WorldGenerator
 var chunk_size = Vector3i(16, 16, 16)
-var render_distance = Vector3i(1, 1, 1)
+var render_distance = Vector3i(5, 1, 5)
 
 @onready var camera: Node3D = $"../Camera3D"
 var prev_camera_chunk_pos: Vector3i = Vector3i.MAX
@@ -65,15 +65,15 @@ func _physics_process(delta):
 	if camera_chunk_pos != prev_camera_chunk_pos:
 		print("Changed chunk: (" + str(camera_chunk_pos.x) + ", " + str(camera_chunk_pos.y) + ", " + str(camera_chunk_pos.z) + ")")
 		prev_camera_chunk_pos = camera_chunk_pos
-		load_position(camera.position)
+		await load_position(camera.position)
 
 func load_position(world_pos: Vector3):
 	var load_chunk_pos = Vector3i((world_pos / Vector3(chunk_size)).floor())
+	
+	var desired_chunks: Array[Vector3i] = []
 	var add_chunks: Array[Vector3i] = []
 	var remove_chunks: Array[Vector3i] = []
-
-	var desired_chunks: Array[Vector3i] = []
-
+	
 	for x in range(-render_distance.x, render_distance.x):
 		for y in range(-render_distance.y, render_distance.y):
 			for z in range(-render_distance.z, render_distance.z):
@@ -94,12 +94,24 @@ func update_chunk_loading(load_positions: Array[Vector3i] = [], unload_positions
 	for chunk_pos in unload_positions:
 		if block_world.chunks.has(chunk_pos):
 			block_world.remove_chunk(chunk_pos)
-	
+
 	# load chunks
+	var thread = Thread.new()
+	thread.start(_generate_chunks.bind(load_positions, thread))
+
+	#block_world.rebuild_world_mesh()
+
+func gather_chunks(thread: Thread):
+	var chunks = thread.wait_to_finish()
+	for chunk in chunks:
+		add_child(chunk)
+
+func _generate_chunks(load_positions: Array[Vector3i], thread: Thread):
+	var chunks: Array[Chunk] = []
 	for chunk_pos in load_positions:
 		var chunk = world_gen.generate_chunk(chunk_pos)
-		block_world.add_chunk(chunk_pos, chunk, false)
-		add_child(chunk)
+		chunk.build_chunk_mesh()
 		chunk.position = chunk_size * chunk_pos
-
-	block_world.rebuild_world_mesh()
+		chunks.append(chunk)
+	call_deferred("gather_chunks", thread)
+	return chunks
