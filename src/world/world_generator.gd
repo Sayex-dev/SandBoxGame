@@ -8,8 +8,8 @@ func _init(_chunk_size: Vector3i):
 	noise = FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	
-func generate_chunk(chunk_pos: Vector3i) -> Chunk:
-	var chunk = Chunk.new(chunk_size)
+func generate_chunk(chunk_pos: Vector3i, chunk_mat: Material) -> Chunk:
+	var chunk = Chunk.new(chunk_size, chunk_mat)
 	_set_ground(chunk, chunk_pos)
 	return chunk
 

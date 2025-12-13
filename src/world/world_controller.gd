@@ -40,11 +40,14 @@ class BlockWorld:
 		chunks.erase(chunk_index)
 		chunk.queue_free()
 
+@export var chunk_mat: Material
+
 var block_world: BlockWorld
 var world_mesh: MeshInstance3D
 var world_gen: WorldGenerator
 var chunk_size = Vector3i(16, 16, 16)
-var render_distance = Vector3i(5, 1, 5)
+var render_distance = Vector3i(5, 2, 5)
+var queued_chunk_pos: Array[Vector3i] = []
 
 @onready var camera: Node3D = $"../Camera3D"
 var prev_camera_chunk_pos: Vector3i = Vector3i.MAX
@@ -63,9 +66,8 @@ func _ready():
 func _physics_process(delta):
 	var camera_chunk_pos = Vector3i(camera.position) / chunk_size
 	if camera_chunk_pos != prev_camera_chunk_pos:
-		print("Changed chunk: (" + str(camera_chunk_pos.x) + ", " + str(camera_chunk_pos.y) + ", " + str(camera_chunk_pos.z) + ")")
 		prev_camera_chunk_pos = camera_chunk_pos
-		await load_position(camera.position)
+		load_position(camera.position)
 
 func load_position(world_pos: Vector3):
 	var load_chunk_pos = Vector3i((world_pos / Vector3(chunk_size)).floor())
@@ -80,12 +82,15 @@ func load_position(world_pos: Vector3):
 				desired_chunks.append(load_chunk_pos + Vector3i(x, y, z))
 
 	for chunk_pos in desired_chunks:
-		if not block_world.chunks.has(chunk_pos):
+		if not block_world.chunks.has(chunk_pos) and chunk_pos not in queued_chunk_pos:
+			queued_chunk_pos.append(chunk_pos)
 			add_chunks.append(chunk_pos)
 
 	for chunk_pos in block_world.chunks.keys():
 		if not desired_chunks.has(chunk_pos):
 			remove_chunks.append(chunk_pos)
+		if chunk_pos in queued_chunk_pos:
+			queued_chunk_pos.erase(chunk_pos)
 
 	update_chunk_loading(add_chunks, remove_chunks)
 
@@ -93,25 +98,31 @@ func update_chunk_loading(load_positions: Array[Vector3i] = [], unload_positions
 	# unload first
 	for chunk_pos in unload_positions:
 		if block_world.chunks.has(chunk_pos):
+			var chunk = block_world.chunks[chunk_pos]
 			block_world.remove_chunk(chunk_pos)
+			chunk.queue_free()
 
 	# load chunks
 	var thread = Thread.new()
 	thread.start(_generate_chunks.bind(load_positions, thread))
 
-	#block_world.rebuild_world_mesh()
-
 func gather_chunks(thread: Thread):
-	var chunks = thread.wait_to_finish()
-	for chunk in chunks:
-		add_child(chunk)
+	var chunks: Dictionary = thread.wait_to_finish()
+	for chunk_pos in chunks.keys():
+		var chunk = chunks[chunk_pos]
+		if chunk_pos in queued_chunk_pos:
+			queued_chunk_pos.erase(chunk_pos)
+			block_world.add_chunk(chunk_pos, chunk, false)
+			add_child(chunk)
+		else:
+			chunk.queue_free()
 
 func _generate_chunks(load_positions: Array[Vector3i], thread: Thread):
-	var chunks: Array[Chunk] = []
+	var chunks: Dictionary = {}
 	for chunk_pos in load_positions:
-		var chunk = world_gen.generate_chunk(chunk_pos)
+		var chunk = world_gen.generate_chunk(chunk_pos, chunk_mat)
 		chunk.build_chunk_mesh()
 		chunk.position = chunk_size * chunk_pos
-		chunks.append(chunk)
+		chunks[chunk_pos] = chunk
 	call_deferred("gather_chunks", thread)
 	return chunks

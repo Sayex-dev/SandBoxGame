@@ -1,7 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=5 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" path="res://src/camera_temp.gd" id="1_3x0up"]
 [ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
+[ext_resource type="Material" uid="uid://cuv5nfksij4ta" path="res://textures/chunk_mat.tres" id="3_2rygj"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_onoj8"]
 
 [node name="Node3D" type="Node3D"]
 
@@ -12,6 +15,10 @@ script = ExtResource("1_3x0up")
 
 [node name="WorldController" type="Node3D" parent="."]
 script = ExtResource("1_wwmw1")
+chunk_mat = ExtResource("3_2rygj")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_onoj8")

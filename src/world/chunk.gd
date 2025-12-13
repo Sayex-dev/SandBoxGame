@@ -20,13 +20,15 @@ var normals = [
 ]
 var chunk_size: Vector3i
 var blocks: Array[int]
+var chunk_mat: Material
 
-func _init(_chunk_size: Vector3i) -> void:
+func _init(_chunk_size: Vector3i, _chunk_mat: Material) -> void:
 	chunk_size = _chunk_size
 	blocks = []
 	var block_count = _chunk_size.x * _chunk_size.y * _chunk_size.z
 	blocks.resize(block_count)
 	blocks.fill(-1)
+	chunk_mat = _chunk_mat
 
 func get_block(chunk_pos: Vector3i) -> int:
 	var index: int = chunk_to_array_pos(chunk_pos)
@@ -272,7 +274,6 @@ func build_chunk_mesh(
 	
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st.set_color(Color.AQUA)
 	
 	for i in len(surfaces):
 		var surface: Surface = surfaces[i]
@@ -280,6 +281,7 @@ func build_chunk_mesh(
 		# Add vertices
 		for vertex in surface.vertices:
 			st.add_vertex(vertex)
-	st.index()
 	
+	st.index()
 	mesh = st.commit()
+	mesh.surface_set_material(0, chunk_mat)
