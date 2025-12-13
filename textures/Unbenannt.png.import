@@ -2,21 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://boplblm4jm72g"
-path.s3tc="res://.godot/imported/Unbenannt.jpg-0d2f38f4388811827d9c4aee443e4a77.s3tc.ctex"
+uid="uid://bkhac1321me0o"
+path="res://.godot/imported/Unbenannt.png-19a1c3c2a2a1e22efa84b659e508bc10.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://textures/Unbenannt.jpg"
-dest_files=["res://.godot/imported/Unbenannt.jpg-0d2f38f4388811827d9c4aee443e4a77.s3tc.ctex"]
+source_file="res://textures/Unbenannt.png"
+dest_files=["res://.godot/imported/Unbenannt.png-19a1c3c2a2a1e22efa84b659e508bc10.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

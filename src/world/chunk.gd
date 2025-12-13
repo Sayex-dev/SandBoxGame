@@ -4,10 +4,12 @@ class_name Chunk
 
 class Surface:
 	var vertices: Array[Vector3i] = []
+	var indices: Array[int] = []
 	var normal: Vector3
 	
-	func _init(_vertices: Array[Vector3i], _normal: Vector3):
+	func _init(_vertices: Array[Vector3i], _indices: Array[int], _normal: Vector3):
 		vertices = _vertices
+		indices = _indices
 		normal = _normal
 
 var normals = [
@@ -17,6 +19,12 @@ var normals = [
 	Vector3i(0, -1, 0),	# y-
 	Vector3i(0, 0, 1),	# z+
 	Vector3i(0, 0, -1)	# z-
+]
+var uvs = [
+	Vector2(0, 0),
+	Vector2(0.5, 0),
+	Vector2(0.5, 0.5),
+	Vector2(0, 0.5)
 ]
 var chunk_size: Vector3i
 var blocks: Array[int]
@@ -216,6 +224,7 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 		
 		# Find corner vectors of surface in world space
 		var vertices: Array[Vector3i] = []
+		var indices: Array[int] = []
 		
 		var displacement: Vector3i = (Vector3(normal) * 0.5) + (Vector3(normal.abs()) * 0.5)
 		if dir_i == 0:
@@ -228,17 +237,22 @@ func get_surface_vectors(exposed_block_surfaces: Dictionary) -> Array[Surface]:
 		var corner_3: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(max_x + 1, max_y + 1), normal)) + base_pos
 		var corner_4: Vector3i = Vector3i(embed_2d_in_plane(Vector2i(max_x + 1, 0), normal)) + base_pos
 		
-		# Triangle 1
 		vertices.append(corner_1)
 		vertices.append(corner_2)
 		vertices.append(corner_3)
+		vertices.append(corner_4)
+		
+		# Triangle 1
+		indices.append(0)
+		indices.append(1)
+		indices.append(2)
 		
 		# Triangle 2
-		vertices.append(corner_3)
-		vertices.append(corner_4)
-		vertices.append(corner_1)
+		indices.append(2)
+		indices.append(3)
+		indices.append(0)
 		
-		var surface: Surface = Surface.new(vertices, normal)
+		var surface: Surface = Surface.new(vertices, indices, normal)
 		surfaces.append(surface)
 	return surfaces
 
@@ -274,14 +288,19 @@ func build_chunk_mesh(
 	
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_material(chunk_mat)
 	
 	for i in len(surfaces):
 		var surface: Surface = surfaces[i]
 		st.set_normal(surface.normal)
 		# Add vertices
-		for vertex in surface.vertices:
+		for j in range(4):
+			var vertex = surface.vertices[j]
+			var uv = uvs[j]
+			st.set_uv(uv)
 			st.add_vertex(vertex)
+		
+		for index in surface.indices:
+			st.add_index((i * 4) + index)
 	
-	st.index()
 	mesh = st.commit()
-	mesh.surface_set_material(0, chunk_mat)
