@@ -6,15 +6,18 @@ var queued_chunk_pos: Array[Vector3i] = []
 var world_gen: WorldGenerator
 var chunk_size: Vector3i
 var chunk_mat: Material
+var ability_manager: AbilityManager
 
 func _init(
 	p_chunk_size: Vector3i, 
-	p_world_gen: WorldGenerator, 
+	p_world_gen: WorldGenerator,
 	p_chunk_mat: Material, 
+	p_ability_manager: AbilityManager
 ):
 	chunk_size = p_chunk_size
 	world_gen = p_world_gen
 	chunk_mat = p_chunk_mat
+	ability_manager = p_ability_manager
 
 func set_block_state(world_pos: Vector3i, block_state: BlockState):
 	var chunk_loc = Chunk.world_to_chunk_location(world_pos, chunk_size)
@@ -88,4 +91,3 @@ func gather_chunks(thread: Thread):
 			add_child(chunk)
 		else:
 			chunk.queue_free()
-
