@@ -26,9 +26,8 @@ transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0,
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_3x0up")
 
-[node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("focus_position")]
+[node name="WorldController" type="Node3D" parent="."]
 script = ExtResource("1_wwmw1")
-focus_position = NodePath("../Camera3D")
 chunk_mat = ExtResource("3_sjtbm")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
