@@ -1,0 +1,42 @@
+[gd_scene load_steps=7 format=3 uid="uid://u3l3grnkbtg6"]
+
+[ext_resource type="Script" path="res://src/camera_temp.gd" id="1_3x0up"]
+[ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
+[ext_resource type="Material" uid="uid://8go7yaq62glg" path="res://resources/textures/world_material.tres" id="3_sjtbm"]
+
+[sub_resource type="Environment" id="Environment_np7kj"]
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.05
+tonemap_mode = 2
+glow_enabled = true
+fog_enabled = true
+fog_light_energy = 0.16
+volumetric_fog_density = 1.0
+volumetric_fog_length = 0.01
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_51icu"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_2n421"]
+material = SubResource("ShaderMaterial_51icu")
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 10, 0)
+environment = SubResource("Environment_np7kj")
+script = ExtResource("1_3x0up")
+
+[node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("focus_position")]
+script = ExtResource("1_wwmw1")
+chunk_mat = ExtResource("3_sjtbm")
+focus_position = NodePath("../Camera3D")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
+light_color = Color(1, 1, 0.894118, 1)
+light_energy = 0.175
+shadow_enabled = true
+shadow_opacity = 0.5
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_2n421")

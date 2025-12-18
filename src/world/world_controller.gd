@@ -22,7 +22,8 @@ func _ready():
 	add_child(world_clock)
 	
 	var world_gen = WorldGenerator.new(chunk_size)
-	block_world = BlockWorld.new(chunk_size, world_gen, chunk_mat)
+	var ability_manager = AbilityManager.new(world_clock)
+	block_world = BlockWorld.new(chunk_size, world_gen, chunk_mat, ability_manager)
 	add_child(block_world)
 	
 	block_world.load_position(focus_position.position, render_distance)
