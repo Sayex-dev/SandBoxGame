@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_sjtbm"]
 [ext_resource type="Script" path="res://src/world/blocks/block_default.gd" id="4_4e4p2"]
-[ext_resource type="Script" path="res://src/world/world_gen/preset_world_generator.gd" id="5_ekpks"]
+[ext_resource type="Script" path="res://src/world/world_gen/simple_noise_world_generator.gd" id="5_8dtaw"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -42,10 +42,9 @@ texture_atlas_face_right = Vector2i(0, 1)
 texture_atlas_face_forwad = Vector2i(0, 1)
 texture_atlas_face_backward = Vector2i(0, 1)
 
-[sub_resource type="Resource" id="Resource_xv5w6"]
-script = ExtResource("5_ekpks")
-blocks = Array[Vector4i]([Vector4i(0, 0, 0, 0), Vector4i(1, 0, 0, 1), Vector4i(2, 0, 0, 2), Vector4i(3, 0, 0, 3)])
-offset = Vector3i(0, 8, -5)
+[sub_resource type="Resource" id="Resource_uceo8"]
+script = ExtResource("5_8dtaw")
+gen_offset = Vector3i(0, 0, 0)
 
 [node name="Node3D" type="Node3D"]
 
@@ -59,10 +58,9 @@ script = ExtResource("1_wwmw1")
 focus_position = NodePath("../Camera3D")
 chunk_mat = ExtResource("3_sjtbm")
 default_block_store = Array[ExtResource("4_4e4p2")]([SubResource("Resource_47k7i"), SubResource("Resource_3ml50")])
-world_generator = SubResource("Resource_xv5w6")
+world_generator = SubResource("Resource_uceo8")
 chunk_size = Vector3i(8, 8, 8)
 render_distance = Vector3i(2, 1, 2)
-debug_draw = 4
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)

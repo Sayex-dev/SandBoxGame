@@ -45,7 +45,6 @@ texture_atlas_face_backward = Vector2i(0, 1)
 [sub_resource type="Resource" id="Resource_xv5w6"]
 script = ExtResource("5_ekpks")
 blocks = Array[Vector4i]([Vector4i(0, 0, 0, 0), Vector4i(1, 0, 0, 1), Vector4i(2, 0, 0, 2), Vector4i(3, 0, 0, 3)])
-offset = Vector3i(0, 8, -5)
 
 [node name="Node3D" type="Node3D"]
 
@@ -62,7 +61,6 @@ default_block_store = Array[ExtResource("4_4e4p2")]([SubResource("Resource_47k7i
 world_generator = SubResource("Resource_xv5w6")
 chunk_size = Vector3i(8, 8, 8)
 render_distance = Vector3i(2, 1, 2)
-debug_draw = 4
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)

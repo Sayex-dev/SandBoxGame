@@ -23,8 +23,8 @@
 - Top layer hardest
 - Generated structures like factories
 - Maybe small units not locked to grid
-    - Drones
-    - People
+	- Drones
+	- People
 
 ## Blocks
 - Blocks Have abilities
@@ -41,4 +41,4 @@
 
 ## Factions
 - Factions that own blocks
-    - In the beginning just *Abandoned*, *Hostile*, *Claimed*
+	- In the beginning just *Abandoned*, *Hostile*, *Claimed*

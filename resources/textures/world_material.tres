@@ -1,7 +1,11 @@
-[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://8go7yaq62glg"]
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://cuyyiwhax61n7"]
 
+[ext_resource type="Shader" path="res://resources/textures/world_material.gdshader" id="1_bymda"]
 [ext_resource type="Texture2D" uid="uid://bkhac1321me0o" path="res://resources/textures/Unbenannt.png" id="1_yogrk"]
 
 [resource]
-albedo_texture = ExtResource("1_yogrk")
-texture_filter = 0
+render_priority = 0
+shader = ExtResource("1_bymda")
+shader_parameter/albedo = Color(1, 1, 1, 1)
+shader_parameter/atlas_size = Vector2(2, 2)
+shader_parameter/texture_albedo = ExtResource("1_yogrk")

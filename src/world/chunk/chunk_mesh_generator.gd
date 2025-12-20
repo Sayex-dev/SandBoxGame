@@ -67,7 +67,7 @@ static func find_block_surfaces(
 					if chunk.is_in_chunk(adjacent_pos):
 						adjacent_block = chunk.get_block(adjacent_pos)
 					else:
-						var adjacent_chunk_pos = Chunk.world_to_chunk_pos(adjacent_pos, chunk.chunk_size)
+						var adjacent_chunk_pos = Chunk.wrap_to_chunk(adjacent_pos, chunk.chunk_size)
 						if adjacent_chunks[i]:
 							adjacent_block = adjacent_chunks[i].get_block(adjacent_chunk_pos)
 						else:

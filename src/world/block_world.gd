@@ -21,17 +21,17 @@ func _init(
 
 func set_block_state(world_pos: Vector3i, block_state: BlockState):
 	var chunk_loc = Chunk.world_to_chunk_location(world_pos, chunk_size)
-	var chunk_pos = Chunk.world_to_chunk_pos(world_pos, chunk_size)
+	var chunk_pos = Chunk.wrap_to_chunk(world_pos, chunk_size)
 	chunks[chunk_loc].set_block_state(chunk_pos, block_state)
 
 func get_block_state(world_pos: Vector3i) -> BlockState:
 	var chunk_loc = Chunk.world_to_chunk_location(world_pos, chunk_size)
-	var chunk_pos = Chunk.world_to_chunk_pos(world_pos, chunk_size)
+	var chunk_pos = Chunk.wrap_to_chunk(world_pos, chunk_size)
 	return chunks[chunk_loc]
 
 func has_block_state(world_pos: Vector3i) -> bool:
 	var chunk_loc = Chunk.world_to_chunk_location(world_pos, chunk_size)
-	var chunk_pos = Chunk.world_to_chunk_pos(world_pos, chunk_size)
+	var chunk_pos = Chunk.wrap_to_chunk(world_pos, chunk_size)
 	return chunks[chunk_loc].has_block_state(chunk_pos)
 
 func load_position(world_pos: Vector3, render_distance: Vector3i):
@@ -74,7 +74,7 @@ func update_chunk_loading(load_positions: Array[Vector3i] = [], unload_positions
 func _generate_chunks(load_positions: Array[Vector3i], thread: Thread):
 	var chunks: Dictionary = {}
 	for chunk_pos in load_positions:
-		var chunk = world_gen.generate_chunk(chunk_pos, chunk_mat)
+		var chunk = world_gen.generate_chunk(chunk_pos, chunk_mat, chunk_size)
 		chunk.build_mesh()
 		chunk.position = chunk_size * chunk_pos
 		chunks[chunk_pos] = chunk

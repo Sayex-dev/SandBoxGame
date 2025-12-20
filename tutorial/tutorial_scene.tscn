@@ -1,0 +1,46 @@
+[gd_scene load_steps=8 format=3 uid="uid://c7pwt58a8d431"]
+
+[ext_resource type="Shader" path="res://tutorial/tutorial_shader.gdshader" id="1_qfwh6"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_di47l"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_diy2v"]
+noise = SubResource("FastNoiseLite_di47l")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_boif5"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pda81"]
+as_normal_map = true
+noise = SubResource("FastNoiseLite_boif5")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_646jt"]
+render_priority = 0
+shader = ExtResource("1_qfwh6")
+shader_parameter/height_scale = 0.5
+shader_parameter/noise = SubResource("NoiseTexture2D_diy2v")
+shader_parameter/normalmap = SubResource("NoiseTexture2D_pda81")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_m0fn6"]
+material = SubResource("ShaderMaterial_646jt")
+size = Vector2(10, 10)
+subdivide_width = 128
+subdivide_depth = 128
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104501, 2.38419e-07, 0.0594753)
+mesh = SubResource("PlaneMesh_m0fn6")
+skeleton = NodePath("../../..")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.7042, 0, 0)
+mesh = SubResource("PlaneMesh_m0fn6")
+skeleton = NodePath("../../..")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.819152, 0.0996005, -0.564863, 0, 0.984808, 0.173648, 0.573576, 0.142244, -0.806707, 0, 0, 0)
+light_energy = 16.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.707107, -0.122788, 0.696364, 0, 0.984808, 0.173648, -0.707107, -0.122788, 0.696364, 2, 1, 2)
