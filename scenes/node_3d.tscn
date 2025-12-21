@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=12 format=3 uid="uid://u3l3grnkbtg6"]
 
-[ext_resource type="Script" path="res://src/camera_temp.gd" id="1_3x0up"]
-[ext_resource type="Script" path="res://src/world/world_controller.gd" id="1_wwmw1"]
+[ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
+[ext_resource type="Script" uid="uid://bmck5y68lejm1" path="res://src/world/world_controller.gd" id="1_wwmw1"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_sjtbm"]
-[ext_resource type="Script" path="res://src/world/blocks/block_default.gd" id="4_4e4p2"]
-[ext_resource type="Script" path="res://src/world/world_gen/preset_world_generator.gd" id="5_ekpks"]
+[ext_resource type="Script" uid="uid://bepjakni52vcy" path="res://src/world/blocks/block_default.gd" id="4_4e4p2"]
+[ext_resource type="Script" uid="uid://c6pr4y6lh6aqe" path="res://src/world/abilities/active_abilities/active_ability.gd" id="5_cptob"]
+[ext_resource type="Script" uid="uid://bxxqu57mtio0p" path="res://src/world/world_gen/preset_world_generator.gd" id="5_ekpks"]
+[ext_resource type="Script" uid="uid://treymubrns6f" path="res://src/world/abilities/passive_abilities/passive_ability.gd" id="6_b2yaj"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -19,22 +21,10 @@ volumetric_fog_length = 0.01
 [sub_resource type="Resource" id="Resource_47k7i"]
 script = ExtResource("4_4e4p2")
 name = "Water"
-health = 0
-passive_abilities = Array[Resource("res://src/world/abilities/passive_abilities/passive_ability.gd")]([])
-active_abilities = Array[Resource("res://src/world/abilities/active_abilities/active_ability.gd")]([])
-texture_atlas_face_up = Vector2i(0, 0)
-texture_atlas_face_down = Vector2i(0, 0)
-texture_atlas_face_left = Vector2i(0, 0)
-texture_atlas_face_right = Vector2i(0, 0)
-texture_atlas_face_forwad = Vector2i(0, 0)
-texture_atlas_face_backward = Vector2i(0, 0)
 
 [sub_resource type="Resource" id="Resource_3ml50"]
 script = ExtResource("4_4e4p2")
 name = "Coal"
-health = 0
-passive_abilities = Array[Resource("res://src/world/abilities/passive_abilities/passive_ability.gd")]([])
-active_abilities = Array[Resource("res://src/world/abilities/active_abilities/active_ability.gd")]([])
 texture_atlas_face_up = Vector2i(0, 1)
 texture_atlas_face_down = Vector2i(0, 1)
 texture_atlas_face_left = Vector2i(0, 1)
@@ -52,7 +42,7 @@ offset = Vector3i(0, 8, -5)
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 10, 0)
 environment = SubResource("Environment_np7kj")
-script = ExtResource("1_3x0up")
+script = ExtResource("1_10v3s")
 
 [node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("focus_position")]
 script = ExtResource("1_wwmw1")
