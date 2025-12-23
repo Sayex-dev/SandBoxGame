@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PresetWorldGenerator" load_steps=2 format=3 uid="uid://c8ojv1efpn8gl"]
+
+[ext_resource type="Script" uid="uid://cgt163rtnl0xw" path="res://src/world/world_gen/PresetWorldGenerator.cs" id="1_8033d"]
+
+[resource]
+script = ExtResource("1_8033d")
+Blocks = Array[Vector4i]([Vector4i(0, 0, 0, 0), Vector4i(1, 0, 0, 1), Vector4i(2, 0, 0, 2), Vector4i(3, 0, 0, 3)])
+Offset = Vector3i(2, 8, -8)
+metadata/_custom_type_script = "uid://cgt163rtnl0xw"

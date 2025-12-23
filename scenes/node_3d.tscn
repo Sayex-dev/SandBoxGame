@@ -1,12 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=6 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
-[ext_resource type="Script" uid="uid://bmck5y68lejm1" path="res://src/world/world_controller.gd" id="1_wwmw1"]
-[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_sjtbm"]
-[ext_resource type="Script" uid="uid://bepjakni52vcy" path="res://src/world/blocks/block_default.gd" id="4_4e4p2"]
-[ext_resource type="Script" uid="uid://c6pr4y6lh6aqe" path="res://src/world/abilities/active_abilities/active_ability.gd" id="5_cptob"]
-[ext_resource type="Script" uid="uid://bxxqu57mtio0p" path="res://src/world/world_gen/preset_world_generator.gd" id="5_ekpks"]
-[ext_resource type="Script" uid="uid://treymubrns6f" path="res://src/world/abilities/passive_abilities/passive_ability.gd" id="6_b2yaj"]
+[ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
+[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
+[ext_resource type="Resource" uid="uid://c8ojv1efpn8gl" path="res://resources/world/test_world.tres" id="4_xvgsr"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -18,25 +15,6 @@ fog_light_energy = 0.16
 volumetric_fog_density = 1.0
 volumetric_fog_length = 0.01
 
-[sub_resource type="Resource" id="Resource_47k7i"]
-script = ExtResource("4_4e4p2")
-name = "Water"
-
-[sub_resource type="Resource" id="Resource_3ml50"]
-script = ExtResource("4_4e4p2")
-name = "Coal"
-texture_atlas_face_up = Vector2i(0, 1)
-texture_atlas_face_down = Vector2i(0, 1)
-texture_atlas_face_left = Vector2i(0, 1)
-texture_atlas_face_right = Vector2i(0, 1)
-texture_atlas_face_forwad = Vector2i(0, 1)
-texture_atlas_face_backward = Vector2i(0, 1)
-
-[sub_resource type="Resource" id="Resource_xv5w6"]
-script = ExtResource("5_ekpks")
-blocks = Array[Vector4i]([Vector4i(0, 0, 0, 0), Vector4i(1, 0, 0, 1), Vector4i(2, 0, 0, 2), Vector4i(3, 0, 0, 3)])
-offset = Vector3i(0, 8, -5)
-
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -44,15 +22,10 @@ transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0,
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 
-[node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("focus_position")]
-script = ExtResource("1_wwmw1")
-focus_position = NodePath("../Camera3D")
-chunk_mat = ExtResource("3_sjtbm")
-default_block_store = Array[ExtResource("4_4e4p2")]([SubResource("Resource_47k7i"), SubResource("Resource_3ml50")])
-world_generator = SubResource("Resource_xv5w6")
-chunk_size = Vector3i(8, 8, 8)
-render_distance = Vector3i(2, 1, 2)
-debug_draw = 4
+[node name="WorldController" type="Node3D" parent="."]
+script = ExtResource("2_ns6u7")
+ChunkMat = ExtResource("3_5t4e2")
+WorldGenerator = ExtResource("4_xvgsr")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
