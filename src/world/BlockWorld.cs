@@ -4,52 +4,55 @@ using System.Threading.Tasks;
 
 public partial class BlockWorld : Node3D
 {
-	private Dictionary<Vector3I, Chunk> _chunks = new();
-	private List<Vector3I> _queuedChunkPositions = new();
+	private Dictionary<Vector3I, Chunk> chunks = new();
+	private List<Vector3I> queuedChunkPositions = new();
 
-	private WorldGenerator _worldGen;
-	private Vector3I _chunkSize;
-	private Material _chunkMaterial;
-	private AbilityManager _abilityManager;
+	private WorldGenerator worldGen;
+	private Vector3I chunkSize;
+	private Material chunkMaterial;
+	private AbilityManager abilityManager;
+	private int seed;
 
 	public BlockWorld(
+		int seed,
 		Vector3I chunkSize,
 		WorldGenerator worldGen,
 		Material chunkMaterial,
 		AbilityManager abilityManager
 	)
 	{
-		_chunkSize = chunkSize;
-		_worldGen = worldGen;
-		_chunkMaterial = chunkMaterial;
-		_abilityManager = abilityManager;
+		this.seed = seed;
+		this.chunkSize = chunkSize;
+		this.worldGen = worldGen;
+		this.chunkMaterial = chunkMaterial;
+		this.abilityManager = abilityManager;
 	}
 
 	public void SetBlockState(Vector3I worldPos, BlockState blockState)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, _chunkSize);
-		var chunkPos = Chunk.WrapToChunk(worldPos, _chunkSize);
-		_chunks[chunkLoc].SetBlockState(chunkPos, blockState);
+		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
+		var chunkPos = Chunk.WrapToChunk(worldPos, chunkSize);
+		chunks[chunkLoc].SetBlockState(chunkPos, blockState);
 	}
 
 	public BlockState GetBlockState(Vector3I worldPos)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, _chunkSize);
-		Chunk chunk = _chunks[chunkLoc];
+		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
+		Chunk chunk = chunks[chunkLoc];
 		var chunkPos = Chunk.WorldToChunkPos(worldPos, chunk.ChunkSize, chunkLoc);
 		return chunk.GetBlockState(chunkPos);
 	}
 
 	public bool HasBlockState(Vector3I worldPos)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, _chunkSize);
-		var chunkPos = Chunk.WrapToChunk(worldPos, _chunkSize);
-		return _chunks[chunkLoc].HasBlockState(chunkPos);
+		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
+		var chunkPos = Chunk.WrapToChunk(worldPos, chunkSize);
+		return chunks[chunkLoc].HasBlockState(chunkPos);
 	}
 
 	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)
 	{
-		var loadChunkPos = (Vector3I)(worldPos / (Vector3)_chunkSize).Floor();
+		var loadChunkPos = (Vector3I)(worldPos / (Vector3)chunkSize).Floor();
 
 		var desiredChunks = new List<Vector3I>();
 		var addChunks = new List<Vector3I>();
@@ -68,20 +71,20 @@ public partial class BlockWorld : Node3D
 
 		foreach (var chunkPos in desiredChunks)
 		{
-			if (!_chunks.ContainsKey(chunkPos) && !_queuedChunkPositions.Contains(chunkPos))
+			if (!chunks.ContainsKey(chunkPos) && !queuedChunkPositions.Contains(chunkPos))
 			{
-				_queuedChunkPositions.Add(chunkPos);
+				queuedChunkPositions.Add(chunkPos);
 				addChunks.Add(chunkPos);
 			}
 		}
 
-		foreach (var chunkPos in new List<Vector3I>(_chunks.Keys))
+		foreach (var chunkPos in new List<Vector3I>(chunks.Keys))
 		{
 			if (!desiredChunks.Contains(chunkPos))
 				removeChunks.Add(chunkPos);
 
-			if (_queuedChunkPositions.Contains(chunkPos))
-				_queuedChunkPositions.Remove(chunkPos);
+			if (queuedChunkPositions.Contains(chunkPos))
+				queuedChunkPositions.Remove(chunkPos);
 		}
 
 		UpdateChunkLoading(addChunks, removeChunks);
@@ -98,9 +101,9 @@ public partial class BlockWorld : Node3D
 		// Unload immediately on main thread
 		foreach (var chunkPos in unloadPositions)
 		{
-			if (_chunks.TryGetValue(chunkPos, out var chunk))
+			if (chunks.TryGetValue(chunkPos, out var chunk))
 			{
-				_chunks.Remove(chunkPos);
+				chunks.Remove(chunkPos);
 				chunk.QueueFree();
 			}
 		}
@@ -117,9 +120,9 @@ public partial class BlockWorld : Node3D
 			var results = new Dictionary<Vector3I, Chunk>();
 			foreach (var chunkPos in loadPositions)
 			{
-				var chunk = _worldGen.GenerateChunk(chunkPos, _chunkMaterial, _chunkSize);
+				var chunk = worldGen.GenerateChunk(seed, chunkPos, chunkMaterial, chunkSize);
 				chunk.BuildMesh();
-				chunk.Position = (Vector3)(_chunkSize * chunkPos);
+				chunk.Position = (Vector3)(chunkSize * chunkPos);
 				results[chunkPos] = chunk;
 			}
 			return results;
@@ -130,10 +133,10 @@ public partial class BlockWorld : Node3D
 			var chunkPos = kvp.Key;
 			var chunk = kvp.Value;
 
-			if (_queuedChunkPositions.Contains(chunkPos))
+			if (queuedChunkPositions.Contains(chunkPos))
 			{
-				_queuedChunkPositions.Remove(chunkPos);
-				_chunks[chunkPos] = chunk;
+				queuedChunkPositions.Remove(chunkPos);
+				chunks[chunkPos] = chunk;
 				AddChild(chunk);
 			}
 			else

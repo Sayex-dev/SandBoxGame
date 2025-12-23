@@ -3,18 +3,19 @@ using Godot;
 [GlobalClass]
 public partial class SimpleNoiseWorldGenerator : WorldGenerator
 {
-	[Export]
-	public Vector3I GenOffset { get; set; }
+	[Export] public Vector3I GenOffset { get; set; }
+	[Export] public FastNoiseLite.NoiseTypeEnum NoiseType { get; set; } = FastNoiseLite.NoiseTypeEnum.Simplex;
 
 	private FastNoiseLite _noise = new FastNoiseLite();
 
 	public SimpleNoiseWorldGenerator()
 	{
-		_noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
+		_noise.NoiseType = NoiseType;
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMat, Vector3I chunkSize)
+	public override Chunk GenerateChunk(int seed, Vector3I chunkLocation, Material chunkMat, Vector3I chunkSize)
 	{
+
 		var chunk = new Chunk(chunkSize, chunkMat);
 		SetGround(chunk, chunkLocation);
 		return chunk;

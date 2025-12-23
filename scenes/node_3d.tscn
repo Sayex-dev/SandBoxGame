@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
-[ext_resource type="Resource" uid="uid://c8ojv1efpn8gl" path="res://resources/world/test_world.tres" id="4_xvgsr"]
+[ext_resource type="Resource" uid="uid://duigki6lkmh7r" path="res://resources/world/noise_world.tres" id="4_xvgsr"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -22,10 +22,12 @@ transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0,
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 
-[node name="WorldController" type="Node3D" parent="."]
+[node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("FocusPosition")]
 script = ExtResource("2_ns6u7")
+FocusPosition = NodePath("../Camera3D")
 ChunkMat = ExtResource("3_5t4e2")
 WorldGenerator = ExtResource("4_xvgsr")
+ChunkSize = Vector3i(8, 8, 8)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
