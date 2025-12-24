@@ -5,6 +5,8 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 {
 	[Export] public Vector3I GenOffset { get; set; }
 	[Export] public FastNoiseLite.NoiseTypeEnum NoiseType { get; set; } = FastNoiseLite.NoiseTypeEnum.Simplex;
+	[Export] public float NoiseScale { get; set; } = 1;
+	[Export] public float HeightScale { get; set; } = 10;
 
 	private FastNoiseLite _noise = new FastNoiseLite();
 
@@ -29,10 +31,10 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 		{
 			for (int z = 0; z < chunkSize.Z; z++)
 			{
-				int xPos = chunkLocation.X * chunkSize.X + x + GenOffset.X;
-				int zPos = chunkLocation.Z * chunkSize.Z + z + GenOffset.Z;
+				float xPos = (chunkLocation.X * chunkSize.X + x + GenOffset.X) * NoiseScale;
+				float zPos = (chunkLocation.Z * chunkSize.Z + z + GenOffset.Z) * NoiseScale;
 
-				int noiseHeight = (int)(_noise.GetNoise2D(xPos, zPos) * 10) + GenOffset.Y;
+				int noiseHeight = (int)(_noise.GetNoise2D(xPos, zPos) * HeightScale) + GenOffset.Y;
 
 				int maxY = Mathf.Min(noiseHeight - chunkLocation.Y * chunkSize.Y, chunkSize.Y);
 

@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=8 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
-[ext_resource type="Resource" uid="uid://duigki6lkmh7r" path="res://resources/world/noise_world.tres" id="4_xvgsr"]
+[ext_resource type="Resource" uid="uid://vh6tbdwkh8p1" path="res://resources/world/biomes/biomeTest.tres" id="4_oqwcg"]
+[ext_resource type="Script" uid="uid://cn655yg2w5np2" path="res://src/world/world_gen/BiomeWorldGenerator/BiomeWorldGenerator.cs" id="5_a6664"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -15,10 +16,15 @@ fog_light_energy = 0.16
 volumetric_fog_density = 1.0
 volumetric_fog_length = 0.01
 
+[sub_resource type="Resource" id="Resource_10v3s"]
+script = ExtResource("5_a6664")
+Biomes = Array[Object]([ExtResource("4_oqwcg")])
+metadata/_custom_type_script = "uid://cn655yg2w5np2"
+
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 10, 0)
+transform = Transform3D(1, 0, 0, 0, 0.98480797, 0.17364822, 0, -0.17364822, 0.98480797, 0, 0, 0)
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 
@@ -26,8 +32,10 @@ script = ExtResource("1_10v3s")
 script = ExtResource("2_ns6u7")
 FocusPosition = NodePath("../Camera3D")
 ChunkMat = ExtResource("3_5t4e2")
-WorldGenerator = ExtResource("4_xvgsr")
-ChunkSize = Vector3i(8, 8, 8)
+DefaultBlockStore = Array[Object]([])
+WorldGenerator = SubResource("Resource_10v3s")
+ChunkSize = Vector3i(32, 32, 32)
+RenderDistance = Vector3i(5, 5, 5)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.520856, -0.544815, 0.65718, 0.338403, 0.838556, 0.426974, -0.783704, -3.01197e-07, 0.621134, 10.508, 5.09948, 9.65549)
