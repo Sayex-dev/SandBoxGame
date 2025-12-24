@@ -120,7 +120,7 @@ public partial class BlockWorld : Node3D
 			var results = new Dictionary<Vector3I, Chunk>();
 			foreach (var chunkPos in loadPositions)
 			{
-				var chunk = worldGen.GenerateChunk(seed, chunkPos, chunkMaterial, chunkSize);
+				var chunk = worldGen.GenerateChunk(chunkPos, chunkMaterial, chunkSize);
 				chunk.BuildMesh();
 				chunk.Position = (Vector3)(chunkSize * chunkPos);
 				results[chunkPos] = chunk;

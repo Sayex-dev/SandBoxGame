@@ -15,7 +15,7 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 		_noise.NoiseType = NoiseType;
 	}
 
-	public override Chunk GenerateChunk(int seed, Vector3I chunkLocation, Material chunkMat, Vector3I chunkSize)
+	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMat, Vector3I chunkSize)
 	{
 
 		var chunk = new Chunk(chunkSize, chunkMat);
@@ -46,4 +46,10 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 			}
 		}
 	}
+
+	public override void SetSeed(int seed)
+	{
+		_noise.Seed = seed;
+	}
+
 }
