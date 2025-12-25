@@ -34,7 +34,6 @@ FocusPosition = NodePath("../Camera3D")
 ChunkMat = ExtResource("3_5t4e2")
 DefaultBlockStore = Array[Object]([])
 WorldGenerator = SubResource("Resource_10v3s")
-ChunkSize = Vector3i(32, 32, 32)
 RenderDistance = Vector3i(5, 5, 5)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
