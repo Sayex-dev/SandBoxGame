@@ -15,7 +15,7 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 		_noise.NoiseType = NoiseType;
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMat, Vector3I chunkSize)
+	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMat, int chunkSize)
 	{
 
 		var chunk = new Chunk(chunkSize, chunkMat);
@@ -27,16 +27,16 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 	{
 		var chunkSize = chunk.ChunkSize;
 
-		for (int x = 0; x < chunkSize.X; x++)
+		for (int x = 0; x < chunkSize; x++)
 		{
-			for (int z = 0; z < chunkSize.Z; z++)
+			for (int z = 0; z < chunkSize; z++)
 			{
-				float xPos = (chunkLocation.X * chunkSize.X + x + GenOffset.X) * NoiseScale;
-				float zPos = (chunkLocation.Z * chunkSize.Z + z + GenOffset.Z) * NoiseScale;
+				float xPos = (chunkLocation.X * chunkSize + x + GenOffset.X) * NoiseScale;
+				float zPos = (chunkLocation.Z * chunkSize + z + GenOffset.Z) * NoiseScale;
 
 				int noiseHeight = (int)(_noise.GetNoise2D(xPos, zPos) * HeightScale) + GenOffset.Y;
 
-				int maxY = Mathf.Min(noiseHeight - chunkLocation.Y * chunkSize.Y, chunkSize.Y);
+				int maxY = Mathf.Min(noiseHeight - chunkLocation.Y * chunkSize, chunkSize);
 
 				for (int y = 0; y < maxY; y++)
 				{

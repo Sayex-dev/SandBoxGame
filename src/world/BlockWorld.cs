@@ -8,14 +8,14 @@ public partial class BlockWorld : Node3D
 	private List<Vector3I> queuedChunkPositions = new();
 
 	private WorldGenerator worldGen;
-	private Vector3I chunkSize;
+	private int chunkSize;
 	private Material chunkMaterial;
 	private AbilityManager abilityManager;
 	private int seed;
 
 	public BlockWorld(
 		int seed,
-		Vector3I chunkSize,
+		int chunkSize,
 		WorldGenerator worldGen,
 		Material chunkMaterial,
 		AbilityManager abilityManager
@@ -52,7 +52,7 @@ public partial class BlockWorld : Node3D
 
 	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)
 	{
-		var loadChunkPos = (Vector3I)(worldPos / (Vector3)chunkSize).Floor();
+		var loadChunkPos = (Vector3I)(worldPos / chunkSize).Floor();
 
 		var desiredChunks = new List<Vector3I>();
 		var addChunks = new List<Vector3I>();

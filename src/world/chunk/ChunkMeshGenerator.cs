@@ -52,11 +52,11 @@ public partial class ChunkMeshGenerator : Node
 			xPosChunk, xNegChunk, yPosChunk, yNegChunk, zPosChunk, zNegChunk
 		};
 
-		for (int z = 0; z < chunk.ChunkSize.Z; z++)
+		for (int z = 0; z < chunk.ChunkSize; z++)
 		{
-			for (int y = 0; y < chunk.ChunkSize.Y; y++)
+			for (int y = 0; y < chunk.ChunkSize; y++)
 			{
-				for (int x = 0; x < chunk.ChunkSize.X; x++)
+				for (int x = 0; x < chunk.ChunkSize; x++)
 				{
 					Vector3I blockPos = new Vector3I(x, y, z);
 
@@ -103,7 +103,7 @@ public partial class ChunkMeshGenerator : Node
 		foreach (var kv in exposed)
 			blockSurfaces[kv.Key] = (bool[])kv.Value.Clone();
 
-		int maxDim = Math.Max(chunk.ChunkSize.X, Math.Max(chunk.ChunkSize.Y, chunk.ChunkSize.Z));
+		int chunkSize = chunk.ChunkSize;
 		var surfaces = new List<Surface>();
 
 		while (blockSurfaces.Count > 0)
@@ -129,7 +129,7 @@ public partial class ChunkMeshGenerator : Node
 			bool moveX = true;
 			bool failedLast = false;
 
-			for (int i = 0; i < maxDim * maxDim; i++)
+			for (int i = 0; i < chunkSize * chunkSize; i++)
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
 				bool hasSurface = blockSurfaces.ContainsKey(newPos) && blockSurfaces[newPos][dirIndex];
@@ -149,12 +149,11 @@ public partial class ChunkMeshGenerator : Node
 
 			int maxX = -1;
 			int maxY = -1;
-			Vector3I maxPos = new Vector3I();
 
-			for (int y = 0; y <= maxDim; y++)
+			for (int y = 0; y <= chunkSize; y++)
 			{
 				bool fullRow = false;
-				for (int x = 0; x <= maxDim; x++)
+				for (int x = 0; x <= chunkSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
 					bool hasSurface = blockSurfaces.ContainsKey(np) && blockSurfaces[np][dirIndex];
@@ -168,13 +167,11 @@ public partial class ChunkMeshGenerator : Node
 					{
 						maxX = x - 1;
 						fullRow = true;
-						maxPos = np - locXMove;
 						break;
 					}
 					else if (hasSurface && lastCol)
 					{
 						fullRow = true;
-						maxPos = np;
 						break;
 					}
 					else
@@ -225,7 +222,7 @@ public partial class ChunkMeshGenerator : Node
 			verts.Add(c3);
 			verts.Add(c4);
 
-			inds.AddRange(new int[] { 0, 1, 2, 2, 3, 0 });
+			inds.AddRange([0, 1, 2, 2, 3, 0]);
 
 			surfaces.Add(new Surface(verts, inds, normal));
 		}

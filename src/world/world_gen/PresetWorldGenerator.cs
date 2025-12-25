@@ -10,7 +10,7 @@ public partial class PresetWorldGenerator : WorldGenerator
 	{
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMaterial, Vector3I chunkSize)
+	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMaterial, int chunkSize)
 	{
 		var chunk = new Chunk(chunkSize, chunkMaterial);
 

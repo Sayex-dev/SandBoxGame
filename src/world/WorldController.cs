@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Godot;
 
 public partial class WorldController : Node3D
@@ -7,7 +8,7 @@ public partial class WorldController : Node3D
     [Export] public Material ChunkMat { get; set; }
     [Export] public Godot.Collections.Array<BlockDefault> DefaultBlockStore { get; set; }
     [Export] public WorldGenerator WorldGenerator { get; set; }
-    [Export] public Vector3I ChunkSize { get; set; } = new Vector3I(16, 16, 16);
+    [Export] public int ChunkSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 2, 5);
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
     private BlockWorld blockWorld;
@@ -44,5 +45,4 @@ public partial class WorldController : Node3D
             blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);
         }
     }
-
 }

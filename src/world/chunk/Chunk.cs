@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 public partial class Chunk : MeshInstance3D
 {
-	public Vector3I ChunkSize { get; private set; }
+	public int ChunkSize { get; private set; }
 	public int[] Blocks { get; private set; }
 	public Dictionary<Vector3I, BlockState> BlockStates { get; private set; } = new();
 
 	private Material _chunkMaterial;
 
-	public Chunk(Vector3I chunkSize, Material chunkMaterial)
+	public Chunk(int chunkSize, Material chunkMaterial)
 	{
 		ChunkSize = chunkSize;
 		_chunkMaterial = chunkMaterial;
 
-		int blockCount = chunkSize.X * chunkSize.Y * chunkSize.Z;
+		int blockCount = (int)Mathf.Pow(chunkSize, 3);
 		Blocks = new int[blockCount];
 		for (int i = 0; i < blockCount; i++)
 			Blocks[i] = -1;
@@ -47,17 +47,17 @@ public partial class Chunk : MeshInstance3D
 		return BlockStates[chunkPos];
 	}
 
-	public static Vector3I WorldToChunkPos(Vector3I worldPos, Vector3I chunkSize, Vector3I chunkLocation)
+	public static Vector3I WorldToChunkPos(Vector3I worldPos, int chunkSize, Vector3I chunkLocation)
 	{
 		return worldPos - (chunkSize * chunkLocation);
 	}
 
-	public static Vector3I WrapToChunk(Vector3I pos, Vector3I chunkSize)
+	public static Vector3I WrapToChunk(Vector3I pos, int chunkSize)
 	{
 		return new Vector3I(
-			Mathf.PosMod(pos.X, chunkSize.X),
-			Mathf.PosMod(pos.Y, chunkSize.Y),
-			Mathf.PosMod(pos.Z, chunkSize.Z)
+			Mathf.PosMod(pos.X, chunkSize),
+			Mathf.PosMod(pos.Y, chunkSize),
+			Mathf.PosMod(pos.Z, chunkSize)
 		);
 	}
 
@@ -66,35 +66,35 @@ public partial class Chunk : MeshInstance3D
 		return (chunkLocation * chunkSize) + chunkPos;
 	}
 
-	public static Vector3I WorldToChunkLocation(Vector3I worldPos, Vector3I chunkSize)
+	public static Vector3I WorldToChunkLocation(Vector3I worldPos, int chunkSize)
 	{
 		return new Vector3I(
-			Mathf.FloorToInt((float)worldPos.X / chunkSize.X),
-			Mathf.FloorToInt((float)worldPos.Y / chunkSize.Y),
-			Mathf.FloorToInt((float)worldPos.Z / chunkSize.Z)
+			Mathf.FloorToInt((float)worldPos.X / chunkSize),
+			Mathf.FloorToInt((float)worldPos.Y / chunkSize),
+			Mathf.FloorToInt((float)worldPos.Z / chunkSize)
 		);
 	}
 
 	public int ChunkToArrayPos(Vector3I chunkPos)
 	{
 		return chunkPos.X
-			 + chunkPos.Y * ChunkSize.X
-			 + chunkPos.Z * ChunkSize.X * ChunkSize.Y;
+			 + chunkPos.Y * ChunkSize
+			 + chunkPos.Z * ChunkSize * ChunkSize;
 	}
 
 	public Vector3I ArrayToChunkPos(int index)
 	{
-		int x = index % ChunkSize.X;
-		int y = (index / ChunkSize.X) % ChunkSize.Y;
-		int z = index / (ChunkSize.X * ChunkSize.Y);
+		int x = index % ChunkSize;
+		int y = index / ChunkSize % ChunkSize;
+		int z = index / (ChunkSize * ChunkSize);
 		return new Vector3I(x, y, z);
 	}
 
 	public bool IsInChunk(Vector3I chunkPos)
 	{
-		bool correctX = chunkPos.X >= 0 && chunkPos.X < ChunkSize.X;
-		bool correctY = chunkPos.Y >= 0 && chunkPos.Y < ChunkSize.Y;
-		bool correctZ = chunkPos.Z >= 0 && chunkPos.Z < ChunkSize.Z;
+		bool correctX = chunkPos.X >= 0 && chunkPos.X < ChunkSize;
+		bool correctY = chunkPos.Y >= 0 && chunkPos.Y < ChunkSize;
+		bool correctZ = chunkPos.Z >= 0 && chunkPos.Z < ChunkSize;
 		return correctX && correctY && correctZ;
 	}
 
