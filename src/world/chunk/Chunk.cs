@@ -99,6 +99,7 @@ public partial class Chunk : MeshInstance3D
 	}
 
 	public void BuildMesh(
+		BlockStore blockStore,
 		Chunk xPosChunk = null,
 		Chunk xNegChunk = null,
 		Chunk yPosChunk = null,
@@ -109,6 +110,7 @@ public partial class Chunk : MeshInstance3D
 		Mesh = ChunkMeshGenerator.BuildChunkMesh(
 			this,
 			_chunkMaterial,
+			blockStore,
 			xPosChunk,
 			xNegChunk,
 			yPosChunk,

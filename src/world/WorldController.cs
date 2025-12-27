@@ -8,6 +8,7 @@ public partial class WorldController : Node3D
     [Export] public Material ChunkMat { get; set; }
     [Export] public Godot.Collections.Array<BlockDefault> DefaultBlockStore { get; set; }
     [Export] public WorldGenerator WorldGenerator { get; set; }
+    [Export] public BlockStore BlockStore { get; set; }
     [Export] public int ChunkSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 2, 5);
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
@@ -29,7 +30,7 @@ public partial class WorldController : Node3D
 
         var abilityManager = new AbilityManager(worldClock);
 
-        blockWorld = new BlockWorld(Seed, ChunkSize, WorldGenerator, ChunkMat, abilityManager);
+        blockWorld = new BlockWorld(Seed, ChunkSize, BlockStore, WorldGenerator, ChunkMat, abilityManager);
         AddChild(blockWorld);
 
         blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);

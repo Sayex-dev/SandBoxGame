@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BlockDefault" load_steps=2 format=3 uid="uid://b17vcb4oblhob"]
+
+[ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="1_o2orr"]
+
+[resource]
+script = ExtResource("1_o2orr")
+Name = "Skull"
+PassiveAbilities = null
+ActiveAbilities = null
+TextureAtlasFaceUp = Vector2i(1, 1)
+TextureAtlasFaceDown = Vector2i(1, 1)
+TextureAtlasFaceLeft = Vector2i(1, 1)
+TextureAtlasFaceRight = Vector2i(1, 1)
+TextureAtlasFaceForward = Vector2i(1, 1)
+TextureAtlasFaceBackward = Vector2i(1, 1)
+metadata/_custom_type_script = "uid://ouggd867q2q1"

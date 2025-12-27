@@ -2,20 +2,35 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
+public enum Direction
+{
+	RIGHT,
+	LEFT,
+	UP,
+	DOWN,
+	BACKWARD,
+	FORWARD
+}
+
 public partial class ChunkMeshGenerator : Node
 {
 	public class Surface
 	{
 		public List<Vector3I> Vertices = new List<Vector3I>();
 		public List<int> Indices = new List<int>();
-		public Vector3 Normal;
+		public Vector3I Normal;
+		public Vector2 SurfaceBlockSpan;
+		public Direction Dir;
 		public int BlockId;
 
-		public Surface(List<Vector3I> vertices, List<int> indices, Vector3 normal)
+		public Surface(List<Vector3I> vertices, List<int> indices, Vector3I normal, Vector2 surfaceBlockSpan, Direction dir, int blockId)
 		{
 			Vertices = vertices;
 			Indices = indices;
 			Normal = normal;
+			SurfaceBlockSpan = surfaceBlockSpan;
+			Dir = dir;
+			BlockId = blockId;
 		}
 	}
 
@@ -109,14 +124,14 @@ public partial class ChunkMeshGenerator : Node
 		while (blockSurfaces.Count > 0)
 		{
 			Vector3I startPos = new List<Vector3I>(blockSurfaces.Keys)[0];
-			int dirIndex = 0;
+			Direction dirIndex = 0;
 			Vector3I normal = new Vector3I();
 
 			for (int i = 0; i < Normals.Length; i++)
 			{
 				if (blockSurfaces[startPos][i])
 				{
-					dirIndex = i;
+					dirIndex = (Direction)i;
 					normal = Normals[i];
 					break;
 				}
@@ -132,7 +147,7 @@ public partial class ChunkMeshGenerator : Node
 			for (int i = 0; i < chunkSize * chunkSize; i++)
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
-				bool hasSurface = blockSurfaces.ContainsKey(newPos) && blockSurfaces[newPos][dirIndex];
+				bool hasSurface = blockSurfaces.ContainsKey(newPos) && blockSurfaces[newPos][(int)dirIndex];
 
 				if (hasSurface)
 				{
@@ -147,8 +162,10 @@ public partial class ChunkMeshGenerator : Node
 				else break;
 			}
 
+
 			int maxX = -1;
 			int maxY = -1;
+			int surfaceBlockId = -1;
 
 			for (int y = 0; y <= chunkSize; y++)
 			{
@@ -156,20 +173,27 @@ public partial class ChunkMeshGenerator : Node
 				for (int x = 0; x <= chunkSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
-					bool hasSurface = blockSurfaces.ContainsKey(np) && blockSurfaces[np][dirIndex];
+					int blockId = chunk.IsInChunk(np) ? chunk.GetBlock(np) : -1;
 
+					if (surfaceBlockId == -1)
+					{
+						surfaceBlockId = blockId;
+					}
+
+					bool hasSurface = blockSurfaces.ContainsKey(np) && blockSurfaces[np][(int)dirIndex];
+					bool sameSurface = blockId == surfaceBlockId;
 					bool firstRow = maxX == -1;
 					bool lastCol = x == maxX;
 
-					if (hasSurface && !lastCol)
+					if (hasSurface && !lastCol && sameSurface)
 						continue;
-					else if (!hasSurface && firstRow)
+					else if ((!hasSurface || !sameSurface) && firstRow)
 					{
 						maxX = x - 1;
 						fullRow = true;
 						break;
 					}
-					else if (hasSurface && lastCol)
+					else if (hasSurface && lastCol && sameSurface)
 					{
 						fullRow = true;
 						break;
@@ -192,7 +216,7 @@ public partial class ChunkMeshGenerator : Node
 				for (int y = 0; y <= maxY; y++)
 				{
 					Vector3I rp = minPos + locXMove * x + locYMove * y;
-					blockSurfaces[rp][dirIndex] = false;
+					blockSurfaces[rp][(int)dirIndex] = false;
 					bool stillHas = false;
 					foreach (bool b in blockSurfaces[rp]) if (b) stillHas = true;
 					if (!stillHas) blockSurfaces.Remove(rp);
@@ -207,7 +231,7 @@ public partial class ChunkMeshGenerator : Node
 
 			if (dirIndex == 0)
 				displacement += new Vector3I(0, 1, 0);
-			else if (dirIndex == 3 || dirIndex == 4)
+			else if ((int)dirIndex == 3 || (int)dirIndex == 4)
 				displacement += new Vector3I(1, 0, 0);
 
 			Vector3I basePos = minPos + displacement;
@@ -224,7 +248,17 @@ public partial class ChunkMeshGenerator : Node
 
 			inds.AddRange([0, 1, 2, 2, 3, 0]);
 
-			surfaces.Add(new Surface(verts, inds, normal));
+			Vector2 surfaceBlockSpan;
+			if (dirIndex == Direction.LEFT || dirIndex == Direction.RIGHT)
+			{
+				surfaceBlockSpan = new Vector2(maxX + 1, maxY + 1);
+			}
+			else
+			{
+				surfaceBlockSpan = new Vector2(maxY + 1, maxX + 1);
+			}
+
+			surfaces.Add(new Surface(verts, inds, normal, surfaceBlockSpan, dirIndex, surfaceBlockId));
 		}
 
 		return surfaces;
@@ -247,6 +281,7 @@ public partial class ChunkMeshGenerator : Node
 	public static Mesh BuildChunkMesh(
 		Chunk chunk,
 		Material mat,
+		BlockStore blockStore,
 		Chunk xPos = null,
 		Chunk xNeg = null,
 		Chunk yPos = null,
@@ -260,15 +295,49 @@ public partial class ChunkMeshGenerator : Node
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);
 		st.SetMaterial(mat);
+		int rotOffset = 0;
 
 		for (int i = 0; i < surfaces.Count; i++)
 		{
-			var s = surfaces[i];
+			Surface s = surfaces[i];
+			BlockDefault blockDefault = blockStore.blockDefaults[s.BlockId];
+			Color surfaceColor = Color.Color8(0, 0, 0, 0);
+
+			switch (s.Dir)
+			{
+				case Direction.UP:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceUp.X, (byte)blockDefault.TextureAtlasFaceUp.Y, 0, 0);
+					rotOffset = 0;
+					break;
+				case Direction.DOWN:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceDown.X, (byte)blockDefault.TextureAtlasFaceDown.Y, 0, 0);
+					rotOffset = 0;
+					break;
+				case Direction.LEFT:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceLeft.X, (byte)blockDefault.TextureAtlasFaceLeft.Y, 0, 0);
+					rotOffset = 3;
+					break;
+				case Direction.RIGHT:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceRight.X, (byte)blockDefault.TextureAtlasFaceRight.Y, 0, 0);
+					rotOffset = 1;
+					break;
+				case Direction.FORWARD:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceForward.X, (byte)blockDefault.TextureAtlasFaceForward.Y, 0, 0);
+					rotOffset = 2;
+					break;
+				case Direction.BACKWARD:
+					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceBackward.X, (byte)blockDefault.TextureAtlasFaceBackward.Y, 0, 0);
+					rotOffset = 2;
+					break;
+			}
+
 			st.SetNormal(s.Normal);
 
 			for (int j = 0; j < 4; j++)
 			{
-				st.SetUV(UVs[j]);
+				int uvId = (j + rotOffset) % 4;
+				st.SetUV(UVs[uvId] * s.SurfaceBlockSpan);
+				st.SetColor(surfaceColor);
 				st.AddVertex(s.Vertices[j]);
 			}
 

@@ -4,18 +4,20 @@ using System.Threading.Tasks;
 
 public partial class BlockWorld : Node3D
 {
-	private Dictionary<Vector3I, Chunk> chunks = new();
-	private List<Vector3I> queuedChunkPositions = new();
-
-	private WorldGenerator worldGen;
+	private int seed;
 	private int chunkSize;
+	private BlockStore blockStore;
+	private WorldGenerator worldGen;
 	private Material chunkMaterial;
 	private AbilityManager abilityManager;
-	private int seed;
+
+	private Dictionary<Vector3I, Chunk> chunks = new();
+	private List<Vector3I> queuedChunkPositions = new();
 
 	public BlockWorld(
 		int seed,
 		int chunkSize,
+		BlockStore blockStore,
 		WorldGenerator worldGen,
 		Material chunkMaterial,
 		AbilityManager abilityManager
@@ -23,6 +25,7 @@ public partial class BlockWorld : Node3D
 	{
 		this.seed = seed;
 		this.chunkSize = chunkSize;
+		this.blockStore = blockStore;
 		this.worldGen = worldGen;
 		this.chunkMaterial = chunkMaterial;
 		this.abilityManager = abilityManager;
@@ -121,7 +124,7 @@ public partial class BlockWorld : Node3D
 			foreach (var chunkPos in loadPositions)
 			{
 				var chunk = worldGen.GenerateChunk(chunkPos, chunkMaterial, chunkSize);
-				chunk.BuildMesh();
+				chunk.BuildMesh(blockStore);
 				chunk.Position = (Vector3)(chunkSize * chunkPos);
 				results[chunkPos] = chunk;
 			}

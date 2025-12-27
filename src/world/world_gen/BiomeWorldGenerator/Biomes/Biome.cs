@@ -4,8 +4,8 @@ using Godot;
 public partial class Biome : Resource
 {
     [Export] public Godot.Collections.Array<NoiseLayer> NoiseLayers { get; set; }
+    [Export] public BlockDefault block { get; set; }
     private FastNoiseLite noise = new FastNoiseLite();
-    private int lastBlockId = 0;
 
     public void SetSeed(int seed)
     {
@@ -14,8 +14,7 @@ public partial class Biome : Resource
 
     public virtual int GetBlockId(Vector3I worldPos, int groundHeight)
     {
-        lastBlockId = (lastBlockId + 1) % 2;
-        return lastBlockId;
+        return block.BlockId;
     }
 
     public virtual int GetGroundHeight(Vector2I worldPos)
