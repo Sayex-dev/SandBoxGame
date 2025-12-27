@@ -1,22 +1,29 @@
-[gd_resource type="Resource" script_class="Biome" load_steps=6 format=3 uid="uid://vh6tbdwkh8p1"]
+[gd_resource type="Resource" script_class="Biome" load_steps=7 format=3 uid="uid://vh6tbdwkh8p1"]
 
 [ext_resource type="Script" uid="uid://kc5w8be8jk8c" path="res://src/world/world_gen/BiomeWorldGenerator/Biomes/NoiseLayer.cs" id="1_4jvog"]
 [ext_resource type="Resource" uid="uid://coihw0qwhor3q" path="res://resources/blocks/diamond.tres" id="2_6uwss"]
 [ext_resource type="Script" uid="uid://vmadcifcrkj1" path="res://src/world/world_gen/BiomeWorldGenerator/Biomes/Biome.cs" id="2_7wqi5"]
 
+[sub_resource type="Resource" id="Resource_6uwss"]
+script = ExtResource("1_4jvog")
+NoiseScale = 0.01
+NoiseHeight = 500.0
+metadata/_custom_type_script = "uid://kc5w8be8jk8c"
+
 [sub_resource type="Resource" id="Resource_7wqi5"]
 script = ExtResource("1_4jvog")
 NoiseScale = 0.5
-NoiseHeight = 5.0
+NoiseHeight = 20.0
 metadata/_custom_type_script = "uid://kc5w8be8jk8c"
 
 [sub_resource type="Resource" id="Resource_4jvog"]
 script = ExtResource("1_4jvog")
-NoiseScale = 10.0
+NoiseScale = 20.0
+NoiseHeight = 3.0
 metadata/_custom_type_script = "uid://kc5w8be8jk8c"
 
 [resource]
 script = ExtResource("2_7wqi5")
-NoiseLayers = Array[Object]([SubResource("Resource_7wqi5"), SubResource("Resource_4jvog")])
+NoiseLayers = Array[Object]([SubResource("Resource_6uwss"), SubResource("Resource_7wqi5"), SubResource("Resource_4jvog")])
 block = ExtResource("2_6uwss")
 metadata/_custom_type_script = "uid://vmadcifcrkj1"

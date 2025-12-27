@@ -24,6 +24,12 @@ public partial class CameraTemp : Node3D
 		if (Input.IsActionPressed("move_backward"))
 			moveVec += Vector3.Back;
 
+		if (Input.IsActionPressed("move_up"))
+			moveVec += Vector3.Up;
+
+		if (Input.IsActionPressed("move_down"))
+			moveVec += Vector3.Down;
+
 		// Camera rotation
 		if (Input.IsActionPressed("move_camera"))
 			Rotate(Vector3.Up, Input.GetLastMouseVelocity().X * -rotationSpeed);

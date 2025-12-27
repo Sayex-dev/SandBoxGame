@@ -117,24 +117,23 @@ public partial class BlockWorld : Node3D
 
 	private async Task GenerateChunksAsync(List<Vector3I> loadPositions)
 	{
-		// Run heavy work in a background thread
-		var generated = await Task.Run(() =>
+		Dictionary<Vector3I, Task<Chunk>> chunkJobs = [];
+		foreach (var chunkPos in loadPositions)
 		{
-			var results = new Dictionary<Vector3I, Chunk>();
-			foreach (var chunkPos in loadPositions)
+			chunkJobs[chunkPos] = Task.Run(() =>
 			{
-				var chunk = worldGen.GenerateChunk(chunkPos, chunkMaterial, chunkSize);
+				Chunk chunk = worldGen.GenerateChunk(chunkPos, chunkMaterial, chunkSize);
 				chunk.BuildMesh(blockStore);
 				chunk.Position = (Vector3)(chunkSize * chunkPos);
-				results[chunkPos] = chunk;
-			}
-			return results;
-		});
+				return chunk;
+			});
+		}
 
-		foreach (var kvp in generated)
+		foreach (var kvp in chunkJobs)
 		{
-			var chunkPos = kvp.Key;
-			var chunk = kvp.Value;
+			Vector3I chunkPos = kvp.Key;
+			Task<Chunk> genTask = kvp.Value;
+			Chunk chunk = await genTask;
 
 			if (queuedChunkPositions.Contains(chunkPos))
 			{
