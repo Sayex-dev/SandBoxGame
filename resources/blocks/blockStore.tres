@@ -1,10 +1,12 @@
-[gd_resource type="Resource" script_class="BlockStore" load_steps=4 format=3 uid="uid://j1ityh36augs"]
+[gd_resource type="Resource" script_class="BlockStore" load_steps=6 format=3 uid="uid://j1ityh36augs"]
 
 [ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="1_8vxqp"]
 [ext_resource type="Script" uid="uid://dq1te4cqvte7w" path="res://src/world/BlockStore.cs" id="2_ekvv6"]
-[ext_resource type="Resource" uid="uid://coihw0qwhor3q" path="res://resources/blocks/diamond.tres" id="4_efhhh"]
+[ext_resource type="Resource" uid="uid://coihw0qwhor3q" path="res://resources/blocks/arch.tres" id="2_h5k88"]
+[ext_resource type="Resource" uid="uid://cnumrurifatfb" path="res://resources/blocks/square.tres" id="3_efhhh"]
+[ext_resource type="Resource" uid="uid://pyn2eqto5bxr" path="res://resources/blocks/square_engraved.tres" id="4_0qjc7"]
 
 [resource]
 script = ExtResource("2_ekvv6")
-blockDefaults = Array[ExtResource("1_8vxqp")]([ExtResource("4_efhhh")])
+blockDefaults = Array[ExtResource("1_8vxqp")]([ExtResource("2_h5k88"), ExtResource("3_efhhh"), ExtResource("4_0qjc7")])
 metadata/_custom_type_script = "uid://dq1te4cqvte7w"

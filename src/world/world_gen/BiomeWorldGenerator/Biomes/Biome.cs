@@ -22,9 +22,7 @@ public partial class Biome : Resource
         float yLevel = 0;
         for (int i = 0; i < NoiseLayers.Count; i++)
         {
-            NoiseLayer noiseLayer = NoiseLayers[i];
-            noise.NoiseType = noiseLayer.NoiseType;
-            yLevel += (noise.GetNoise2Dv((Vector2)worldPos * noiseLayer.NoiseScale) * noiseLayer.NoiseHeight) + noiseLayer.NoiseHeightOffset;
+            yLevel += NoiseLayers[i].GetNoiseHeight2D((Vector2)worldPos, noise);
         }
         return (int)yLevel;
     }

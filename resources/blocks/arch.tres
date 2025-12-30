@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="BlockDefault" load_steps=2 format=3 uid="uid://coihw0qwhor3q"]
 
-[ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="1_8cqbe"]
+[ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="1_4ksjy"]
 
 [resource]
-script = ExtResource("1_8cqbe")
-Name = "Diamond"
+script = ExtResource("1_4ksjy")
+Name = "Arch"
 PassiveAbilities = null
 ActiveAbilities = null
 TextureAtlasFaceUp = Vector2i(2, 7)

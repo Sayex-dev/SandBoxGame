@@ -35,7 +35,7 @@ FocusPosition = NodePath("../Camera3D")
 ChunkMat = ExtResource("3_5t4e2")
 DefaultBlockStore = Array[Object]([])
 WorldGenerator = SubResource("Resource_10v3s")
-BlockStore = ExtResource("6_a6664")
+GameBlockStore = ExtResource("6_a6664")
 RenderDistance = Vector3i(5, 5, 5)
 DebugDraw = 0
 

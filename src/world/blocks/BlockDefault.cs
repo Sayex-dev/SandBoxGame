@@ -19,7 +19,7 @@ public partial class BlockDefault : Resource
 	[Export] public Vector2I TextureAtlasFaceForward { get; set; }
 	[Export] public Vector2I TextureAtlasFaceBackward { get; set; }
 
-	private int blockId;
+	private int blockId = -1;
 
 	public int BlockId
 	{
