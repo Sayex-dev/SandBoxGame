@@ -6,9 +6,7 @@ public partial class Chunk : MeshInstance3D, IBlockContainer
 	public int ChunkSize { get; private set; }
 	private int[] blocks = [];
 	public Dictionary<Vector3I, BlockState> BlockStates { get; private set; } = new();
-
 	private Material chunkMaterial;
-
 	public Chunk(int chunkSize, Material chunkMaterial)
 	{
 		ChunkSize = chunkSize;
