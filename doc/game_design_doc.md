@@ -1,10 +1,10 @@
 # Glossary
-- **Cube**: Cubes the world is made of. Most basic building blocks.
-- **Block**: One or multiple Cubes combine into a block with a specific function.
-- **Assembly**: Collection of Cubes that move together on World Gird.
+- **Block**: Cubes the world is made of. Most basic building blocks.
+- **Module**: Fixed size of aggregation of **blocks**.
+- **Construct**: Collection of **modules** that move together on World Gird.
 - **World Position**: Cube Integer position inside the world.
-- **Chunk Position**: Base position of the chunk in the world. World Position / Chunk Size
-- **In Chunk Position**: Position of a cube relative to the chunk.
+- **Module Location**: Base position of the **module** in the **construct**.
+- **In Chunk Position**: Position of a block relative to the module.
 
 
 # Game World
