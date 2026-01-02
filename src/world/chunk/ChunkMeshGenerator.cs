@@ -52,21 +52,9 @@ public partial class ChunkMeshGenerator : Node
 		new Vector2(0, 1)
 	};
 
-	public static Dictionary<Vector3I, bool[]> FindBlockSurfaces(
-		Chunk chunk,
-		Chunk xPosChunk = null,
-		Chunk xNegChunk = null,
-		Chunk yPosChunk = null,
-		Chunk yNegChunk = null,
-		Chunk zPosChunk = null,
-		Chunk zNegChunk = null)
+	public static Dictionary<Vector3I, bool[]> FindBlockSurfaces(Chunk chunk)
 	{
 		var exposedBlocks = new Dictionary<Vector3I, bool[]>();
-		var adjacentChunks = new Chunk[]
-		{
-			xPosChunk, xNegChunk, yPosChunk, yNegChunk, zPosChunk, zNegChunk
-		};
-
 		for (int z = 0; z < chunk.ChunkSize; z++)
 		{
 			for (int y = 0; y < chunk.ChunkSize; y++)
@@ -93,8 +81,7 @@ public partial class ChunkMeshGenerator : Node
 						}
 						else
 						{
-							Vector3I wrapped = Chunk.WrapToChunk(adjacentPos, chunk.ChunkSize);
-							adjacentBlock = adjacentChunks[i]?.GetBlock(wrapped) ?? -1;
+							adjacentBlock = -1;
 						}
 
 						if (adjacentBlock == -1)
@@ -281,15 +268,9 @@ public partial class ChunkMeshGenerator : Node
 	public static Mesh BuildChunkMesh(
 		Chunk chunk,
 		Material mat,
-		BlockStore blockStore,
-		Chunk xPos = null,
-		Chunk xNeg = null,
-		Chunk yPos = null,
-		Chunk yNeg = null,
-		Chunk zPos = null,
-		Chunk zNeg = null)
+		BlockStore blockStore)
 	{
-		var exposed = FindBlockSurfaces(chunk, xPos, xNeg, yPos, yNeg, zPos, zNeg);
+		var exposed = FindBlockSurfaces(chunk);
 		var surfaces = GetSurfaceVectors(chunk, exposed);
 
 		var st = new SurfaceTool();

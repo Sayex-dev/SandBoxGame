@@ -1,35 +1,46 @@
 using Godot;
 using System.Collections.Generic;
 
-public partial class Chunk : MeshInstance3D
+public partial class Chunk : MeshInstance3D, IBlockContainer
 {
 	public int ChunkSize { get; private set; }
-	public int[] Blocks { get; private set; }
+	private int[] blocks = [];
 	public Dictionary<Vector3I, BlockState> BlockStates { get; private set; } = new();
 
-	private Material _chunkMaterial;
+	private Material chunkMaterial;
 
 	public Chunk(int chunkSize, Material chunkMaterial)
 	{
 		ChunkSize = chunkSize;
-		_chunkMaterial = chunkMaterial;
+		this.chunkMaterial = chunkMaterial;
 
 		int blockCount = (int)Mathf.Pow(chunkSize, 3);
-		Blocks = new int[blockCount];
+		blocks = new int[blockCount];
 		for (int i = 0; i < blockCount; i++)
-			Blocks[i] = -1;
+			blocks[i] = -1;
 	}
 
 	public int GetBlock(Vector3I chunkPos)
 	{
 		int index = ChunkToArrayPos(chunkPos);
-		return Blocks[index];
+		return blocks[index];
+	}
+
+	public bool HasBlock(Vector3I localPos)
+	{
+		int index = ChunkToArrayPos(localPos);
+		return blocks.Length > index && blocks[index] != -1;
 	}
 
 	public void SetBlock(Vector3I chunkPos, int blockId)
 	{
 		int index = ChunkToArrayPos(chunkPos);
-		Blocks[index] = blockId;
+		blocks[index] = blockId;
+	}
+
+	public BlockState GetBlockState(Vector3I chunkPos)
+	{
+		return BlockStates[chunkPos];
 	}
 
 	public void SetBlockState(Vector3I chunkPos, BlockState blockState)
@@ -40,11 +51,6 @@ public partial class Chunk : MeshInstance3D
 	public bool HasBlockState(Vector3I chunkPos)
 	{
 		return BlockStates.ContainsKey(chunkPos);
-	}
-
-	public BlockState GetBlockState(Vector3I chunkPos)
-	{
-		return BlockStates[chunkPos];
 	}
 
 	public static Vector3I WorldToChunkPos(Vector3I worldPos, int chunkSize, Vector3I chunkLocation)
@@ -99,24 +105,12 @@ public partial class Chunk : MeshInstance3D
 	}
 
 	public void BuildMesh(
-		BlockStore blockStore,
-		Chunk xPosChunk = null,
-		Chunk xNegChunk = null,
-		Chunk yPosChunk = null,
-		Chunk yNegChunk = null,
-		Chunk zPosChunk = null,
-		Chunk zNegChunk = null)
+		BlockStore blockStore)
 	{
 		Mesh = ChunkMeshGenerator.BuildChunkMesh(
 			this,
-			_chunkMaterial,
-			blockStore,
-			xPosChunk,
-			xNegChunk,
-			yPosChunk,
-			yNegChunk,
-			zPosChunk,
-			zNegChunk
+			chunkMaterial,
+			blockStore
 		);
 	}
 }
