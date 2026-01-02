@@ -32,7 +32,7 @@ script = ExtResource("1_10v3s")
 [node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("FocusPosition")]
 script = ExtResource("2_ns6u7")
 FocusPosition = NodePath("../Camera3D")
-ChunkMat = ExtResource("3_5t4e2")
+ModuleMat = ExtResource("3_5t4e2")
 DefaultBlockStore = Array[Object]([])
 WorldGenerator = SubResource("Resource_10v3s")
 GameBlockStore = ExtResource("6_a6664")
