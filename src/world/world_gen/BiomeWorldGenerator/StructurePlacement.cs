@@ -18,7 +18,7 @@ public partial class StructurePlacement : Resource
 		noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
 	}
 
-	public Vector3I GetClosest(int seed, Vector3I worldPos, Chunk chunk)
+	public Vector3I GetClosest(int seed, Vector3I worldPos, Module module)
 	{
 		return Vector3I.Down;
 	}

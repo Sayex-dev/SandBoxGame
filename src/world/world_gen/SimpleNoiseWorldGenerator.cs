@@ -15,33 +15,33 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 		_noise.NoiseType = NoiseType;
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMat, int chunkSize)
+	public override Module GenerateModules(Vector3I moduleLocation, Material moduleMat, int moduleSize)
 	{
 
-		var chunk = new Chunk(chunkSize, chunkMat);
-		SetGround(chunk, chunkLocation);
-		return chunk;
+		var module = new Module(moduleSize, moduleMat);
+		SetGround(module, moduleLocation);
+		return module;
 	}
 
-	private void SetGround(Chunk chunk, Vector3I chunkLocation)
+	private void SetGround(Module module, Vector3I moduleLocation)
 	{
-		var chunkSize = chunk.ChunkSize;
+		var moduleSize = module.ModuleSize;
 
-		for (int x = 0; x < chunkSize; x++)
+		for (int x = 0; x < moduleSize; x++)
 		{
-			for (int z = 0; z < chunkSize; z++)
+			for (int z = 0; z < moduleSize; z++)
 			{
-				float xPos = (chunkLocation.X * chunkSize + x + GenOffset.X) * NoiseScale;
-				float zPos = (chunkLocation.Z * chunkSize + z + GenOffset.Z) * NoiseScale;
+				float xPos = (moduleLocation.X * moduleSize + x + GenOffset.X) * NoiseScale;
+				float zPos = (moduleLocation.Z * moduleSize + z + GenOffset.Z) * NoiseScale;
 
 				int noiseHeight = (int)(_noise.GetNoise2D(xPos, zPos) * HeightScale) + GenOffset.Y;
 
-				int maxY = Mathf.Min(noiseHeight - chunkLocation.Y * chunkSize, chunkSize);
+				int maxY = Mathf.Min(noiseHeight - moduleLocation.Y * moduleSize, moduleSize);
 
 				for (int y = 0; y < maxY; y++)
 				{
-					var inChunkPos = new Vector3I(x, y, z);
-					chunk.SetBlock(inChunkPos, 1);
+					var inModulePos = new Vector3I(x, y, z);
+					module.SetBlock(inModulePos, 1);
 				}
 			}
 		}

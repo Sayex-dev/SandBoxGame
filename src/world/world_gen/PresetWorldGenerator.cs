@@ -10,22 +10,22 @@ public partial class PresetWorldGenerator : WorldGenerator
 	{
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMaterial, int chunkSize)
+	public override Module GenerateModules(Vector3I moduleLocation, Material moduleMaterial, int moduleSize)
 	{
-		var chunk = new Chunk(chunkSize, chunkMaterial);
+		var module = new Module(moduleSize, moduleMaterial);
 
 		foreach (var block in Blocks)
 		{
 			var worldPos = new Vector3I(block.X, block.Y, block.Z) + Offset;
-			var inChunkPos = Chunk.WorldToChunkPos(worldPos, chunkSize, chunkLocation);
+			var inModulePos = Module.WorldToInModulePos(worldPos, moduleSize, moduleLocation);
 
-			if (chunk.IsInChunk(inChunkPos))
+			if (module.IsInModule(inModulePos))
 			{
-				chunk.SetBlock(inChunkPos, block.W);
+				module.SetBlock(inModulePos, block.W);
 			}
 		}
 
-		return chunk;
+		return module;
 	}
 
 	public override void SetSeed(int seed)

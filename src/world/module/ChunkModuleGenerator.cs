@@ -12,7 +12,7 @@ public enum Direction
 	FORWARD
 }
 
-public partial class ChunkMeshGenerator : Node
+public partial class ModuleMeshGenerator : Node
 {
 	public class Surface
 	{
@@ -52,18 +52,18 @@ public partial class ChunkMeshGenerator : Node
 		new Vector2(0, 1)
 	};
 
-	public static Dictionary<Vector3I, bool[]> FindBlockSurfaces(Chunk chunk)
+	public static Dictionary<Vector3I, bool[]> FindBlockSurfaces(Module module)
 	{
 		var exposedBlocks = new Dictionary<Vector3I, bool[]>();
-		for (int z = 0; z < chunk.ChunkSize; z++)
+		for (int z = 0; z < module.ModuleSize; z++)
 		{
-			for (int y = 0; y < chunk.ChunkSize; y++)
+			for (int y = 0; y < module.ModuleSize; y++)
 			{
-				for (int x = 0; x < chunk.ChunkSize; x++)
+				for (int x = 0; x < module.ModuleSize; x++)
 				{
 					Vector3I blockPos = new Vector3I(x, y, z);
 
-					if (chunk.GetBlock(blockPos) == -1)
+					if (module.GetBlock(blockPos) == -1)
 						continue;
 
 					bool[] exposedSurfaces = new bool[Normals.Length];
@@ -75,9 +75,9 @@ public partial class ChunkMeshGenerator : Node
 						Vector3I adjacentPos = blockPos + dir;
 						int adjacentBlock;
 
-						if (chunk.IsInChunk(adjacentPos))
+						if (module.IsInModule(adjacentPos))
 						{
-							adjacentBlock = chunk.GetBlock(adjacentPos);
+							adjacentBlock = module.GetBlock(adjacentPos);
 						}
 						else
 						{
@@ -99,13 +99,13 @@ public partial class ChunkMeshGenerator : Node
 		return exposedBlocks;
 	}
 
-	public static List<Surface> GetSurfaceVectors(Chunk chunk, Dictionary<Vector3I, bool[]> exposed)
+	public static List<Surface> GetSurfaceVectors(Module module, Dictionary<Vector3I, bool[]> exposed)
 	{
 		var blockSurfaces = new Dictionary<Vector3I, bool[]>();
 		foreach (var kv in exposed)
 			blockSurfaces[kv.Key] = (bool[])kv.Value.Clone();
 
-		int chunkSize = chunk.ChunkSize;
+		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
 
 		while (blockSurfaces.Count > 0)
@@ -131,7 +131,7 @@ public partial class ChunkMeshGenerator : Node
 			bool moveX = true;
 			bool failedLast = false;
 
-			for (int i = 0; i < chunkSize * chunkSize; i++)
+			for (int i = 0; i < moduleSize * moduleSize; i++)
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
 				bool hasSurface = blockSurfaces.ContainsKey(newPos) && blockSurfaces[newPos][(int)dirIndex];
@@ -154,13 +154,13 @@ public partial class ChunkMeshGenerator : Node
 			int maxY = -1;
 			int surfaceBlockId = -1;
 
-			for (int y = 0; y <= chunkSize; y++)
+			for (int y = 0; y <= moduleSize; y++)
 			{
 				bool fullRow = false;
-				for (int x = 0; x <= chunkSize; x++)
+				for (int x = 0; x <= moduleSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
-					int blockId = chunk.IsInChunk(np) ? chunk.GetBlock(np) : -1;
+					int blockId = module.IsInModule(np) ? module.GetBlock(np) : -1;
 
 					if (surfaceBlockId == -1)
 					{
@@ -265,13 +265,13 @@ public partial class ChunkMeshGenerator : Node
 		return v.X * t1 + v.Y * t2;
 	}
 
-	public static Mesh BuildChunkMesh(
-		Chunk chunk,
+	public static Mesh BuildModuleMesh(
+		Module module,
 		Material mat,
 		BlockStore blockStore)
 	{
-		var exposed = FindBlockSurfaces(chunk);
-		var surfaces = GetSurfaceVectors(chunk, exposed);
+		var exposed = FindBlockSurfaces(module);
+		var surfaces = GetSurfaceVectors(module, exposed);
 
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);

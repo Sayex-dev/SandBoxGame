@@ -5,61 +5,61 @@ using System.Threading.Tasks;
 public partial class BlockWorld : Node3D
 {
 	private int seed;
-	private int chunkSize;
+	private int moduleSize;
 	private BlockStore blockStore;
 	private WorldGenerator worldGen;
-	private Material chunkMaterial;
+	private Material moduleMaterial;
 	private AbilityManager abilityManager;
 
-	private Dictionary<Vector3I, Chunk> chunks = new();
-	private List<Vector3I> queuedChunkPositions = new();
+	private Dictionary<Vector3I, Module> modules = new();
+	private List<Vector3I> queuedModulesPositions = new();
 
 	public BlockWorld(
 		int seed,
-		int chunkSize,
+		int moduleSize,
 		BlockStore blockStore,
 		WorldGenerator worldGen,
-		Material chunkMaterial,
+		Material moduleMaterial,
 		AbilityManager abilityManager
 	)
 	{
 		this.seed = seed;
-		this.chunkSize = chunkSize;
+		this.moduleSize = moduleSize;
 		this.blockStore = blockStore;
 		this.worldGen = worldGen;
-		this.chunkMaterial = chunkMaterial;
+		this.moduleMaterial = moduleMaterial;
 		this.abilityManager = abilityManager;
 	}
 
 	public void SetBlockState(Vector3I worldPos, BlockState blockState)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
-		var chunkPos = Chunk.WrapToChunk(worldPos, chunkSize);
-		chunks[chunkLoc].SetBlockState(chunkPos, blockState);
+		var moduleLoc = Module.WorldToModuleLocation(worldPos, moduleSize);
+		var modulePos = Module.WrapToModule(worldPos, moduleSize);
+		modules[moduleLoc].SetBlockState(modulePos, blockState);
 	}
 
 	public BlockState GetBlockState(Vector3I worldPos)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
-		Chunk chunk = chunks[chunkLoc];
-		var chunkPos = Chunk.WorldToChunkPos(worldPos, chunk.ChunkSize, chunkLoc);
-		return chunk.GetBlockState(chunkPos);
+		var moduleLoc = Module.WorldToModuleLocation(worldPos, moduleSize);
+		Module module = modules[moduleLoc];
+		var modulePos = Module.WorldToInModulePos(worldPos, module.ModuleSize, moduleLoc);
+		return module.GetBlockState(modulePos);
 	}
 
 	public bool HasBlockState(Vector3I worldPos)
 	{
-		var chunkLoc = Chunk.WorldToChunkLocation(worldPos, chunkSize);
-		var chunkPos = Chunk.WrapToChunk(worldPos, chunkSize);
-		return chunks[chunkLoc].HasBlockState(chunkPos);
+		var moduleLoc = Module.WorldToModuleLocation(worldPos, moduleSize);
+		var modulePos = Module.WrapToModule(worldPos, moduleSize);
+		return modules[moduleLoc].HasBlockState(modulePos);
 	}
 
 	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)
 	{
-		var loadChunkPos = (Vector3I)(worldPos / chunkSize).Floor();
+		var loadModulePos = (Vector3I)(worldPos / moduleSize).Floor();
 
-		var desiredChunks = new List<Vector3I>();
-		var addChunks = new List<Vector3I>();
-		var removeChunks = new List<Vector3I>();
+		var desiredModules = new List<Vector3I>();
+		var addModules = new List<Vector3I>();
+		var removeModules = new List<Vector3I>();
 
 		for (int x = -renderDistance.X; x < renderDistance.X; x++)
 		{
@@ -67,33 +67,33 @@ public partial class BlockWorld : Node3D
 			{
 				for (int z = -renderDistance.Z; z < renderDistance.Z; z++)
 				{
-					desiredChunks.Add(loadChunkPos + new Vector3I(x, y, z));
+					desiredModules.Add(loadModulePos + new Vector3I(x, y, z));
 				}
 			}
 		}
 
-		foreach (var chunkPos in desiredChunks)
+		foreach (var modulePos in desiredModules)
 		{
-			if (!chunks.ContainsKey(chunkPos) && !queuedChunkPositions.Contains(chunkPos))
+			if (!modules.ContainsKey(modulePos) && !queuedModulesPositions.Contains(modulePos))
 			{
-				queuedChunkPositions.Add(chunkPos);
-				addChunks.Add(chunkPos);
+				queuedModulesPositions.Add(modulePos);
+				addModules.Add(modulePos);
 			}
 		}
 
-		foreach (var chunkPos in new List<Vector3I>(chunks.Keys))
+		foreach (var modulePos in new List<Vector3I>(modules.Keys))
 		{
-			if (!desiredChunks.Contains(chunkPos))
-				removeChunks.Add(chunkPos);
+			if (!desiredModules.Contains(modulePos))
+				removeModules.Add(modulePos);
 
-			if (queuedChunkPositions.Contains(chunkPos))
-				queuedChunkPositions.Remove(chunkPos);
+			if (queuedModulesPositions.Contains(modulePos))
+				queuedModulesPositions.Remove(modulePos);
 		}
 
-		UpdateChunkLoading(addChunks, removeChunks);
+		UpdateModuleLoading(addModules, removeModules);
 	}
 
-	public void UpdateChunkLoading(
+	public void UpdateModuleLoading(
 		List<Vector3I> loadPositions = null,
 		List<Vector3I> unloadPositions = null
 	)
@@ -102,48 +102,48 @@ public partial class BlockWorld : Node3D
 		unloadPositions ??= new List<Vector3I>();
 
 		// Unload immediately on main thread
-		foreach (var chunkPos in unloadPositions)
+		foreach (var modulePos in unloadPositions)
 		{
-			if (chunks.TryGetValue(chunkPos, out var chunk))
+			if (modules.TryGetValue(modulePos, out var module))
 			{
-				chunks.Remove(chunkPos);
-				chunk.QueueFree();
+				modules.Remove(modulePos);
+				module.QueueFree();
 			}
 		}
 
-		// Spawn async chunk generation task
-		_ = GenerateChunksAsync(loadPositions);
+		// Spawn async module generation task
+		_ = GenerateModulesAsync(loadPositions);
 	}
 
-	private async Task GenerateChunksAsync(List<Vector3I> loadPositions)
+	private async Task GenerateModulesAsync(List<Vector3I> loadPositions)
 	{
-		Dictionary<Vector3I, Task<Chunk>> chunkJobs = [];
-		foreach (var chunkPos in loadPositions)
+		Dictionary<Vector3I, Task<Module>> moduleJobs = [];
+		foreach (var modulePos in loadPositions)
 		{
-			chunkJobs[chunkPos] = Task.Run(() =>
+			moduleJobs[modulePos] = Task.Run(() =>
 			{
-				Chunk chunk = worldGen.GenerateChunk(chunkPos, chunkMaterial, chunkSize);
-				chunk.BuildMesh(blockStore);
-				chunk.Position = (Vector3)(chunkSize * chunkPos);
-				return chunk;
+				Module module = worldGen.GenerateModules(modulePos, moduleMaterial, moduleSize);
+				module.BuildMesh(blockStore);
+				module.Position = (Vector3)(moduleSize * modulePos);
+				return module;
 			});
 		}
 
-		foreach (var kvp in chunkJobs)
+		foreach (var kvp in moduleJobs)
 		{
-			Vector3I chunkPos = kvp.Key;
-			Task<Chunk> genTask = kvp.Value;
-			Chunk chunk = await genTask;
+			Vector3I modulePos = kvp.Key;
+			Task<Module> genTask = kvp.Value;
+			Module module = await genTask;
 
-			if (queuedChunkPositions.Contains(chunkPos))
+			if (queuedModulesPositions.Contains(modulePos))
 			{
-				queuedChunkPositions.Remove(chunkPos);
-				chunks[chunkPos] = chunk;
-				AddChild(chunk);
+				queuedModulesPositions.Remove(modulePos);
+				modules[modulePos] = module;
+				AddChild(module);
 			}
 			else
 			{
-				chunk.QueueFree();
+				module.QueueFree();
 			}
 		}
 	}

@@ -20,31 +20,31 @@ public partial class BiomeWorldGenerator : WorldGenerator
 		}
 	}
 
-	public override Chunk GenerateChunk(Vector3I chunkLocation, Material chunkMaterial, int chunkSize)
+	public override Module GenerateModules(Vector3I moduleLocation, Material moduleMaterial, int moduleSize)
 	{
-		Chunk chunk = new Chunk(chunkSize, chunkMaterial);
-		PopulateChunk(chunk, chunkLocation, chunkSize);
-		return chunk;
+		Module module = new Module(moduleSize, moduleMaterial);
+		PopulateModule(module, moduleLocation, moduleSize);
+		return module;
 	}
 
-	private void PopulateChunk(Chunk chunk, Vector3I chunkLocation, int chunkSize)
+	private void PopulateModule(Module module, Vector3I moduleLocation, int moduleSize)
 	{
-		Vector3I rootWorldPos = chunkLocation * chunkSize;
-		for (int x = 0; x < chunkSize; x++)
+		Vector3I rootWorldPos = moduleLocation * moduleSize;
+		for (int x = 0; x < moduleSize; x++)
 		{
-			for (int z = 0; z < chunkSize; z++)
+			for (int z = 0; z < moduleSize; z++)
 			{
 				Biome biome = Biomes[0];
 				Vector2I worldLocation = new Vector2I(rootWorldPos.X, rootWorldPos.Z) + new Vector2I(x, z);
 				int groundHeight = biome.GetGroundHeight(worldLocation);
-				int maxY = Mathf.Min(groundHeight - chunkLocation.Y * chunkSize, chunkSize);
+				int maxY = Mathf.Min(groundHeight - moduleLocation.Y * moduleSize, moduleSize);
 
 				for (int y = 0; y < maxY; y++)
 				{
-					Vector3I inChunkPos = new Vector3I(x, y, z);
-					Vector3I worldPos = inChunkPos + rootWorldPos;
+					Vector3I inModulePos = new Vector3I(x, y, z);
+					Vector3I worldPos = inModulePos + rootWorldPos;
 					int blockId = biome.GetBlockId(worldPos, groundHeight);
-					chunk.SetBlock(inChunkPos, blockId);
+					module.SetBlock(inModulePos, blockId);
 				}
 			}
 		}

@@ -5,18 +5,18 @@ public partial class WorldController : Node3D
 {
     [Export] public int Seed { get; set; } = 0;
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
-    [Export] public Material ChunkMat { get; set; }
+    [Export] public Material ModuleMat { get; set; }
     [Export] public Godot.Collections.Array<BlockDefault> DefaultBlockStore { get; set; }
     [Export] public WorldGenerator WorldGenerator { get; set; }
     [Export] public BlockStore GameBlockStore { get; set; }
-    [Export] public int ChunkSize { get; set; } = 32;
+    [Export] public int ModuleSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 2, 5);
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
     private BlockWorld blockWorld;
     private MeshInstance3D worldMesh;
     private WorldClock worldClock;
 
-    private Vector3I prevCameraChunkPos = Vector3I.MaxValue;
+    private Vector3I prevCameraModulePos = Vector3I.MaxValue;
 
     public override void _Ready()
     {
@@ -32,7 +32,7 @@ public partial class WorldController : Node3D
 
         var abilityManager = new AbilityManager(worldClock);
 
-        blockWorld = new BlockWorld(Seed, ChunkSize, GameBlockStore, WorldGenerator, ChunkMat, abilityManager);
+        blockWorld = new BlockWorld(Seed, ModuleSize, GameBlockStore, WorldGenerator, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
         blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);
@@ -40,11 +40,11 @@ public partial class WorldController : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        Vector3I cameraChunkPos = (Vector3I)FocusPosition.Position / ChunkSize;
+        Vector3I cameraModulePos = (Vector3I)FocusPosition.Position / ModuleSize;
 
-        if (cameraChunkPos != prevCameraChunkPos)
+        if (cameraModulePos != prevCameraModulePos)
         {
-            prevCameraChunkPos = cameraChunkPos;
+            prevCameraModulePos = cameraModulePos;
             blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);
         }
     }
