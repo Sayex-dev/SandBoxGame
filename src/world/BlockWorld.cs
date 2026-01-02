@@ -10,10 +10,7 @@ public partial class BlockWorld : Node3D
 	private WorldGenerator worldGen;
 	private Material moduleMaterial;
 	private AbilityManager abilityManager;
-
-	private Dictionary<Vector3I, Module> modules = new();
-	private List<Vector3I> queuedModulesPositions = new();
-
+	private Dictionary<Vector3I, Construct> constructs = [];
 	public BlockWorld(
 		int seed,
 		int moduleSize,
