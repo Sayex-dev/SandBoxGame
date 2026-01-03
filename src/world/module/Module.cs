@@ -4,6 +4,14 @@ using System.Collections.Generic;
 public partial class Module : MeshInstance3D, IBlockContainer
 {
 	public int ModuleSize { get; private set; }
+	public int BlockCount { get; private set; }
+	public bool HasBlocks
+	{
+		get
+		{
+			return BlockCount > 0;
+		}
+	}
 	private int[] blocks = [];
 	public Dictionary<Vector3I, BlockState> BlockStates { get; private set; } = new();
 	private Material moduleMaterial;
@@ -16,6 +24,8 @@ public partial class Module : MeshInstance3D, IBlockContainer
 		blocks = new int[blockCount];
 		for (int i = 0; i < blockCount; i++)
 			blocks[i] = -1;
+
+		BlockCount = 0;
 	}
 
 	public int GetBlock(Vector3I modulePos)
@@ -33,6 +43,13 @@ public partial class Module : MeshInstance3D, IBlockContainer
 	public void SetBlock(Vector3I modulePos, int blockId)
 	{
 		int index = InModuleToArrayPos(modulePos);
+		int prevBlockId = blocks[index];
+
+		if (prevBlockId != blockId)
+		{
+			BlockCount += prevBlockId == -1 ? 1 : -1;
+		}
+
 		blocks[index] = blockId;
 	}
 
@@ -102,9 +119,13 @@ public partial class Module : MeshInstance3D, IBlockContainer
 		return correctX && correctY && correctZ;
 	}
 
-	public void BuildMesh(
-		BlockStore blockStore)
+	public void BuildMesh(BlockStore blockStore)
 	{
+		if (!HasBlocks)
+		{
+			return;
+		}
+
 		Mesh = ModuleMeshGenerator.BuildModuleMesh(
 			this,
 			moduleMaterial,
