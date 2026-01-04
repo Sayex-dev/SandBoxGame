@@ -119,7 +119,7 @@ public partial class Construct : Node, IHaveBoundingBox
 		{
 			moduleJobs.Add(Task.Run(() =>
 			{
-				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial, moduleSize);
+				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial);
 				Dictionary<Vector3I, Module> modules = response.generatedModules;
 				foreach (KeyValuePair<Vector3I, Module> entry in modules)
 				{

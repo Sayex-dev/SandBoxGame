@@ -16,7 +16,11 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		_noise.NoiseType = NoiseType;
 	}
 
-	public override GenerationResponse GenerateModules(Vector3I moduleLocation, Material moduleMat, int moduleSize)
+	public override GenerationResponse GenerateModules(
+		Vector3I moduleLocation,
+		Material moduleMat,
+		HashSet<Vector3I> prevLoaded = null
+	)
 	{
 
 		var module = new Module(moduleSize, moduleMat);
@@ -60,4 +64,8 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		_noise.Seed = seed;
 	}
 
+	public override bool IsModuleNeeded(Vector3I chunkLocation)
+	{
+		return chunkLocation.Y <= (int)(HeightScale / moduleSize);
+	}
 }

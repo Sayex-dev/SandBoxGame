@@ -6,8 +6,22 @@ public partial class PresetConstructGenerator : ConstructGenerator
 {
 	[Export] public Godot.Collections.Array<Vector4I> Blocks { get; set; }
 	[Export] public Vector3I Offset { get; set; }
+	private HashSet<Vector3I> requiredChunks;
 
-	public override GenerationResponse GenerateModules(Vector3I relativeWorldPos, Material moduleMaterial, int moduleSize)
+	public override void Init(int moduleSize)
+	{
+		base.Init(moduleSize);
+		foreach (Vector4 block in Blocks)
+		{
+			requiredChunks.Add((Vector3I)(new Vector3(block.X, block.Y, block.Z) / moduleSize));
+		}
+	}
+
+	public override GenerationResponse GenerateModules(
+		Vector3I relativeWorldPos,
+		Material moduleMaterial,
+		HashSet<Vector3I> prevLoaded = null
+	)
 	{
 		Module module = new Module(moduleSize, moduleMaterial);
 		Vector3I moduleLocation = Module.WorldToModuleLocation(relativeWorldPos, moduleSize);
@@ -31,6 +45,11 @@ public partial class PresetConstructGenerator : ConstructGenerator
 				{moduleLocation, module}
 			}
 		};
+	}
+
+	public override bool IsModuleNeeded(Vector3I chunkLocation)
+	{
+		return requiredChunks.Contains(chunkLocation);
 	}
 
 	public override void SetSeed(int seed)

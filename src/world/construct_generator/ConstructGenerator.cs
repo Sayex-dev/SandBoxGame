@@ -11,6 +11,17 @@ public class GenerationResponse
 [GlobalClass]
 public abstract partial class ConstructGenerator : Resource
 {
-	public abstract GenerationResponse GenerateModules(Vector3I relativeWorldPos, Material moduleMaterial, int moduleSize);
+	public int moduleSize;
+
+	public virtual void Init(int moduleSize)
+	{
+		this.moduleSize = moduleSize;
+	}
+	public abstract GenerationResponse GenerateModules(
+		Vector3I relativeWorldPos,
+		Material moduleMaterial,
+		HashSet<Vector3I> prevLoaded = null
+	);
+	public abstract bool IsModuleNeeded(Vector3I chunkLocation);
 	public abstract void SetSeed(int seed);
 }
