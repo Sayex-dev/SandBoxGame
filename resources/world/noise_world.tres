@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SimpleNoiseWorldGenerator" load_steps=2 format=3 uid="uid://duigki6lkmh7r"]
 
-[ext_resource type="Script" uid="uid://i1he7axw0aox" path="res://src/world/world_gen/SimpleNoiseWorldGenerator.cs" id="1_ofstb"]
+[ext_resource type="Script" uid="uid://i1he7axw0aox" path="res://src/world/construct_generator/SimpleNoiseConstructGenerator.cs" id="1_ofstb"]
 
 [resource]
 script = ExtResource("1_ofstb")

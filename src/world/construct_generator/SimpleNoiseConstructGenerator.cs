@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Godot;
 
 [GlobalClass]
-public partial class SimpleNoiseWorldGenerator : WorldGenerator
+public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 {
 	[Export] public Vector3I GenOffset { get; set; }
 	[Export] public FastNoiseLite.NoiseTypeEnum NoiseType { get; set; } = FastNoiseLite.NoiseTypeEnum.Simplex;
@@ -10,17 +11,24 @@ public partial class SimpleNoiseWorldGenerator : WorldGenerator
 
 	private FastNoiseLite _noise = new FastNoiseLite();
 
-	public SimpleNoiseWorldGenerator()
+	public SimpleNoiseConstructGenerator()
 	{
 		_noise.NoiseType = NoiseType;
 	}
 
-	public override Module GenerateModules(Vector3I moduleLocation, Material moduleMat, int moduleSize)
+	public override GenerationResponse GenerateModules(Vector3I moduleLocation, Material moduleMat, int moduleSize)
 	{
 
 		var module = new Module(moduleSize, moduleMat);
 		SetGround(module, moduleLocation);
-		return module;
+		return new GenerationResponse
+		{
+			generatedAllModules = false,
+			generatedModules = new Dictionary<Vector3I, Module>
+			{
+				{moduleLocation, module}
+			}
+		};
 	}
 
 	private void SetGround(Module module, Vector3I moduleLocation)

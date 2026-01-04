@@ -7,10 +7,10 @@ public partial class WorldController : Node3D
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
     [Export] public Godot.Collections.Array<BlockDefault> DefaultBlockStore { get; set; }
-    [Export] public WorldGenerator WorldGenerator { get; set; }
+    [Export] public ConstructGenerator WorldGenerator { get; set; }
     [Export] public BlockStore GameBlockStore { get; set; }
     [Export] public int ModuleSize { get; set; } = 32;
-    [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 2, 5);
+    [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 5, 5);
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
     private BlockWorld blockWorld;
     private MeshInstance3D worldMesh;
@@ -35,7 +35,7 @@ public partial class WorldController : Node3D
         blockWorld = new BlockWorld(Seed, ModuleSize, GameBlockStore, WorldGenerator, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
-        blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);
+        blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -45,7 +45,7 @@ public partial class WorldController : Node3D
         if (cameraModulePos != prevCameraModulePos)
         {
             prevCameraModulePos = cameraModulePos;
-            blockWorld.LoadPosition(FocusPosition.Position, RenderDistance);
+            blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
         }
     }
 }

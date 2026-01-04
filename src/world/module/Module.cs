@@ -1,7 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
-public partial class Module : MeshInstance3D, IBlockContainer
+public partial class Module : MeshInstance3D
 {
 	public int ModuleSize { get; private set; }
 	public int BlockCount { get; private set; }

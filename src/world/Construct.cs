@@ -4,27 +4,29 @@ using System.Threading.Tasks;
 
 public partial class Construct : Node
 {
-	private Dictionary<Vector3I, Module> modules = new();
+	private Dictionary<Vector3I, Module> loadedModules = new();
 	private List<Vector3I> queuedModulesPositions = new();
 
 	private int moduleSize;
+	private ConstructGenerator constructGenerator;
 
-	public Construct(int moduleSize)
+	public Construct(int moduleSize, ConstructGenerator constructGenerator)
 	{
 		this.moduleSize = moduleSize;
+		this.constructGenerator = constructGenerator;
 	}
 
 	public void SetBlockState(Vector3I inConstructPos, BlockState blockState)
 	{
 		var moduleLoc = Module.WorldToModuleLocation(inConstructPos, moduleSize);
 		var modulePos = Module.WrapToModule(inConstructPos, moduleSize);
-		modules[moduleLoc].SetBlockState(modulePos, blockState);
+		loadedModules[moduleLoc].SetBlockState(modulePos, blockState);
 	}
 
 	public BlockState GetBlockState(Vector3I inConstructPos)
 	{
 		var moduleLoc = Module.WorldToModuleLocation(inConstructPos, moduleSize);
-		Module module = modules[moduleLoc];
+		Module module = loadedModules[moduleLoc];
 		var modulePos = Module.WorldToInModulePos(inConstructPos, module.ModuleSize, moduleLoc);
 		return module.GetBlockState(modulePos);
 	}
@@ -33,7 +35,7 @@ public partial class Construct : Node
 	{
 		var moduleLoc = Module.WorldToModuleLocation(inConstructPos, moduleSize);
 		var modulePos = Module.WrapToModule(inConstructPos, moduleSize);
-		return modules[moduleLoc].HasBlockState(modulePos);
+		return loadedModules[moduleLoc].HasBlockState(modulePos);
 	}
 
 	public void LoadPosition(Vector3 inConstructPos, Vector3I renderDistance)
@@ -57,14 +59,14 @@ public partial class Construct : Node
 
 		foreach (var modulePos in desiredModules)
 		{
-			if (!modules.ContainsKey(modulePos) && !queuedModulesPositions.Contains(modulePos))
+			if (!loadedModules.ContainsKey(modulePos) && !queuedModulesPositions.Contains(modulePos))
 			{
 				queuedModulesPositions.Add(modulePos);
 				addModules.Add(modulePos);
 			}
 		}
 
-		foreach (var modulePos in new List<Vector3I>(modules.Keys))
+		foreach (var modulePos in new List<Vector3I>(loadedModules.Keys))
 		{
 			if (!desiredModules.Contains(modulePos))
 				removeModules.Add(modulePos);
@@ -87,9 +89,9 @@ public partial class Construct : Node
 		// Unload immediately on main thread
 		foreach (var modulePos in unloadPositions)
 		{
-			if (modules.TryGetValue(modulePos, out var module))
+			if (loadedModules.TryGetValue(modulePos, out var module))
 			{
-				modules.Remove(modulePos);
+				loadedModules.Remove(modulePos);
 				module.QueueFree();
 			}
 		}
@@ -105,7 +107,7 @@ public partial class Construct : Node
 		{
 			moduleJobs[modulePos] = Task.Run(() =>
 			{
-				Module module = worldGen.GenerateModules(modulePos, moduleMaterial, moduleSize);
+				Module module = constructGenerator.GenerateModules(modulePos, moduleMaterial, moduleSize);
 				module.BuildMesh(blockStore);
 				module.Position = (Vector3)(moduleSize * modulePos);
 				return module;
@@ -121,7 +123,7 @@ public partial class Construct : Node
 			if (queuedModulesPositions.Contains(modulePos))
 			{
 				queuedModulesPositions.Remove(modulePos);
-				modules[modulePos] = module;
+				loadedModules[modulePos] = module;
 				AddChild(module);
 			}
 			else

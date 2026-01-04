@@ -7,7 +7,7 @@ public partial class BlockWorld : Node3D
 	private int seed;
 	private int moduleSize;
 	private BlockStore blockStore;
-	private WorldGenerator worldGen;
+	private ConstructGenerator worldGen;
 	private Material moduleMaterial;
 	private AbilityManager abilityManager;
 	private Dictionary<Vector3I, Construct> constructs = [];
@@ -15,7 +15,7 @@ public partial class BlockWorld : Node3D
 		int seed,
 		int moduleSize,
 		BlockStore blockStore,
-		WorldGenerator worldGen,
+		ConstructGenerator worldGen,
 		Material moduleMaterial,
 		AbilityManager abilityManager
 	)
@@ -28,7 +28,7 @@ public partial class BlockWorld : Node3D
 		this.abilityManager = abilityManager;
 	}
 
-	public void UpdateConstructLoading(Vector3I worldPos)
+	public void UpdateConstructLoading(Vector3I worldPos, Vector3I renderDistance)
 	{
 
 	}

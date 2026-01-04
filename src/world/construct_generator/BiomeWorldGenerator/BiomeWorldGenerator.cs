@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Godot;
 
 [GlobalClass]
-public partial class BiomeWorldGenerator : WorldGenerator
+public partial class BiomeWorldGenerator : ConstructGenerator
 {
 	[Export] Godot.Collections.Array<Biome> Biomes;
 
@@ -20,11 +21,18 @@ public partial class BiomeWorldGenerator : WorldGenerator
 		}
 	}
 
-	public override Module GenerateModules(Vector3I moduleLocation, Material moduleMaterial, int moduleSize)
+	public override GenerationResponse GenerateModules(Vector3I moduleLocation, Material moduleMaterial, int moduleSize)
 	{
 		Module module = new Module(moduleSize, moduleMaterial);
 		PopulateModule(module, moduleLocation, moduleSize);
-		return module;
+		return new GenerationResponse
+		{
+			generatedAllModules = false,
+			generatedModules = new Dictionary<Vector3I, Module>
+			{
+				{moduleLocation, module}
+			}
+		};
 	}
 
 	private void PopulateModule(Module module, Vector3I moduleLocation, int moduleSize)
