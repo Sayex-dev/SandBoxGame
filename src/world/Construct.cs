@@ -1,19 +1,31 @@
 using Godot;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-public partial class Construct : Node
+public partial class Construct : Node, IHaveBoundingBox
 {
 	private Dictionary<Vector3I, Module> loadedModules = new();
 	private List<Vector3I> queuedModulesPositions = new();
 
 	private int moduleSize;
 	private ConstructGenerator constructGenerator;
+	private Vector3I worldOffset;
+	private Vector3I minModuleLocation;
+	private Vector3I maxModuleLocation;
+	private BlockStore blockStore;
+	private Material moduleMaterial;
 
-	public Construct(int moduleSize, ConstructGenerator constructGenerator)
+	public Construct(int moduleSize, ConstructGenerator constructGenerator, Vector3I worldOffset, BlockStore blockStore, Material moduleMaterial)
 	{
 		this.moduleSize = moduleSize;
 		this.constructGenerator = constructGenerator;
+		this.worldOffset = worldOffset;
+		this.blockStore = blockStore;
+		this.moduleMaterial = moduleMaterial;
+		minModuleLocation = worldOffset;
+		maxModuleLocation = worldOffset;
 	}
 
 	public void SetBlockState(Vector3I inConstructPos, BlockState blockState)
@@ -38,9 +50,9 @@ public partial class Construct : Node
 		return loadedModules[moduleLoc].HasBlockState(modulePos);
 	}
 
-	public void LoadPosition(Vector3 inConstructPos, Vector3I renderDistance)
+	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)
 	{
-		var loadModulePos = (Vector3I)(inConstructPos / moduleSize).Floor();
+		var loadModulePos = (Vector3I)((worldPos - worldOffset) / moduleSize).Floor();
 
 		var desiredModules = new List<Vector3I>();
 		var addModules = new List<Vector3I>();
@@ -102,34 +114,69 @@ public partial class Construct : Node
 
 	private async void GenerateModulesAsync(List<Vector3I> loadPositions)
 	{
-		Dictionary<Vector3I, Task<Module>> moduleJobs = [];
+		List<Task<GenerationResponse>> moduleJobs = [];
 		foreach (var modulePos in loadPositions)
 		{
-			moduleJobs[modulePos] = Task.Run(() =>
+			moduleJobs.Add(Task.Run(() =>
 			{
-				Module module = constructGenerator.GenerateModules(modulePos, moduleMaterial, moduleSize);
-				module.BuildMesh(blockStore);
-				module.Position = (Vector3)(moduleSize * modulePos);
-				return module;
-			});
+				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial, moduleSize);
+				Dictionary<Vector3I, Module> modules = response.generatedModules;
+				foreach (KeyValuePair<Vector3I, Module> entry in modules)
+				{
+					entry.Value.BuildMesh(blockStore);
+					entry.Value.Position = (Vector3)(moduleSize * entry.Key);
+				}
+				return response;
+			}));
 		}
 
-		foreach (var kvp in moduleJobs)
+		foreach (Task<GenerationResponse> job in moduleJobs)
 		{
-			Vector3I modulePos = kvp.Key;
-			Task<Module> genTask = kvp.Value;
-			Module module = await genTask;
+			GenerationResponse response = await job;
+			foreach (KeyValuePair<Vector3I, Module> entry in response.generatedModules)
+			{
+				Vector3I modulePos = entry.Key;
+				Module module = entry.Value;
 
-			if (queuedModulesPositions.Contains(modulePos))
-			{
-				queuedModulesPositions.Remove(modulePos);
-				loadedModules[modulePos] = module;
-				AddChild(module);
-			}
-			else
-			{
-				module.QueueFree();
+				if (queuedModulesPositions.Contains(modulePos))
+				{
+					queuedModulesPositions.Remove(modulePos);
+					loadedModules[modulePos] = module;
+					AddChild(module);
+
+					minModuleLocation = new Vector3I
+					{
+						X = Math.Min(minModuleLocation.X, modulePos.X),
+						Y = Math.Min(minModuleLocation.Y, modulePos.Y),
+						Z = Math.Min(minModuleLocation.Z, modulePos.Z),
+					};
+					maxModuleLocation = new Vector3I
+					{
+						X = Math.Max(maxModuleLocation.X, modulePos.X),
+						Y = Math.Max(maxModuleLocation.Y, modulePos.Y),
+						Z = Math.Max(maxModuleLocation.Z, modulePos.Z),
+					};
+				}
+				else
+				{
+					module.QueueFree();
+				}
 			}
 		}
+	}
+
+	public Vector3I GetRootPos()
+	{
+		return worldOffset;
+	}
+
+	public Vector3I GetMin()
+	{
+		return worldOffset + minModuleLocation * moduleSize;
+	}
+
+	public Vector3I GetMax()
+	{
+		return worldOffset + maxModuleLocation * moduleSize;
 	}
 }

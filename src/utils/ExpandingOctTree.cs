@@ -104,7 +104,7 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
         if (node.BoundObjects.Contains(t))
         {
             node.BoundObjects.Remove(t);
-            Collapse(node);
+            TryCollapse(node);
             return;
         }
 
@@ -124,8 +124,10 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
         }
     }
 
-    private void Collapse(Node node)
+    private void TryCollapse(Node node)
     {
+        if (node.HasChildren) return;
+
         foreach (Node child in node.Children)
         {
             if (!child.IsEmpty)
@@ -171,11 +173,11 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
 
     private void RecursiveInsert(Node node, Vector3I origin, int size, T t)
     {
+        int childSize = size / 2;
         if (size > minNodeSize)
         {
             for (int i = 0; i < 8; i++)
             {
-                int childSize = size / 2;
                 Vector3I childOrigin = GetChildOrigin(origin, childSize, i);
                 if (FitsInside(childOrigin, childSize, t))
                 {
@@ -213,7 +215,6 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
             origin.X + size < max.X &&
             origin.Y + size < max.Y &&
             origin.Z + size < max.Z;
-
     }
 
     private Vector3I GetChildOrigin(Vector3I origin, int half, int index)

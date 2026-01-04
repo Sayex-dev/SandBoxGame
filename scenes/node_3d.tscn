@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=9 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
+[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
 [ext_resource type="Resource" uid="uid://vh6tbdwkh8p1" path="res://resources/world/biomes/biomeTest.tres" id="4_oqwcg"]
 [ext_resource type="Script" uid="uid://cn655yg2w5np2" path="res://src/world/construct_generator/BiomeWorldGenerator/BiomeWorldGenerator.cs" id="5_a6664"]
 [ext_resource type="Resource" uid="uid://j1ityh36augs" path="res://resources/blocks/blockStore.tres" id="6_a6664"]
@@ -31,10 +32,10 @@ script = ExtResource("1_10v3s")
 [node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("FocusPosition")]
 script = ExtResource("2_ns6u7")
 FocusPosition = NodePath("../Camera3D")
+ModuleMat = ExtResource("3_5t4e2")
 DefaultBlockStore = Array[Object]([])
 WorldGenerator = SubResource("Resource_10v3s")
 GameBlockStore = ExtResource("6_a6664")
-RenderDistance = Vector3i(5, 5, 5)
 DebugDraw = 0
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]

@@ -35,6 +35,8 @@ public partial class WorldController : Node3D
         blockWorld = new BlockWorld(Seed, ModuleSize, GameBlockStore, WorldGenerator, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
+        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, Vector3I.Zero, GameBlockStore, ModuleMat));
+
         blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
     }
 
