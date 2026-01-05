@@ -212,9 +212,9 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
             origin.X <= min.X &&
             origin.Y <= min.Y &&
             origin.Z <= min.Z &&
-            origin.X + size < max.X &&
-            origin.Y + size < max.Y &&
-            origin.Z + size < max.Z;
+            origin.X + size > max.X &&
+            origin.Y + size > max.Y &&
+            origin.Z + size > max.Z;
     }
 
     private Vector3I GetChildOrigin(Vector3I origin, int half, int index)

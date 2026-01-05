@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-public partial class Construct : Node, IHaveBoundingBox
+public partial class Construct : Node3D, IHaveBoundingBox
 {
 	private Dictionary<Vector3I, Module> loadedModules = new();
 	private List<Vector3I> queuedModulesPositions = new();
@@ -16,6 +16,7 @@ public partial class Construct : Node, IHaveBoundingBox
 	private Vector3I maxModuleLocation;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
+	private const int MaxConcurrentModuleLoads = 5;
 
 	public Construct(int moduleSize, ConstructGenerator constructGenerator, Vector3I worldOffset, BlockStore blockStore, Material moduleMaterial)
 	{
@@ -24,8 +25,10 @@ public partial class Construct : Node, IHaveBoundingBox
 		this.worldOffset = worldOffset;
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
-		minModuleLocation = worldOffset;
-		maxModuleLocation = worldOffset;
+
+		Position = worldOffset;
+		minModuleLocation = Vector3I.Zero;
+		maxModuleLocation = Vector3I.Zero;
 	}
 
 	public void SetBlockState(Vector3I inConstructPos, BlockState blockState)
@@ -64,7 +67,11 @@ public partial class Construct : Node, IHaveBoundingBox
 			{
 				for (int z = -renderDistance.Z; z < renderDistance.Z; z++)
 				{
-					desiredModules.Add(loadModulePos + new Vector3I(x, y, z));
+					Vector3I pos = loadModulePos + new Vector3I(x, y, z);
+					if (constructGenerator.IsModuleNeeded(pos))
+					{
+						desiredModules.Add(pos);
+					}
 				}
 			}
 		}
@@ -115,8 +122,15 @@ public partial class Construct : Node, IHaveBoundingBox
 	private async void GenerateModulesAsync(List<Vector3I> loadPositions)
 	{
 		List<Task<GenerationResponse>> moduleJobs = [];
+		int i = 0;
 		foreach (var modulePos in loadPositions)
 		{
+			i++;
+			if (i % MaxConcurrentModuleLoads == 0)
+			{
+				await ToSignal(GetTree(), "process_frame");
+			}
+
 			moduleJobs.Add(Task.Run(() =>
 			{
 				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial);
@@ -130,8 +144,15 @@ public partial class Construct : Node, IHaveBoundingBox
 			}));
 		}
 
+		i = 0;
 		foreach (Task<GenerationResponse> job in moduleJobs)
 		{
+			i++;
+			if (i % MaxConcurrentModuleLoads == 0)
+			{
+				await ToSignal(GetTree(), "process_frame");
+			}
+
 			GenerationResponse response = await job;
 			foreach (KeyValuePair<Vector3I, Module> entry in response.generatedModules)
 			{

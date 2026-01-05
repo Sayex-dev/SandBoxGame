@@ -33,6 +33,7 @@ public partial class BlockWorld : Node3D
 	public void AddConstruct(Construct construct)
 	{
 		constructs.Insert(construct);
+		AddChild(construct);
 	}
 
 	public void AddGlobalConstruct(Construct construct)

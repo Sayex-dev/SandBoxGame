@@ -11,6 +11,7 @@ public partial class PresetConstructGenerator : ConstructGenerator
 	public override void Init(int moduleSize)
 	{
 		base.Init(moduleSize);
+		requiredChunks = [];
 		foreach (Vector4 block in Blocks)
 		{
 			requiredChunks.Add((Vector3I)(new Vector3(block.X, block.Y, block.Z) / moduleSize));

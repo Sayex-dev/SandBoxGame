@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -7,6 +8,8 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 	[Export] Godot.Collections.Array<Biome> Biomes;
 
 	private FastNoiseLite _noise = new FastNoiseLite();
+	private int maxY = 0;
+	private Dictionary<Vector2I, int> cachedMaxModuleY = [];
 
 	public BiomeWorldGenerator()
 	{
@@ -41,6 +44,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 	private void PopulateModule(Module module, Vector3I moduleLocation, int moduleSize)
 	{
+		int maxMaxY = 0;
 		Vector3I rootWorldPos = moduleLocation * moduleSize;
 		for (int x = 0; x < moduleSize; x++)
 		{
@@ -49,7 +53,8 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				Biome biome = Biomes[0];
 				Vector2I worldLocation = new Vector2I(rootWorldPos.X, rootWorldPos.Z) + new Vector2I(x, z);
 				int groundHeight = biome.GetGroundHeight(worldLocation);
-				int maxY = Mathf.Min(groundHeight - moduleLocation.Y * moduleSize, moduleSize);
+				int maxY = Math.Min(groundHeight - moduleLocation.Y * moduleSize, moduleSize);
+				maxMaxY = Math.Max(maxMaxY, maxY);
 
 				for (int y = 0; y < maxY; y++)
 				{
@@ -60,27 +65,15 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				}
 			}
 		}
+
+		if (maxMaxY > 0 && maxMaxY < moduleSize * 0.75)
+		{
+			cachedMaxModuleY[new Vector2I(moduleLocation.X, moduleLocation.Z)] = moduleLocation.Y;
+		}
 	}
 
 	public override bool IsModuleNeeded(Vector3I moduleLocation)
 	{
-		Vector3I rootWorldPos = moduleLocation * moduleSize;
-		for (int x = 0; x < moduleSize; x++)
-		{
-			for (int z = 0; z < moduleSize; z++)
-			{
-				Biome biome = Biomes[0];
-				Vector2I worldLocation = new Vector2I(rootWorldPos.X, rootWorldPos.Z) + new Vector2I(x, z);
-				int groundHeight = biome.GetGroundHeight(worldLocation);
-				int maxY = Mathf.Min(groundHeight - moduleLocation.Y * moduleSize, moduleSize);
-				if ((maxY / moduleSize) >= moduleLocation.Y)
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return cachedMaxModuleY.GetValueOrDefault(new Vector2I(moduleLocation.X, moduleLocation.Z), int.MaxValue) >= moduleLocation.Y;
 	}
-
 }

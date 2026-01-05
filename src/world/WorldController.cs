@@ -6,7 +6,6 @@ public partial class WorldController : Node3D
     [Export] public int Seed { get; set; } = 0;
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
-    [Export] public Godot.Collections.Array<BlockDefault> DefaultBlockStore { get; set; }
     [Export] public ConstructGenerator WorldGenerator { get; set; }
     [Export] public ConstructGenerator TestGenerator { get; set; }
     [Export] public BlockStore GameBlockStore { get; set; }
@@ -39,7 +38,7 @@ public partial class WorldController : Node3D
         AddChild(blockWorld);
 
         blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, Vector3I.Zero, GameBlockStore, ModuleMat));
-        blockWorld.AddConstruct(new Construct(ModuleSize, WorldGenerator, new Vector3I(0, 15, 0), GameBlockStore, ModuleMat));
+        blockWorld.AddConstruct(new Construct(ModuleSize, TestGenerator, new Vector3I(0, 5, 0), GameBlockStore, ModuleMat));
 
         blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
     }
