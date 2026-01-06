@@ -55,7 +55,7 @@ public partial class Module : MeshInstance3D
 
 	public BlockState GetBlockState(Vector3I modulePos)
 	{
-		return BlockStates[modulePos];
+		return BlockStates.GetValueOrDefault(modulePos);
 	}
 
 	public void SetBlockState(Vector3I modulePos, BlockState blockState)
@@ -68,9 +68,9 @@ public partial class Module : MeshInstance3D
 		return BlockStates.ContainsKey(modulePos);
 	}
 
-	public static Vector3I WorldToInModulePos(Vector3I worldPos, int moduleSize, Vector3I moduleLocation)
+	public static Vector3I InConstructToInModulePos(Vector3I inConstructPos, int moduleSize, Vector3I moduleLocation)
 	{
-		return worldPos - (moduleSize * moduleLocation);
+		return inConstructPos - (moduleSize * moduleLocation);
 	}
 
 	public static Vector3I WrapToModule(Vector3I pos, int moduleSize)
@@ -82,12 +82,12 @@ public partial class Module : MeshInstance3D
 		);
 	}
 
-	public static Vector3I InModuleToWorldPos(Vector3I moduleLocation, Vector3I moduleSize, Vector3I modulePos)
+	public static Vector3I InModuleToInConstruct(Vector3I moduleLocation, Vector3I moduleSize, Vector3I modulePos)
 	{
 		return (moduleLocation * moduleSize) + modulePos;
 	}
 
-	public static Vector3I WorldToModuleLocation(Vector3I modulePos, int moduleSize)
+	public static Vector3I InConstructToModuleLocation(Vector3I modulePos, int moduleSize)
 	{
 		return new Vector3I(
 			Mathf.FloorToInt((float)modulePos.X / moduleSize),

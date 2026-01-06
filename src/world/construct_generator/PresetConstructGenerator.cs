@@ -25,12 +25,12 @@ public partial class PresetConstructGenerator : ConstructGenerator
 	)
 	{
 		Module module = new Module(moduleSize, moduleMaterial);
-		Vector3I moduleLocation = Module.WorldToModuleLocation(relativeWorldPos, moduleSize);
+		Vector3I moduleLocation = Module.InConstructToModuleLocation(relativeWorldPos, moduleSize);
 
 		foreach (var block in Blocks)
 		{
 			var worldPos = new Vector3I(block.X, block.Y, block.Z) + Offset;
-			var inModulePos = Module.WorldToInModulePos(worldPos, moduleSize, relativeWorldPos);
+			var inModulePos = Module.InConstructToInModulePos(worldPos, moduleSize, relativeWorldPos);
 
 			if (module.IsInModule(inModulePos))
 			{

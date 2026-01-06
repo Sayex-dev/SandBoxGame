@@ -30,6 +30,66 @@ public partial class BlockWorld : Node3D
 		constructs = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
 	}
 
+	public void SetBlock(Construct construct, Vector3I worldPos, int blockId)
+	{
+		construct.SetBlock(worldPos, blockId);
+	}
+
+	public int GetBlock(Vector3I worldPos)
+	{
+		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+		foreach (Construct construct in nearConstructs)
+		{
+			int blockId = construct.GetBlock(worldPos);
+			if (blockId != -1)
+			{
+				return blockId;
+			}
+		}
+		return -1;
+	}
+
+	public Construct HasBlock(Vector3I worldPos)
+	{
+		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+		foreach (Construct construct in nearConstructs)
+		{
+			int blockId = construct.GetBlock(worldPos);
+			if (blockId != -1)
+			{
+				return construct;
+			}
+		}
+		return null;
+	}
+
+	public void SetBlockState(Construct construct, Vector3I worldPos, BlockState blockState)
+	{
+		construct.SetBlockState(worldPos, blockState);
+	}
+
+	public BlockState GetBlockState(Vector3I worldPos)
+	{
+		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+		foreach (Construct construct in nearConstructs)
+		{
+			BlockState blockState = construct.GetBlockState(worldPos);
+			if (blockState != null) return blockState;
+		}
+		return null;
+	}
+
+	public Construct HasBlockState(Vector3I worldPos)
+	{
+		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+		foreach (Construct construct in nearConstructs)
+		{
+			BlockState blockState = construct.GetBlockState(worldPos);
+			if (blockState != null) return construct;
+		}
+		return null;
+	}
+
 	public void AddConstruct(Construct construct)
 	{
 		constructs.Insert(construct);
