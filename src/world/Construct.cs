@@ -19,15 +19,14 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	private const int MaxConcurrentModuleLoads = 5;
 	private SecondOrderDynamics sod;
 
-	public Construct(int moduleSize, ConstructGenerator constructGenerator, Vector3I worldOffset, BlockStore blockStore, Material moduleMaterial, SecondOrderDynamicsSettings sodSettings)
+	public Construct(int moduleSize, ConstructGenerator constructGenerator, Vector3I worldOffset, BlockStore blockStore, Material moduleMaterial, SecondOrderDynamics sod)
 	{
 		this.moduleSize = moduleSize;
 		this.constructGenerator = constructGenerator;
 		WorldOffset = worldOffset;
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
-
-		sod = sodSettings.GetInstance(worldOffset);
+		this.sod = sod;
 
 		Position = worldOffset;
 		minModuleLocation = Vector3I.Zero;

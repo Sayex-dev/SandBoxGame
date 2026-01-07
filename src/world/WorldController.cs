@@ -7,8 +7,6 @@ public partial class WorldController : Node3D
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
     [Export] public ConstructGenerator WorldGenerator { get; set; }
-    [Export] public ConstructGenerator TestGenerator { get; set; }
-    [Export] public SecondOrderDynamicsSettings sodSettings { get; set; }
     [Export] public BlockStore GameBlockStore { get; set; }
     [Export] public int ModuleSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 5, 5);
@@ -25,7 +23,6 @@ public partial class WorldController : Node3D
 
         GameBlockStore.SetBlockIds();
         WorldGenerator.Init(ModuleSize);
-        TestGenerator.Init(ModuleSize);
 
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
@@ -38,27 +35,15 @@ public partial class WorldController : Node3D
         blockWorld = new BlockWorld(Seed, ModuleSize, GameBlockStore, WorldGenerator, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
-
-        moveConstruct = new Construct(ModuleSize, TestGenerator, new Vector3I(1, 5, 0), GameBlockStore, ModuleMat, sodSettings);
-        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, Vector3I.Zero, GameBlockStore, ModuleMat, sodSettings));
-        blockWorld.AddConstruct(moveConstruct);
+        Vector3I worldOffset = Vector3I.Zero;
+        SecondOrderDynamics sod = new SecondOrderDynamics(1, 1, 0, worldOffset);
+        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, worldOffset, GameBlockStore, ModuleMat, sod));
 
         blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
     }
 
-    private double tempMoveTime = 0;
-    private Construct moveConstruct;
-
     public override void _PhysicsProcess(double delta)
     {
-        tempMoveTime += delta;
-        if (tempMoveTime > 1)
-        {
-            moveConstruct.MoveTo(moveConstruct.WorldOffset + Vector3I.Forward);
-            tempMoveTime = 0;
-        }
-
-
         Vector3I cameraModulePos = (Vector3I)FocusPosition.Position / ModuleSize;
 
         if (cameraModulePos != prevCameraModulePos)
