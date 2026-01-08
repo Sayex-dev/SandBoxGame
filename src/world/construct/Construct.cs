@@ -2,7 +2,10 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+
+
 
 public partial class Construct : Node3D, IHaveBoundingBox
 {
@@ -18,8 +21,16 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	private Material moduleMaterial;
 	private const int MaxConcurrentModuleLoads = 5;
 	private SecondOrderDynamics sod;
+	private bool isStatic;
 
-	public Construct(int moduleSize, ConstructGenerator constructGenerator, Vector3I worldOffset, BlockStore blockStore, Material moduleMaterial, SecondOrderDynamics sod)
+	public Construct(
+		int moduleSize,
+		ConstructGenerator constructGenerator,
+		Vector3I worldOffset,
+		BlockStore blockStore,
+		Material moduleMaterial,
+		SecondOrderDynamics sod,
+		bool isStatic = true)
 	{
 		this.moduleSize = moduleSize;
 		this.constructGenerator = constructGenerator;
@@ -27,6 +38,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
 		this.sod = sod;
+		this.isStatic = isStatic;
 
 		Position = worldOffset;
 		minModuleLocation = Vector3I.Zero;
@@ -40,6 +52,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public void MoveTo(Vector3I worldPos)
 	{
+		if (worldPos == WorldOffset) return;
 		WorldOffset = worldPos;
 	}
 
@@ -82,6 +95,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		Vector3I moduleLocation = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
 		Vector3I inModulePosition = Module.InConstructToInModulePos(inConstructPos, moduleSize, moduleLocation);
 		return loadedModules[moduleLocation].GetBlock(inModulePosition);
+	}
+
+	public Dictionary<Vector3I, Module> GetModules()
+	{
+		return loadedModules;
 	}
 
 	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)

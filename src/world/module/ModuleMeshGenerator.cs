@@ -2,16 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public enum Direction
-{
-	RIGHT,
-	LEFT,
-	UP,
-	DOWN,
-	BACKWARD,
-	FORWARD
-}
-
 public partial class ModuleMeshGenerator : Node
 {
 	public class Surface

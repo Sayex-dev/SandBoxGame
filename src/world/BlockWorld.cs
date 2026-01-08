@@ -102,6 +102,11 @@ public partial class BlockWorld : Node3D
 		AddChild(construct);
 	}
 
+	public List<Construct> GetConstructsInArea(Vector3I min, Vector3I max)
+	{
+		return constructs.QueryBox(min, max);
+	}
+
 	public void UpdateConstructLoading(Vector3I worldPos, Vector3I renderDistance)
 	{
 		Vector3I minPos = worldPos - renderDistance * moduleSize;

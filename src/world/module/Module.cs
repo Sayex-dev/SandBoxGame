@@ -28,6 +28,11 @@ public partial class Module : MeshInstance3D
 		BlockCount = 0;
 	}
 
+	public int[] GetBlockArray()
+	{
+		return blocks;
+	}
+
 	public int GetBlock(Vector3I modulePos)
 	{
 		int index = InModuleToArrayPos(modulePos);
