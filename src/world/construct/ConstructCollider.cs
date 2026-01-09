@@ -15,45 +15,48 @@ public class ConstructCollider
 
     public ConstructCollider(Construct construct)
     {
-        SetupCollider(construct);
     }
 
     public async void SetupCollider(Construct construct)
     {
         directionalCollisionBlocks.Clear();
-        Dictionary<Vector3I, Module> modules = construct.GetModules();
-        foreach (KeyValuePair<Vector3I, Module> kvp in modules)
+        Dictionary<ModuleLocation, Module> modules = construct.GetModules();
+        foreach (KeyValuePair<ModuleLocation, Module> kvp in modules)
         {
             Module module = kvp.Value;
-            Vector3I inConstructModulePos = kvp.Key;
+            ModuleLocation moduleLocation = kvp.Key;
+
             int[] blocks = module.GetBlockArray();
 
             for (int i = 0; i < blocks.Length; i++)
             {
                 int blockId = blocks[i];
                 if (blockId == -1) continue;
-                foreach (Direction dir in Enum.GetValues(typeof(Direction)))
-                {
-
-                }
+                ModuleGridPos modulePos = module.ArrayToInModulePos(i);
+                ConstructGridPos constructPos = modulePos.ToConstruct(moduleLocation, construct.ModuleSize);
+                Dictionary<Direction, bool> collideableDirections = GetCollideableDirections(construct, constructPos);
             }
         }
     }
 
-    public void AddBlockCollider(Construct construct, Vector3I inConstructPos)
+    public void AddBlockCollider(Construct construct, ConstructGridPos constructGridPos)
     {
-        foreach (Vector3I inConstructPos in construct.)
-        {
-
-        }
-        foreach (Direction dir in Enum.GetValues(typeof(Direction)))
-        {
-
-        }
     }
 
-    public void RemoveBlockCollider(Construct construct, Vector3I inConstructPos)
+    public void RemoveBlockFromCollider(Construct construct, Vector3I worldPos)
     {
+    }
 
+    private Dictionary<Direction, bool> GetCollideableDirections(Construct construct, ConstructGridPos constructPos)
+    {
+        Dictionary<Direction, bool> collideableDirections = [];
+        foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+        {
+            WorldGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionMethods.GetWorldDirVec(dir));
+            int checkBlockId;
+            if (!construct.HasBlock(checkPos, out checkBlockId)) continue;
+            collideableDirections[dir] = checkBlockId != -1;
+        }
+        return collideableDirections;
     }
 }

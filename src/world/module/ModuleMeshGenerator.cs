@@ -53,7 +53,7 @@ public partial class ModuleMeshGenerator : Node
 				{
 					Vector3I blockPos = new Vector3I(x, y, z);
 
-					if (module.GetBlock(blockPos) == -1)
+					if (module.GetBlock(new(blockPos)) == -1)
 						continue;
 
 					bool[] exposedSurfaces = new bool[Normals.Length];
@@ -62,12 +62,12 @@ public partial class ModuleMeshGenerator : Node
 					for (int i = 0; i < Normals.Length; i++)
 					{
 						Vector3I dir = Normals[i];
-						Vector3I adjacentPos = blockPos + dir;
+						ConstructGridPos adjacentPos = new(blockPos + dir);
 						int adjacentBlock;
 
 						if (module.IsInModule(adjacentPos))
 						{
-							adjacentBlock = module.GetBlock(adjacentPos);
+							adjacentBlock = module.GetBlock(adjacentPos.ToModule(module.ModuleSize));
 						}
 						else
 						{
@@ -150,7 +150,7 @@ public partial class ModuleMeshGenerator : Node
 				for (int x = 0; x <= moduleSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
-					int blockId = module.IsInModule(np) ? module.GetBlock(np) : -1;
+					int blockId = module.IsInModule(new(np)) ? module.GetBlock(new(np)) : -1;
 
 					if (surfaceBlockId == -1)
 					{

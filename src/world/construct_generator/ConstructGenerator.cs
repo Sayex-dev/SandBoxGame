@@ -4,24 +4,24 @@ using Godot;
 public class GenerationResponse
 {
 	public bool generatedAllModules = false;
-	public Dictionary<Vector3I, Module> generatedModules = [];
+	public Dictionary<ModuleLocation, Module> generatedModules = [];
 
 }
 
 [GlobalClass]
 public abstract partial class ConstructGenerator : Resource
 {
-	public int moduleSize;
+	public int ModuleSize;
 
 	public virtual void Init(int moduleSize)
 	{
-		this.moduleSize = moduleSize;
+		this.ModuleSize = moduleSize;
 	}
 	public abstract GenerationResponse GenerateModules(
-		Vector3I relativeWorldPos,
+		ModuleLocation moduleLocation,
 		Material moduleMaterial,
-		HashSet<Vector3I> prevLoaded = null
+		HashSet<ModuleLocation> prevLoaded = null
 	);
-	public abstract bool IsModuleNeeded(Vector3I chunkLocation);
+	public abstract bool IsModuleNeeded(ModuleLocation moduleLocation);
 	public abstract void SetSeed(int seed);
 }

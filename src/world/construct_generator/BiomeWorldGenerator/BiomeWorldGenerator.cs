@@ -25,41 +25,41 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 	}
 
 	public override GenerationResponse GenerateModules(
-		Vector3I moduleLocation,
+		ModuleLocation moduleLocation,
 		Material moduleMaterial,
-		HashSet<Vector3I> prevLoaded
+		HashSet<ModuleLocation> prevLoaded
 	)
 	{
-		Module module = new Module(moduleSize, moduleMaterial);
-		PopulateModule(module, moduleLocation, moduleSize);
+		Module module = new Module(ModuleSize, moduleMaterial);
+		PopulateModule(module, moduleLocation, ModuleSize);
 		return new GenerationResponse
 		{
 			generatedAllModules = false,
-			generatedModules = new Dictionary<Vector3I, Module>
+			generatedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			}
 		};
 	}
 
-	private void PopulateModule(Module module, Vector3I moduleLocation, int moduleSize)
+	private void PopulateModule(Module module, ModuleLocation moduleLocation, int moduleSize)
 	{
 		int maxMaxY = 0;
-		Vector3I rootWorldPos = moduleLocation * moduleSize;
+		ConstructGridPos moduleOffset = moduleLocation.ToConstruct(ModuleSize);
 		for (int x = 0; x < moduleSize; x++)
 		{
 			for (int z = 0; z < moduleSize; z++)
 			{
 				Biome biome = Biomes[0];
-				Vector2I worldLocation = new Vector2I(rootWorldPos.X, rootWorldPos.Z) + new Vector2I(x, z);
-				int groundHeight = biome.GetGroundHeight(worldLocation);
-				int maxY = Math.Min(groundHeight - moduleLocation.Y * moduleSize, moduleSize);
+				Vector2I inConstructLocation = new Vector2I(moduleOffset.Value.X, moduleOffset.Value.Z) + new Vector2I(x, z);
+				int groundHeight = biome.GetGroundHeight(inConstructLocation);
+				int maxY = Math.Min(groundHeight - moduleLocation.Value.Y * moduleSize, moduleSize);
 				maxMaxY = Math.Max(maxMaxY, maxY);
 
 				for (int y = 0; y < maxY; y++)
 				{
-					Vector3I inModulePos = new Vector3I(x, y, z);
-					Vector3I worldPos = inModulePos + rootWorldPos;
+					ModuleGridPos inModulePos = new(new Vector3I(x, y, z));
+					ConstructGridPos worldPos = inModulePos.ToConstruct(moduleLocation, ModuleSize);
 					int blockId = biome.GetBlockId(worldPos, groundHeight);
 					module.SetBlock(inModulePos, blockId);
 				}
@@ -68,12 +68,13 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 		if (maxMaxY > 0 && maxMaxY < moduleSize * 0.75)
 		{
-			cachedMaxModuleY[new Vector2I(moduleLocation.X, moduleLocation.Z)] = moduleLocation.Y;
+			cachedMaxModuleY[new Vector2I(moduleLocation.Value.X, moduleLocation.Value.Z)] = moduleLocation.Value.Y;
 		}
 	}
 
-	public override bool IsModuleNeeded(Vector3I moduleLocation)
+	public override bool IsModuleNeeded(ModuleLocation moduleLocation)
 	{
-		return cachedMaxModuleY.GetValueOrDefault(new Vector2I(moduleLocation.X, moduleLocation.Z), int.MaxValue) >= moduleLocation.Y;
+		return cachedMaxModuleY.GetValueOrDefault(
+			new Vector2I(moduleLocation.Value.X, moduleLocation.Value.Z), int.MaxValue) >= moduleLocation.Value.Y;
 	}
 }

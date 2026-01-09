@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 
 public partial class Construct : Node3D, IHaveBoundingBox
 {
-	private Dictionary<Vector3I, Module> loadedModules = new();
-	private List<Vector3I> queuedModulesPositions = new();
+	public int ModuleSize { get; private set; }
+	public WorldGridPos WorldOffset { get; private set; }
 
-	private int moduleSize;
+	private Dictionary<ModuleLocation, Module> loadedModules = new();
+	private List<ModuleLocation> queuedModulesPositions = new();
+
 	private ConstructGenerator constructGenerator;
-	public Vector3I WorldOffset { get; private set; }
-	private Vector3I minModuleLocation;
-	private Vector3I maxModuleLocation;
+	private ModuleLocation minModuleLocation;
+	private ModuleLocation maxModuleLocation;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
 	private const int MaxConcurrentModuleLoads = 5;
@@ -26,13 +27,13 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	public Construct(
 		int moduleSize,
 		ConstructGenerator constructGenerator,
-		Vector3I worldOffset,
+		WorldGridPos worldOffset,
 		BlockStore blockStore,
 		Material moduleMaterial,
 		SecondOrderDynamics sod,
 		bool isStatic = true)
 	{
-		this.moduleSize = moduleSize;
+		this.ModuleSize = moduleSize;
 		this.constructGenerator = constructGenerator;
 		WorldOffset = worldOffset;
 		this.blockStore = blockStore;
@@ -40,75 +41,92 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		this.sod = sod;
 		this.isStatic = isStatic;
 
-		Position = worldOffset;
-		minModuleLocation = Vector3I.Zero;
-		maxModuleLocation = Vector3I.Zero;
+		Position = worldOffset.Value;
+		minModuleLocation = new ModuleLocation(Vector3I.Zero);
+		maxModuleLocation = new ModuleLocation(Vector3I.Zero);
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		Position = sod.Update((float)delta, WorldOffset);
+		Position = sod.Update((float)delta, WorldOffset.Value);
 	}
 
-	public void MoveTo(Vector3I worldPos)
+	public void MoveTo(WorldGridPos worldPos)
 	{
 		if (worldPos == WorldOffset) return;
 		WorldOffset = worldPos;
 	}
 
-	public void SetBlockState(Vector3I worldPos, BlockState blockState)
+	public void SetBlockState(WorldGridPos worldPos, BlockState blockState)
 	{
-		Vector3I inConstructPos = worldPos - WorldOffset;
-		var moduleLoc = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
-		var modulePos = Module.WrapToModule(inConstructPos, moduleSize);
-		loadedModules[moduleLoc].SetBlockState(modulePos, blockState);
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module = loadedModules[moduleLocation];
+		module.SetBlockState(inModulePos, blockState);
 	}
 
-	public BlockState GetBlockState(Vector3I worldPos)
+	public BlockState GetBlockState(WorldGridPos worldPos)
 	{
-		Vector3I inConstructPos = worldPos - WorldOffset;
-		var moduleLoc = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
-		Module module = loadedModules[moduleLoc];
-		var modulePos = Module.InConstructToInModulePos(inConstructPos, module.ModuleSize, moduleLoc);
-		return module.GetBlockState(modulePos);
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module = loadedModules[moduleLocation];
+		return module.GetBlockState(inModulePos);
 	}
 
-	public bool HasBlockState(Vector3I worldPos)
+	public bool HasBlockState(WorldGridPos worldPos)
 	{
-		Vector3I inConstructPos = worldPos - WorldOffset;
-		var moduleLoc = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
-		var modulePos = Module.WrapToModule(inConstructPos, moduleSize);
-		return loadedModules[moduleLoc].HasBlockState(modulePos);
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module = loadedModules[moduleLocation];
+		return module.HasBlockState(inModulePos);
 	}
 
-	public void SetBlock(Vector3I worldPos, int blockId)
+	public void SetBlock(WorldGridPos worldPos, int blockId)
 	{
-		Vector3I inConstructPos = worldPos - WorldOffset;
-		Vector3I moduleLocation = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
-		Vector3I inModulePosition = Module.InConstructToInModulePos(inConstructPos, moduleSize, moduleLocation);
-		loadedModules[moduleLocation].SetBlock(inModulePosition, blockId);
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module = loadedModules[moduleLocation];
+		module.SetBlock(inModulePos, blockId);
 	}
 
-	public int GetBlock(Vector3I worldPos)
+	public int GetBlock(WorldGridPos worldPos)
 	{
-		Vector3I inConstructPos = worldPos - WorldOffset;
-		Vector3I moduleLocation = Module.InConstructToModuleLocation(inConstructPos, moduleSize);
-		Vector3I inModulePosition = Module.InConstructToInModulePos(inConstructPos, moduleSize, moduleLocation);
-		return loadedModules[moduleLocation].GetBlock(inModulePosition);
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module = loadedModules[moduleLocation];
+		return module.GetBlock(inModulePos);
 	}
 
-	public Dictionary<Vector3I, Module> GetModules()
+	public bool HasBlock(WorldGridPos worldPos, out int blockId)
+	{
+		blockId = -1;
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
+		ModuleGridPos inModulePos = worldPos.ToModule(WorldOffset, ModuleSize);
+		Module module;
+
+		if (!loadedModules.TryGetValue(moduleLocation, out module)) return false;
+		if (!module.HasBlock(inModulePos)) return false;
+		blockId = module.GetBlock(inModulePos);
+		return blockId != -1;
+	}
+
+	public bool HasBlock(WorldGridPos worldPos)
+	{
+		return HasBlock(worldPos, out _);
+	}
+
+	public Dictionary<ModuleLocation, Module> GetModules()
 	{
 		return loadedModules;
 	}
 
-	public void LoadPosition(Vector3 worldPos, Vector3I renderDistance)
+	public void LoadPosition(WorldGridPos worldPos, Vector3I renderDistance)
 	{
-		var loadModulePos = (Vector3I)((worldPos - WorldOffset) / moduleSize).Floor();
+		ModuleLocation moduleLocation = worldPos.ToModuleLocation(WorldOffset, ModuleSize);
 
-		var desiredModules = new List<Vector3I>();
-		var addModules = new List<Vector3I>();
-		var removeModules = new List<Vector3I>();
+		var desiredModules = new List<ModuleLocation>();
+		var addModules = new List<ModuleLocation>();
+		var removeModules = new List<ModuleLocation>();
 
 		for (int x = -renderDistance.X; x < renderDistance.X; x++)
 		{
@@ -116,10 +134,10 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			{
 				for (int z = -renderDistance.Z; z < renderDistance.Z; z++)
 				{
-					Vector3I pos = loadModulePos + new Vector3I(x, y, z);
-					if (constructGenerator.IsModuleNeeded(pos))
+					ModuleLocation newModulePos = new(moduleLocation.Value + new Vector3I(x, y, z));
+					if (constructGenerator.IsModuleNeeded(newModulePos))
 					{
-						desiredModules.Add(pos);
+						desiredModules.Add(newModulePos);
 					}
 				}
 			}
@@ -134,7 +152,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			}
 		}
 
-		foreach (var modulePos in new List<Vector3I>(loadedModules.Keys))
+		foreach (var modulePos in new List<ModuleLocation>(loadedModules.Keys))
 		{
 			if (!desiredModules.Contains(modulePos))
 				removeModules.Add(modulePos);
@@ -147,12 +165,12 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	}
 
 	public void UpdateModuleLoading(
-	List<Vector3I> loadPositions = null,
-	List<Vector3I> unloadPositions = null
+	List<ModuleLocation> loadPositions = null,
+	List<ModuleLocation> unloadPositions = null
 )
 	{
-		loadPositions ??= new List<Vector3I>();
-		unloadPositions ??= new List<Vector3I>();
+		loadPositions ??= new List<ModuleLocation>();
+		unloadPositions ??= new List<ModuleLocation>();
 
 		// Unload immediately on main thread
 		foreach (var modulePos in unloadPositions)
@@ -168,11 +186,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		GenerateModulesAsync(loadPositions);
 	}
 
-	private async void GenerateModulesAsync(List<Vector3I> loadPositions)
+	private async void GenerateModulesAsync(List<ModuleLocation> loadPositions)
 	{
 		List<Task<GenerationResponse>> moduleJobs = [];
 		int i = 0;
-		foreach (var modulePos in loadPositions)
+		foreach (ModuleLocation modulePos in loadPositions)
 		{
 			i++;
 			if (i % MaxConcurrentModuleLoads == 0)
@@ -183,11 +201,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			moduleJobs.Add(Task.Run(() =>
 			{
 				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial);
-				Dictionary<Vector3I, Module> modules = response.generatedModules;
-				foreach (KeyValuePair<Vector3I, Module> entry in modules)
+				Dictionary<ModuleLocation, Module> modules = response.generatedModules;
+				foreach (KeyValuePair<ModuleLocation, Module> entry in modules)
 				{
 					entry.Value.BuildMesh(blockStore);
-					entry.Value.Position = (Vector3)(moduleSize * entry.Key);
+					entry.Value.Position = (Vector3)(ModuleSize * entry.Key.Value);
 				}
 				return response;
 			}));
@@ -203,9 +221,9 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			}
 
 			GenerationResponse response = await job;
-			foreach (KeyValuePair<Vector3I, Module> entry in response.generatedModules)
+			foreach (KeyValuePair<ModuleLocation, Module> entry in response.generatedModules)
 			{
-				Vector3I modulePos = entry.Key;
+				ModuleLocation modulePos = entry.Key;
 				Module module = entry.Value;
 
 				if (queuedModulesPositions.Contains(modulePos))
@@ -214,18 +232,18 @@ public partial class Construct : Node3D, IHaveBoundingBox
 					loadedModules[modulePos] = module;
 					AddChild(module);
 
-					minModuleLocation = new Vector3I
+					minModuleLocation = new(new Vector3I
 					{
-						X = Math.Min(minModuleLocation.X, modulePos.X),
-						Y = Math.Min(minModuleLocation.Y, modulePos.Y),
-						Z = Math.Min(minModuleLocation.Z, modulePos.Z),
-					};
-					maxModuleLocation = new Vector3I
+						X = Math.Min(minModuleLocation.Value.X, modulePos.Value.X),
+						Y = Math.Min(minModuleLocation.Value.Y, modulePos.Value.Y),
+						Z = Math.Min(minModuleLocation.Value.Z, modulePos.Value.Z),
+					});
+					maxModuleLocation = new(new Vector3I
 					{
-						X = Math.Max(maxModuleLocation.X, modulePos.X),
-						Y = Math.Max(maxModuleLocation.Y, modulePos.Y),
-						Z = Math.Max(maxModuleLocation.Z, modulePos.Z),
-					};
+						X = Math.Max(maxModuleLocation.Value.X, modulePos.Value.X),
+						Y = Math.Max(maxModuleLocation.Value.Y, modulePos.Value.Y),
+						Z = Math.Max(maxModuleLocation.Value.Z, modulePos.Value.Z),
+					});
 				}
 				else
 				{
@@ -237,16 +255,17 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public Vector3I GetRootPos()
 	{
-		return WorldOffset;
+		return WorldOffset.Value;
 	}
 
 	public Vector3I GetMin()
 	{
-		return WorldOffset + minModuleLocation * moduleSize;
+		return minModuleLocation.ToWorld(ModuleSize, WorldOffset).Value;
 	}
 
 	public Vector3I GetMax()
 	{
-		return WorldOffset + maxModuleLocation * moduleSize;
+		return maxModuleLocation.ToWorld(ModuleSize, WorldOffset).Value;
 	}
+
 }

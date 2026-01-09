@@ -17,25 +17,25 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 	}
 
 	public override GenerationResponse GenerateModules(
-		Vector3I moduleLocation,
+		ModuleLocation moduleLocation,
 		Material moduleMat,
-		HashSet<Vector3I> prevLoaded = null
+		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
 
-		var module = new Module(moduleSize, moduleMat);
+		var module = new Module(ModuleSize, moduleMat);
 		SetGround(module, moduleLocation);
 		return new GenerationResponse
 		{
 			generatedAllModules = false,
-			generatedModules = new Dictionary<Vector3I, Module>
+			generatedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			}
 		};
 	}
 
-	private void SetGround(Module module, Vector3I moduleLocation)
+	private void SetGround(Module module, ModuleLocation moduleLocation)
 	{
 		var moduleSize = module.ModuleSize;
 
@@ -43,16 +43,16 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		{
 			for (int z = 0; z < moduleSize; z++)
 			{
-				float xPos = (moduleLocation.X * moduleSize + x + GenOffset.X) * NoiseScale;
-				float zPos = (moduleLocation.Z * moduleSize + z + GenOffset.Z) * NoiseScale;
+				float xPos = (moduleLocation.Value.X * moduleSize + x + GenOffset.X) * NoiseScale;
+				float zPos = (moduleLocation.Value.Z * moduleSize + z + GenOffset.Z) * NoiseScale;
 
 				int noiseHeight = (int)(_noise.GetNoise2D(xPos, zPos) * HeightScale) + GenOffset.Y;
 
-				int maxY = Mathf.Min(noiseHeight - moduleLocation.Y * moduleSize, moduleSize);
+				int maxY = Mathf.Min(noiseHeight - moduleLocation.Value.Y * moduleSize, moduleSize);
 
 				for (int y = 0; y < maxY; y++)
 				{
-					var inModulePos = new Vector3I(x, y, z);
+					ModuleGridPos inModulePos = new(new(x, y, z));
 					module.SetBlock(inModulePos, 1);
 				}
 			}
@@ -64,8 +64,8 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		_noise.Seed = seed;
 	}
 
-	public override bool IsModuleNeeded(Vector3I chunkLocation)
+	public override bool IsModuleNeeded(ModuleLocation moduleLocation)
 	{
-		return chunkLocation.Y <= (int)(HeightScale / moduleSize);
+		return moduleLocation.Value.Y <= (int)(HeightScale / ModuleSize);
 	}
 }

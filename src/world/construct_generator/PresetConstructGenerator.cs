@@ -6,54 +6,54 @@ public partial class PresetConstructGenerator : ConstructGenerator
 {
 	[Export] public Godot.Collections.Array<Vector4I> Blocks { get; set; }
 	[Export] public Vector3I Offset { get; set; }
-	private HashSet<Vector3I> requiredChunks;
+	private HashSet<ModuleLocation> requiredModules;
 
 	public override void Init(int moduleSize)
 	{
 		base.Init(moduleSize);
-		requiredChunks = [];
-		foreach (Vector4 block in Blocks)
+		requiredModules = [];
+		foreach (Vector4I block in Blocks)
 		{
-			requiredChunks.Add((Vector3I)(new Vector3(block.X, block.Y, block.Z) / moduleSize));
+			requiredModules.Add(new((Vector3I)(new Vector3(block.X, block.Y, block.Z) / moduleSize)));
 		}
 	}
 
 	public override GenerationResponse GenerateModules(
-		Vector3I relativeWorldPos,
+		ModuleLocation moduleLocation,
 		Material moduleMaterial,
-		HashSet<Vector3I> prevLoaded = null
+		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
-		Module module = new Module(moduleSize, moduleMaterial);
-		Vector3I moduleLocation = Module.InConstructToModuleLocation(relativeWorldPos, moduleSize);
+		Module module = new Module(ModuleSize, moduleMaterial);
 
-		foreach (var block in Blocks)
+		foreach (Vector4I block in Blocks)
 		{
-			var worldPos = new Vector3I(block.X, block.Y, block.Z) + Offset;
-			var inModulePos = Module.InConstructToInModulePos(worldPos, moduleSize, relativeWorldPos);
+			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(block.X, block.Y, block.Z) + Offset);
+			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(ModuleSize);
 
-			if (module.IsInModule(inModulePos))
+			if (module.IsInModule(inConstructBlockPos))
 			{
-				module.SetBlock(inModulePos, block.W);
+				module.SetBlock(inModuleBlockPos, block.W);
 			}
 		}
 
 		return new GenerationResponse
 		{
 			generatedAllModules = false,
-			generatedModules = new Dictionary<Vector3I, Module>
+			generatedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			}
 		};
 	}
 
-	public override bool IsModuleNeeded(Vector3I chunkLocation)
+	public override bool IsModuleNeeded(ModuleLocation moduleLocation)
 	{
-		return requiredChunks.Contains(chunkLocation);
+		return requiredModules.Contains(moduleLocation);
 	}
 
 	public override void SetSeed(int seed)
 	{
 	}
+
 }

@@ -14,6 +14,20 @@ public enum Direction
 
 static class DirectionMethods
 {
+	public static Vector3 GetWorldDirVec(Direction direction)
+	{
+		return direction switch
+		{
+			Direction.FORWARD => Vector3.Forward,
+			Direction.BACKWARD => Vector3.Back,
+			Direction.RIGHT => Vector3.Right,
+			Direction.LEFT => Vector3.Left,
+			Direction.UP => Vector3.Up,
+			Direction.DOWN => Vector3.Down,
+			_ => Vector3.Zero
+		};
+	}
+
 	public static Vector3 GetVecFromForward(Vector3 forwardVec, Direction direction)
 	{
 		Vector3 forward = forwardVec.Normalized();

@@ -30,12 +30,12 @@ public partial class BlockWorld : Node3D
 		constructs = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
 	}
 
-	public void SetBlock(Construct construct, Vector3I worldPos, int blockId)
+	public void SetBlock(Construct construct, WorldGridPos worldPos, int blockId)
 	{
 		construct.SetBlock(worldPos, blockId);
 	}
 
-	public int GetBlock(Vector3I worldPos)
+	public int GetBlock(WorldGridPos worldPos)
 	{
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
@@ -49,7 +49,7 @@ public partial class BlockWorld : Node3D
 		return -1;
 	}
 
-	public Construct HasBlock(Vector3I worldPos)
+	public Construct HasBlock(WorldGridPos worldPos)
 	{
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
@@ -63,12 +63,12 @@ public partial class BlockWorld : Node3D
 		return null;
 	}
 
-	public void SetBlockState(Construct construct, Vector3I worldPos, BlockState blockState)
+	public void SetBlockState(Construct construct, WorldGridPos worldPos, BlockState blockState)
 	{
 		construct.SetBlockState(worldPos, blockState);
 	}
 
-	public BlockState GetBlockState(Vector3I worldPos)
+	public BlockState GetBlockState(WorldGridPos worldPos)
 	{
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
@@ -79,7 +79,7 @@ public partial class BlockWorld : Node3D
 		return null;
 	}
 
-	public Construct HasBlockState(Vector3I worldPos)
+	public Construct HasBlockState(WorldGridPos worldPos)
 	{
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
@@ -102,15 +102,15 @@ public partial class BlockWorld : Node3D
 		AddChild(construct);
 	}
 
-	public List<Construct> GetConstructsInArea(Vector3I min, Vector3I max)
+	public List<Construct> GetConstructsInArea(WorldGridPos min, WorldGridPos max)
 	{
-		return constructs.QueryBox(min, max);
+		return constructs.QueryBox(min.Value, max.Value);
 	}
 
-	public void UpdateConstructLoading(Vector3I worldPos, Vector3I renderDistance)
+	public void UpdateConstructLoading(WorldGridPos worldPos, Vector3I renderDistance)
 	{
-		Vector3I minPos = worldPos - renderDistance * moduleSize;
-		Vector3I maxPos = worldPos + renderDistance * moduleSize;
+		Vector3I minPos = worldPos.Value - renderDistance * moduleSize;
+		Vector3I maxPos = worldPos.Value + renderDistance * moduleSize;
 
 		List<Construct> nearConstructs = constructs.QueryBox(minPos, maxPos);
 		foreach (Construct construct in nearConstructs)

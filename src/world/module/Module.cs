@@ -13,7 +13,7 @@ public partial class Module : MeshInstance3D
 		}
 	}
 	private int[] blocks = [];
-	public Dictionary<Vector3I, BlockState> BlockStates { get; private set; } = new();
+	public Dictionary<ModuleGridPos, BlockState> BlockStates { get; private set; } = new();
 	private Material moduleMaterial;
 	public Module(int moduleSize, Material moduleMaterial)
 	{
@@ -33,19 +33,31 @@ public partial class Module : MeshInstance3D
 		return blocks;
 	}
 
-	public int GetBlock(Vector3I modulePos)
+	public int GetBlock(ModuleGridPos modulePos)
 	{
 		int index = InModuleToArrayPos(modulePos);
 		return blocks[index];
 	}
 
-	public bool HasBlock(Vector3I localPos)
+	public bool HasBlock(ModuleGridPos modulePos, out int blockId)
 	{
-		int index = InModuleToArrayPos(localPos);
-		return blocks.Length > index && blocks[index] != -1;
+		int index = InModuleToArrayPos(modulePos);
+		blockId = -1;
+		if (blocks.Length > index)
+		{
+			blockId = blocks[index];
+			return blockId != -1;
+		}
+		return false;
 	}
 
-	public void SetBlock(Vector3I modulePos, int blockId)
+	public bool HasBlock(ModuleGridPos modulePos)
+	{
+		int _;
+		return HasBlock(modulePos, out _);
+	}
+
+	public void SetBlock(ModuleGridPos modulePos, int blockId)
 	{
 		int index = InModuleToArrayPos(modulePos);
 		int prevBlockId = blocks[index];
@@ -58,69 +70,41 @@ public partial class Module : MeshInstance3D
 		blocks[index] = blockId;
 	}
 
-	public BlockState GetBlockState(Vector3I modulePos)
+	public BlockState GetBlockState(ModuleGridPos modulePos)
 	{
 		return BlockStates.GetValueOrDefault(modulePos);
 	}
 
-	public void SetBlockState(Vector3I modulePos, BlockState blockState)
+	public void SetBlockState(ModuleGridPos modulePos, BlockState blockState)
 	{
 		BlockStates[modulePos] = blockState;
 	}
 
-	public bool HasBlockState(Vector3I modulePos)
+	public bool HasBlockState(ModuleGridPos modulePos)
 	{
 		return BlockStates.ContainsKey(modulePos);
 	}
 
-	public static Vector3I InConstructToInModulePos(Vector3I inConstructPos, int moduleSize, Vector3I moduleLocation)
+	public int InModuleToArrayPos(ModuleGridPos modulePos)
 	{
-		return inConstructPos - (moduleSize * moduleLocation);
+		return modulePos.Value.X
+			 + modulePos.Value.Y * ModuleSize
+			 + modulePos.Value.Z * ModuleSize * ModuleSize;
 	}
 
-	public static Vector3I WrapToModule(Vector3I pos, int moduleSize)
-	{
-		return new Vector3I(
-			Mathf.PosMod(pos.X, moduleSize),
-			Mathf.PosMod(pos.Y, moduleSize),
-			Mathf.PosMod(pos.Z, moduleSize)
-		);
-	}
-
-	public static Vector3I InModuleToInConstruct(Vector3I moduleLocation, Vector3I moduleSize, Vector3I modulePos)
-	{
-		return (moduleLocation * moduleSize) + modulePos;
-	}
-
-	public static Vector3I InConstructToModuleLocation(Vector3I modulePos, int moduleSize)
-	{
-		return new Vector3I(
-			Mathf.FloorToInt((float)modulePos.X / moduleSize),
-			Mathf.FloorToInt((float)modulePos.Y / moduleSize),
-			Mathf.FloorToInt((float)modulePos.Z / moduleSize)
-		);
-	}
-
-	public int InModuleToArrayPos(Vector3I modulePos)
-	{
-		return modulePos.X
-			 + modulePos.Y * ModuleSize
-			 + modulePos.Z * ModuleSize * ModuleSize;
-	}
-
-	public Vector3I ArrayToInModulePos(int index)
+	public ModuleGridPos ArrayToInModulePos(int index)
 	{
 		int x = index % ModuleSize;
 		int y = index / ModuleSize % ModuleSize;
 		int z = index / (ModuleSize * ModuleSize);
-		return new Vector3I(x, y, z);
+		return new(new(x, y, z));
 	}
 
-	public bool IsInModule(Vector3I modulePos)
+	public bool IsInModule(ConstructGridPos inConstructPos)
 	{
-		bool correctX = modulePos.X >= 0 && modulePos.X < ModuleSize;
-		bool correctY = modulePos.Y >= 0 && modulePos.Y < ModuleSize;
-		bool correctZ = modulePos.Z >= 0 && modulePos.Z < ModuleSize;
+		bool correctX = inConstructPos.Value.X >= 0 && inConstructPos.Value.X < ModuleSize;
+		bool correctY = inConstructPos.Value.Y >= 0 && inConstructPos.Value.Y < ModuleSize;
+		bool correctZ = inConstructPos.Value.Z >= 0 && inConstructPos.Value.Z < ModuleSize;
 		return correctX && correctY && correctZ;
 	}
 

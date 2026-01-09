@@ -86,9 +86,9 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
         return results;
     }
 
-    public List<T> QueryAt(Vector3I pos)
+    public List<T> QueryAt(WorldGridPos pos)
     {
-        return QueryBox(pos, pos);
+        return QueryBox(pos.Value, pos.Value);
     }
 
     public void Remove(T t)

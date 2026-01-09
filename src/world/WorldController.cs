@@ -37,9 +37,9 @@ public partial class WorldController : Node3D
 
         Vector3I worldOffset = Vector3I.Zero;
         SecondOrderDynamics sod = new SecondOrderDynamics(1, 1, 0, worldOffset);
-        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, worldOffset, GameBlockStore, ModuleMat, sod));
+        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, new(worldOffset), GameBlockStore, ModuleMat, sod));
 
-        blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
+        blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -49,7 +49,7 @@ public partial class WorldController : Node3D
         if (cameraModulePos != prevCameraModulePos)
         {
             prevCameraModulePos = cameraModulePos;
-            blockWorld.UpdateConstructLoading((Vector3I)FocusPosition.Position, RenderDistance);
+            blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
         }
     }
 }
