@@ -2,28 +2,28 @@ using Godot;
 
 public readonly record struct WorldGridPos(Vector3I Value)
 {
-    public ConstructGridPos ToConstruct(WorldGridPos constructOffset)
+    public ConstructGridPos ToConstruct(ConstructTransform transform)
     {
-        return new(Value - constructOffset.Value);
+        return new(Value - transform.WorldPos.Value);
     }
 
-    public ModuleGridPos ToModule(WorldGridPos constructOffset, int moduleSize)
+    public ModuleGridPos ToModule(ConstructTransform transform, int moduleSize)
     {
-        return ToConstruct(constructOffset).ToModule(moduleSize);
+        return ToConstruct(transform).ToModule(moduleSize);
     }
 
-    public ModuleLocation ToModuleLocation(WorldGridPos constructOffset, int moduleSize)
+    public ModuleLocation ToModuleLocation(ConstructTransform transform, int moduleSize)
     {
-        return ToConstruct(constructOffset).ToModuleLocation(moduleSize);
+        return ToConstruct(transform).ToModuleLocation(moduleSize);
     }
 }
 
 public readonly record struct ConstructGridPos(Vector3I Value)
 {
 
-    public WorldGridPos ToWorld(WorldGridPos constructOffset)
+    public WorldGridPos ToWorld(ConstructTransform transform)
     {
-        return new(constructOffset.Value + Value);
+        return new(transform.WorldPos.Value + Value);
     }
 
     public ModuleGridPos ToModule(int moduleSize)
@@ -49,9 +49,9 @@ public readonly record struct ConstructGridPos(Vector3I Value)
 
 public readonly record struct ModuleLocation(Vector3I Value)
 {
-    public WorldGridPos ToWorld(int moduleSize, WorldGridPos constructOffset)
+    public WorldGridPos ToWorld(int moduleSize, ConstructTransform transform)
     {
-        return ToConstruct(moduleSize).ToWorld(constructOffset);
+        return ToConstruct(moduleSize).ToWorld(transform);
     }
 
     public ConstructGridPos ToConstruct(int moduleSize)
@@ -63,9 +63,9 @@ public readonly record struct ModuleLocation(Vector3I Value)
 
 public readonly record struct ModuleGridPos(Vector3I Value)
 {
-    public WorldGridPos ToWorld(ModuleLocation moduleLocation, WorldGridPos constructOffset, int moduleSize)
+    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructTransform transform, int moduleSize)
     {
-        return ToConstruct(moduleLocation, moduleSize).ToWorld(constructOffset);
+        return ToConstruct(moduleLocation, moduleSize).ToWorld(transform);
     }
 
     public ConstructGridPos ToConstruct(ModuleLocation moduleLocation, int moduleSize)

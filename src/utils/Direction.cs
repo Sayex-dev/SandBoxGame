@@ -12,8 +12,42 @@ public enum Direction
 	FORWARD
 }
 
-static class DirectionMethods
+static class DirectionTools
 {
+	public static Direction RotateLeft(Direction dir)
+	{
+		switch (dir)
+		{
+			case Direction.FORWARD:
+				return Direction.LEFT;
+			case Direction.LEFT:
+				return Direction.BACKWARD;
+			case Direction.BACKWARD:
+				return Direction.RIGHT;
+			case Direction.RIGHT:
+				return Direction.FORWARD;
+			default:
+				return dir;
+		}
+	}
+
+	public static Direction RotateRight(Direction dir)
+	{
+		switch (dir)
+		{
+			case Direction.FORWARD:
+				return Direction.RIGHT;
+			case Direction.RIGHT:
+				return Direction.BACKWARD;
+			case Direction.BACKWARD:
+				return Direction.LEFT;
+			case Direction.LEFT:
+				return Direction.FORWARD;
+			default:
+				return dir;
+		}
+	}
+
 	public static Vector3 GetWorldDirVec(Direction direction)
 	{
 		return direction switch

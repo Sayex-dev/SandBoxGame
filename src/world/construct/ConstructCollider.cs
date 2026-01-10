@@ -52,7 +52,7 @@ public class ConstructCollider
         Dictionary<Direction, bool> collideableDirections = [];
         foreach (Direction dir in Enum.GetValues(typeof(Direction)))
         {
-            WorldGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionMethods.GetWorldDirVec(dir));
+            WorldGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionTools.GetWorldDirVec(dir));
             int checkBlockId;
             if (!construct.HasBlock(checkPos, out checkBlockId)) continue;
             collideableDirections[dir] = checkBlockId != -1;

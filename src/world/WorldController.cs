@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Godot;
 
 public partial class WorldController : Node3D
@@ -7,7 +9,7 @@ public partial class WorldController : Node3D
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
     [Export] public ConstructGenerator WorldGenerator { get; set; }
-    [Export] public BlockStore GameBlockStore { get; set; }
+    [Export] public BlockStore BlockStore { get; set; }
     [Export] public int ModuleSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 5, 5);
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
@@ -17,11 +19,12 @@ public partial class WorldController : Node3D
 
     private Vector3I prevCameraModulePos = Vector3I.MaxValue;
 
-    public override void _Ready()
+    public override void _EnterTree()
     {
+        SetPhysicsProcess(false);
         RenderingServer.SetDebugGenerateWireframes(true);
 
-        GameBlockStore.SetBlockIds();
+        BlockStore.SetBlockIds();
         WorldGenerator.Init(ModuleSize);
 
         var vp = GetViewport();
@@ -32,14 +35,13 @@ public partial class WorldController : Node3D
 
         var abilityManager = new AbilityManager(worldClock);
 
-        blockWorld = new BlockWorld(Seed, ModuleSize, GameBlockStore, WorldGenerator, ModuleMat, abilityManager);
+        blockWorld = new BlockWorld(Seed, ModuleSize, BlockStore, WorldGenerator, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
-        Vector3I worldOffset = Vector3I.Zero;
-        SecondOrderDynamics sod = new SecondOrderDynamics(1, 1, 0, worldOffset);
-        blockWorld.AddGlobalConstruct(new Construct(ModuleSize, WorldGenerator, new(worldOffset), GameBlockStore, ModuleMat, sod));
+        GatherConstuctChildren();
 
         blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
+        SetPhysicsProcess(true);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -50,6 +52,19 @@ public partial class WorldController : Node3D
         {
             prevCameraModulePos = cameraModulePos;
             blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
+        }
+    }
+
+    public void GatherConstuctChildren()
+    {
+        foreach (var construct in GetChildren().OfType<Construct>())
+        {
+            construct.SetupConstruct(ModuleSize, BlockStore, ModuleMat);
+            RemoveChild(construct);
+            if (construct.IsGlobal)
+                blockWorld.AddGlobalConstruct(construct);
+            else
+                blockWorld.AddConstruct(construct);
         }
     }
 }
