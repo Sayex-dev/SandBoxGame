@@ -10,8 +10,9 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	[Export] private ConstructGenerator constructGenerator;
 	[Export] private SecondOrderDynamicsSettings sodSettings;
 	[Export] public bool IsGlobal = false;
-	public int ModuleSize { get; private set; }
 	public ConstructTransform ConstructTransform { get; private set; }
+	private float curRot = 0;
+	public int ModuleSize { get; private set; }
 
 	private Dictionary<ModuleLocation, Module> loadedModules = new();
 	private List<ModuleLocation> queuedModulesPositions = new();
@@ -21,7 +22,8 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	private BlockStore blockStore;
 	private Material moduleMaterial;
 	private const int MaxConcurrentModuleLoads = 5;
-	private SecondOrderDynamics sod;
+	private SecondOrderDynamics<Vector3> moveSod;
+	private SecondOrderDynamics<float> rotSod;
 	private bool isStatic;
 
 	public void SetupConstruct(
@@ -30,7 +32,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		Material moduleMaterial,
 		ConstructGenerator constructGenerator = null,
 		ConstructTransform constructTransform = null,
-		SecondOrderDynamics sod = null
+		SecondOrderDynamicsSettings sodSettings = null
 	)
 	{
 		this.blockStore = blockStore;
@@ -47,13 +49,15 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		}
 		Position = ConstructTransform.WorldPos.Value;
 
-		if (sodSettings == null)
+		if (this.sodSettings == null)
 		{
-			this.sod = sod;
+			moveSod = sodSettings.GetInstance(ConstructTransform.WorldPos.Value);
+			rotSod = sodSettings.GetInstance(0);
 		}
 		else
 		{
-			this.sod = sodSettings.GetInstance(ConstructTransform.WorldPos.Value);
+			moveSod = this.sodSettings.GetInstance(ConstructTransform.WorldPos.Value);
+			rotSod = this.sodSettings.GetInstance(0);
 		}
 
 		if (this.constructGenerator == null) this.constructGenerator = constructGenerator;
@@ -61,6 +65,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		minModuleLocation = new ModuleLocation(Vector3I.Zero);
 		maxModuleLocation = new ModuleLocation(Vector3I.Zero);
 
+		ConstructTransform.RotateLeft();
 		SetPhysicsProcess(true);
 	}
 
@@ -71,7 +76,19 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public override void _PhysicsProcess(double delta)
 	{
-		Position = sod.Update((float)delta, ConstructTransform.WorldPos.Value);
+		if (Position != ConstructTransform.WorldPos.Value)
+			Position = moveSod.Update((float)delta, ConstructTransform.WorldPos.Value);
+
+		if (curRot != ConstructTransform.Rotation)
+		{
+			if (Math.Abs(curRot - ConstructTransform.Rotation) > 180)
+			{
+				curRot -= (float)Math.CopySign(360, curRot - ConstructTransform.Rotation);
+				rotSod.SetPrevious(curRot);
+			}
+			curRot = rotSod.Update((float)delta, ConstructTransform.Rotation);
+			Rotation = new Vector3(Rotation.X, Mathf.DegToRad(curRot), Rotation.Z);
+		}
 	}
 
 	public void MoveTo(WorldGridPos worldPos)

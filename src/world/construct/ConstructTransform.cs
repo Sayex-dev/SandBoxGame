@@ -3,8 +3,15 @@ using Godot;
 public class ConstructTransform
 {
     public WorldGridPos WorldPos { get; private set; }
-    public Vector3I RotationOffset { get; private set; }
-
+    public float Rotation
+    {
+        get
+        {
+            Vector3 facingVec = DirectionTools.GetWorldDirVec(FacingDirection);
+            float angleToForward = Mathf.PosMod(Vector3.Forward.SignedAngleTo(facingVec, Vector3.Up), 2 * Mathf.Pi);
+            return Mathf.RadToDeg(angleToForward);
+        }
+    }
     private Direction facingDirection = Direction.FORWARD;
     public Direction FacingDirection
     {
@@ -17,14 +24,14 @@ public class ConstructTransform
             }
         }
     }
-    public Vector3I BlockCenter
+    public ConstructGridPos BlockCenter
     {
         get
         {
             if (blockCount == 0)
-                return Vector3I.Zero;
+                return new(Vector3I.Zero);
 
-            return (Vector3I)((Vector3)positionSum / blockCount).Round();
+            return new((Vector3I)((Vector3)positionSum / blockCount).Round());
         }
     }
 
@@ -46,6 +53,13 @@ public class ConstructTransform
 
     public void RotateTo(Direction newDir)
     {
+        if (newDir == FacingDirection) return;
+
+        Vector3 oldFacing = DirectionTools.GetWorldDirVec(FacingDirection);
+        Vector3 newFacing = DirectionTools.GetWorldDirVec(newDir);
+
+        float deltaAngle = oldFacing.SignedAngleTo(newFacing, Vector3.Up);
+        WorldPos = new(WorldPos.Value + BlockCenter.Value - (Vector3I)((Vector3)BlockCenter.Value).Rotated(Vector3.Up, deltaAngle));
         FacingDirection = newDir;
     }
 

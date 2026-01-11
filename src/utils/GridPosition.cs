@@ -4,7 +4,8 @@ public readonly record struct WorldGridPos(Vector3I Value)
 {
     public ConstructGridPos ToConstruct(ConstructTransform transform)
     {
-        return new(Value - transform.WorldPos.Value);
+        float radRot = Mathf.DegToRad(transform.Rotation);
+        return new((Vector3I)((Vector3)(Value - transform.WorldPos.Value)).Rotated(Vector3.Up, -radRot));
     }
 
     public ModuleGridPos ToModule(ConstructTransform transform, int moduleSize)
@@ -23,7 +24,8 @@ public readonly record struct ConstructGridPos(Vector3I Value)
 
     public WorldGridPos ToWorld(ConstructTransform transform)
     {
-        return new(transform.WorldPos.Value + Value);
+        Vector3I rotated = (Vector3I)((Vector3)Value).Rotated(Vector3.Up, transform.Rotation).Round();
+        return new(transform.WorldPos.Value + rotated);
     }
 
     public ModuleGridPos ToModule(int moduleSize)

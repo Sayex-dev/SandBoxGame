@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="SecondOrderDynamicsSettings" load_steps=2 format=3 uid="uid://dv8ysmj8tjhtt"]
 
-[ext_resource type="Script" uid="uid://c4quk8vp5r6c7" path="res://src/utils/SecondOrderDynamicsSettings.cs" id="1_pwac8"]
+[ext_resource type="Script" uid="uid://cpy1y7gj2bsb3" path="res://src/utils/SecondOrderDynamics/SecondOrderDynamicsSettings.cs" id="1_pwac8"]
 
 [resource]
 script = ExtResource("1_pwac8")
