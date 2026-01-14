@@ -17,8 +17,8 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	private Dictionary<ModuleLocation, Module> loadedModules = new();
 	private List<ModuleLocation> queuedModulesPositions = new();
 
-	private ModuleLocation minModuleLocation;
-	private ModuleLocation maxModuleLocation;
+	private ConstructGridPos minPos;
+	private ConstructGridPos maxPos;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
 	private const int MaxConcurrentModuleLoads = 5;
@@ -62,10 +62,9 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 		if (this.constructGenerator == null) this.constructGenerator = constructGenerator;
 
-		minModuleLocation = new ModuleLocation(Vector3I.Zero);
-		maxModuleLocation = new ModuleLocation(Vector3I.Zero);
+		minPos = new ConstructGridPos(Vector3I.Zero);
+		maxPos = new ConstructGridPos(Vector3I.Zero);
 
-		ConstructTransform.RotateLeft();
 		SetPhysicsProcess(true);
 	}
 
@@ -266,6 +265,9 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			}
 
 			GenerationResponse response = await job;
+			minPos = new(minPos.Value.Min(response.minBlockPos.Value));
+			maxPos = new(minPos.Value.Max(response.maxBlockPos.Value));
+
 			foreach (KeyValuePair<ModuleLocation, Module> entry in response.generatedModules)
 			{
 				ModuleLocation modulePos = entry.Key;
@@ -276,19 +278,6 @@ public partial class Construct : Node3D, IHaveBoundingBox
 					queuedModulesPositions.Remove(modulePos);
 					loadedModules[modulePos] = module;
 					AddChild(module);
-
-					minModuleLocation = new(new Vector3I
-					{
-						X = Math.Min(minModuleLocation.Value.X, modulePos.Value.X),
-						Y = Math.Min(minModuleLocation.Value.Y, modulePos.Value.Y),
-						Z = Math.Min(minModuleLocation.Value.Z, modulePos.Value.Z),
-					});
-					maxModuleLocation = new(new Vector3I
-					{
-						X = Math.Max(maxModuleLocation.Value.X, modulePos.Value.X),
-						Y = Math.Max(maxModuleLocation.Value.Y, modulePos.Value.Y),
-						Z = Math.Max(maxModuleLocation.Value.Z, modulePos.Value.Z),
-					});
 				}
 				else
 				{
@@ -305,12 +294,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public Vector3I GetMin()
 	{
-		return minModuleLocation.ToWorld(ModuleSize, ConstructTransform).Value;
+		return minPos.ToWorld(ConstructTransform).Value;
 	}
 
 	public Vector3I GetMax()
 	{
-		return maxModuleLocation.ToWorld(ModuleSize, ConstructTransform).Value;
+		return maxPos.ToWorld(ConstructTransform).Value;
 	}
-
 }

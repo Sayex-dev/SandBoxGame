@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -6,7 +7,7 @@ public partial class PresetConstructGenerator : ConstructGenerator
 {
 	[Export] public Godot.Collections.Array<Vector4I> Blocks { get; set; }
 	[Export] public Vector3I Offset { get; set; }
-	private HashSet<ModuleLocation> requiredModules;
+	private HashSet<ModuleLocation> requiredModules = [];
 
 	public override void Init(int moduleSize)
 	{
@@ -26,10 +27,15 @@ public partial class PresetConstructGenerator : ConstructGenerator
 	{
 		Module module = new Module(ModuleSize, moduleMaterial);
 
+		ModuleGridPos minPos = new(Vector3I.One * ModuleSize);
+		ModuleGridPos maxPos = new(Vector3I.Zero);
 		foreach (Vector4I block in Blocks)
 		{
 			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(block.X, block.Y, block.Z) + Offset);
 			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(ModuleSize);
+
+			minPos = new(minPos.Value.Min(inModuleBlockPos.Value));
+			maxPos = new(maxPos.Value.Max(inModuleBlockPos.Value));
 
 			if (module.IsInModule(inConstructBlockPos))
 			{
@@ -43,7 +49,9 @@ public partial class PresetConstructGenerator : ConstructGenerator
 			generatedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
-			}
+			},
+			maxBlockPos = maxPos,
+			minBlockPos = minPos
 		};
 	}
 

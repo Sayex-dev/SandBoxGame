@@ -4,6 +4,8 @@ using Godot;
 public class GenerationResponse
 {
 	public bool generatedAllModules = false;
+	public ModuleGridPos maxBlockPos;
+	public ModuleGridPos minBlockPos;
 	public Dictionary<ModuleLocation, Module> generatedModules = [];
 
 }

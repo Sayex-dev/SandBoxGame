@@ -38,7 +38,9 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 			generatedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
-			}
+			},
+			maxBlockPos = new(Vector3I.One * (ModuleSize - 1)),
+			minBlockPos = new(Vector3I.Zero),
 		};
 	}
 

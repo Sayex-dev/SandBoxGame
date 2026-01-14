@@ -251,5 +251,11 @@ public class ExpandingOctTree<T> where T : IHaveBoundingBox
         root = newRoot;
         rootOrigin = newOrigin;
         rootSize = newSize;
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (i == idx) continue;
+            root.Children[i] = new Node();
+        }
     }
 }
