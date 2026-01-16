@@ -7,17 +7,18 @@ using System.Threading.Tasks;
 [GlobalClass]
 public partial class Construct : Node3D, IHaveBoundingBox
 {
-	[Export] private ConstructGenerator constructGenerator;
+	[Export] private ConstructGeneratorSettings constructGeneratorSettings;
 	[Export] private SecondOrderDynamicsSettings sodSettings;
 	[Export] private int seed;
 	[Export] public bool IsGlobal = false;
+
 	public ConstructTransform ConstructTransform { get; private set; }
-	private float curRot = 0;
 	public int ModuleSize { get; private set; }
 
+	private ConstructGenerator constructGenerator;
+	private float curRot = 0;
 	private Dictionary<ModuleLocation, Module> loadedModules = new();
 	private List<ModuleLocation> queuedModulesPositions = new();
-
 	private ConstructGridPos minPos;
 	private ConstructGridPos maxPos;
 	private BlockStore blockStore;
@@ -61,7 +62,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	{
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
-		ModuleSize = moduleSize;
+		this.ModuleSize = moduleSize;
 
 		if (constructTransform == null)
 		{
@@ -84,12 +85,18 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			rotSod = this.sodSettings.GetInstance(0);
 		}
 
-		if (this.constructGenerator == null) this.constructGenerator = constructGenerator;
+		if (constructGeneratorSettings == null)
+		{
+			this.constructGenerator = constructGenerator;
+		}
+		else
+		{
+			this.constructGenerator = constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
+		}
 
 		minPos = new ConstructGridPos(Vector3I.Zero);
 		maxPos = new ConstructGridPos(Vector3I.Zero);
 
-		this.constructGenerator.Init(moduleSize, seed);
 		SetPhysicsProcess(true);
 	}
 

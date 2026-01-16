@@ -7,7 +7,6 @@ public partial class BlockWorld : Node3D
 	private int seed;
 	private int moduleSize;
 	private BlockStore blockStore;
-	private ConstructGenerator worldGen;
 	private Material moduleMaterial;
 	private AbilityManager abilityManager;
 	private ExpandingOctTree<Construct> constructs;
@@ -15,7 +14,6 @@ public partial class BlockWorld : Node3D
 		int seed,
 		int moduleSize,
 		BlockStore blockStore,
-		ConstructGenerator worldGen,
 		Material moduleMaterial,
 		AbilityManager abilityManager
 	)
@@ -23,7 +21,6 @@ public partial class BlockWorld : Node3D
 		this.seed = seed;
 		this.moduleSize = moduleSize;
 		this.blockStore = blockStore;
-		this.worldGen = worldGen;
 		this.moduleMaterial = moduleMaterial;
 		this.abilityManager = abilityManager;
 

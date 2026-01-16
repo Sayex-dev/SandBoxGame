@@ -1,19 +1,26 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 
-[GlobalClass]
-public partial class PresetConstructGenerator : ConstructGenerator
+
+public class PresetConstructGenerator : ConstructGenerator
 {
-	[Export] public Godot.Collections.Array<Vector4I> Blocks { get; set; }
-	[Export] public Vector3I Offset { get; set; }
+
+	private List<Vector4I> blocks;
+	private Vector3I offset;
 	private HashSet<ModuleLocation> requiredModules = [];
 
-	public override void Init(int moduleSize, int seed)
+	public PresetConstructGenerator(
+		int moduleSize,
+		int seed,
+		List<Vector4I> blocks,
+		Vector3I offset
+	) : base(moduleSize, seed)
 	{
-		base.Init(moduleSize, seed);
+		this.blocks = blocks;
+		this.offset = offset;
+
 		requiredModules = [];
-		foreach (Vector4I block in Blocks)
+		foreach (Vector4I block in blocks)
 		{
 			ConstructGridPos constructPos = new(new Vector3I(block.X, block.Y, block.Z));
 			requiredModules.Add(constructPos.ToModuleLocation(moduleSize));
@@ -26,14 +33,14 @@ public partial class PresetConstructGenerator : ConstructGenerator
 		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
-		Module module = new Module(ModuleSize, moduleMaterial);
+		Module module = new Module(moduleSize, moduleMaterial);
 
-		ModuleGridPos minPos = new(Vector3I.One * ModuleSize);
+		ModuleGridPos minPos = new(Vector3I.One * moduleSize);
 		ModuleGridPos maxPos = new(Vector3I.Zero);
-		foreach (Vector4I block in Blocks)
+		foreach (Vector4I block in blocks)
 		{
-			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(block.X, block.Y, block.Z) + Offset);
-			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(ModuleSize);
+			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(block.X, block.Y, block.Z) + offset);
+			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(moduleSize);
 
 			minPos = new(minPos.Value.Min(inConstructBlockPos.Value));
 			maxPos = new(maxPos.Value.Max(inConstructBlockPos.Value));

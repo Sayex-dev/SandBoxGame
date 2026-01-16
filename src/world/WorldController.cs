@@ -6,7 +6,6 @@ public partial class WorldController : Node3D
     [Export] public int Seed { get; set; } = 0;
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
-    [Export] public ConstructGenerator WorldGenerator { get; set; }
     [Export] public BlockStore BlockStore { get; set; }
     [Export] public int ModuleSize { get; set; } = 32;
     [Export] public Vector3I RenderDistance { get; set; } = new Vector3I(5, 5, 5);
@@ -23,7 +22,6 @@ public partial class WorldController : Node3D
         RenderingServer.SetDebugGenerateWireframes(true);
 
         BlockStore.SetBlockIds();
-        WorldGenerator.Init(ModuleSize, Seed);
 
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
@@ -33,7 +31,7 @@ public partial class WorldController : Node3D
 
         var abilityManager = new AbilityManager(worldClock);
 
-        blockWorld = new BlockWorld(Seed, ModuleSize, BlockStore, WorldGenerator, ModuleMat, abilityManager);
+        blockWorld = new BlockWorld(Seed, ModuleSize, BlockStore, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
         GatherConstuctChildren();

@@ -10,17 +10,17 @@ public class GenerationResponse
 
 }
 
-[GlobalClass]
-public abstract partial class ConstructGenerator : Resource
-{
-	public int ModuleSize;
-	public int Seed;
 
-	public virtual void Init(int moduleSize, int seed)
+public abstract partial class ConstructGenerator
+{
+	protected int moduleSize;
+	protected int seed;
+	public ConstructGenerator(int moduleSize, int seed)
 	{
-		this.ModuleSize = moduleSize;
-		this.Seed = seed;
+		this.moduleSize = moduleSize;
+		this.seed = seed;
 	}
+
 	public abstract GenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		Material moduleMaterial,
