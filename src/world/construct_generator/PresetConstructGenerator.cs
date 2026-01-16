@@ -9,9 +9,9 @@ public partial class PresetConstructGenerator : ConstructGenerator
 	[Export] public Vector3I Offset { get; set; }
 	private HashSet<ModuleLocation> requiredModules = [];
 
-	public override void Init(int moduleSize)
+	public override void Init(int moduleSize, int seed)
 	{
-		base.Init(moduleSize);
+		base.Init(moduleSize, seed);
 		requiredModules = [];
 		foreach (Vector4I block in Blocks)
 		{
@@ -59,9 +59,4 @@ public partial class PresetConstructGenerator : ConstructGenerator
 	{
 		return requiredModules.Contains(moduleLocation);
 	}
-
-	public override void SetSeed(int seed)
-	{
-	}
-
 }

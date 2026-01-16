@@ -16,8 +16,9 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 		_noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
 	}
 
-	public override void SetSeed(int seed)
+	public override void Init(int moduleSize, int seed)
 	{
+		base.Init(moduleSize, seed);
 		for (int i = 0; i < Biomes.Count; i++)
 		{
 			Biomes[i].SetSeed(seed);

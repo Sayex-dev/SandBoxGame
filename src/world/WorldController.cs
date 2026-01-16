@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -19,7 +17,7 @@ public partial class WorldController : Node3D
 
     private Vector3I prevCameraModulePos = Vector3I.MaxValue;
 
-    public override void _EnterTree()
+    public override void _Ready()
     {
         SetPhysicsProcess(false);
         RenderingServer.SetDebugGenerateWireframes(true);
@@ -59,8 +57,8 @@ public partial class WorldController : Node3D
     {
         foreach (var construct in GetChildren().OfType<Construct>())
         {
-            construct.SetupConstruct(ModuleSize, BlockStore, ModuleMat);
             RemoveChild(construct);
+            construct.SetupConstruct(ModuleSize, BlockStore, ModuleMat);
             if (construct.IsGlobal)
                 blockWorld.AddGlobalConstruct(construct);
             else

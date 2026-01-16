@@ -9,6 +9,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 {
 	[Export] private ConstructGenerator constructGenerator;
 	[Export] private SecondOrderDynamicsSettings sodSettings;
+	[Export] private int seed;
 	[Export] public bool IsGlobal = false;
 	public ConstructTransform ConstructTransform { get; private set; }
 	private float curRot = 0;
@@ -25,6 +26,29 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	private SecondOrderDynamics<Vector3> moveSod;
 	private SecondOrderDynamics<float> rotSod;
 	private bool isStatic;
+
+
+	public override void _Ready()
+	{
+		SetPhysicsProcess(false);
+	}
+
+	public override void _PhysicsProcess(double delta)
+	{
+		if (Position != ConstructTransform.WorldPos.Value)
+			Position = moveSod.Update((float)delta, ConstructTransform.WorldPos.Value);
+
+		if (curRot != ConstructTransform.Rotation)
+		{
+			if (Math.Abs(curRot - ConstructTransform.Rotation) > 180)
+			{
+				curRot -= (float)Math.CopySign(360, curRot - ConstructTransform.Rotation);
+				rotSod.SetPrevious(curRot);
+			}
+			curRot = rotSod.Update((float)delta, ConstructTransform.Rotation);
+			Rotation = new Vector3(Rotation.X, Mathf.DegToRad(curRot), Rotation.Z);
+		}
+	}
 
 	public void SetupConstruct(
 		int moduleSize,
@@ -65,29 +89,8 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		minPos = new ConstructGridPos(Vector3I.Zero);
 		maxPos = new ConstructGridPos(Vector3I.Zero);
 
+		this.constructGenerator.Init(moduleSize, seed);
 		SetPhysicsProcess(true);
-	}
-
-	public override void _EnterTree()
-	{
-		SetPhysicsProcess(false);
-	}
-
-	public override void _PhysicsProcess(double delta)
-	{
-		if (Position != ConstructTransform.WorldPos.Value)
-			Position = moveSod.Update((float)delta, ConstructTransform.WorldPos.Value);
-
-		if (curRot != ConstructTransform.Rotation)
-		{
-			if (Math.Abs(curRot - ConstructTransform.Rotation) > 180)
-			{
-				curRot -= (float)Math.CopySign(360, curRot - ConstructTransform.Rotation);
-				rotSod.SetPrevious(curRot);
-			}
-			curRot = rotSod.Update((float)delta, ConstructTransform.Rotation);
-			Rotation = new Vector3(Rotation.X, Mathf.DegToRad(curRot), Rotation.Z);
-		}
 	}
 
 	public void MoveTo(WorldGridPos worldPos)

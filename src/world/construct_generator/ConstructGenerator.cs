@@ -14,10 +14,12 @@ public class GenerationResponse
 public abstract partial class ConstructGenerator : Resource
 {
 	public int ModuleSize;
+	public int Seed;
 
-	public virtual void Init(int moduleSize)
+	public virtual void Init(int moduleSize, int seed)
 	{
 		this.ModuleSize = moduleSize;
+		this.Seed = seed;
 	}
 	public abstract GenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
@@ -25,5 +27,4 @@ public abstract partial class ConstructGenerator : Resource
 		HashSet<ModuleLocation> prevLoaded = null
 	);
 	public abstract bool IsModuleNeeded(ModuleLocation moduleLocation);
-	public abstract void SetSeed(int seed);
 }

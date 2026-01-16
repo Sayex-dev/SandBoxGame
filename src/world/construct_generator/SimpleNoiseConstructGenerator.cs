@@ -16,6 +16,11 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		_noise.NoiseType = NoiseType;
 	}
 
+	public override void Init(int moduleSize, int seed)
+	{
+		base.Init(moduleSize, seed);
+	}
+
 	public override GenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		Material moduleMat,
@@ -59,11 +64,6 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 				}
 			}
 		}
-	}
-
-	public override void SetSeed(int seed)
-	{
-		_noise.Seed = seed;
 	}
 
 	public override bool IsModuleNeeded(ModuleLocation moduleLocation)
