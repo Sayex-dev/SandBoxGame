@@ -1,7 +1,7 @@
 [gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://cuyyiwhax61n7"]
 
 [ext_resource type="Shader" uid="uid://o5n637vvxvb0" path="res://resources/textures/world_material.gdshader" id="1_bymda"]
-[ext_resource type="Texture2D" uid="uid://b3kgojmbs47mt" path="res://resources/textures/tiles_for_a_block_game.png" id="2_oroe2"]
+[ext_resource type="Texture2D" uid="uid://dr888m2d5q4vc" path="res://resources/textures/Thingy.jpg" id="2_oroe2"]
 
 [resource]
 render_priority = 0
@@ -9,4 +9,4 @@ shader = ExtResource("1_bymda")
 shader_parameter/blockSize = 0.0
 shader_parameter/albedo = Color(1, 1, 1, 1)
 shader_parameter/texture_albedo = ExtResource("2_oroe2")
-shader_parameter/atlas_size = Vector2(7, 8)
+shader_parameter/atlas_size = Vector2(8, 8)
