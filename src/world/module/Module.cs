@@ -100,11 +100,21 @@ public partial class Module : MeshInstance3D
 		return new(new(x, y, z));
 	}
 
-	public bool IsInModule(ConstructGridPos inConstructPos)
+	public bool IsInModule(ConstructGridPos inConstructPos, ModuleLocation moduleLocation)
 	{
-		bool correctX = inConstructPos.Value.X >= 0 && inConstructPos.Value.X < ModuleSize;
-		bool correctY = inConstructPos.Value.Y >= 0 && inConstructPos.Value.Y < ModuleSize;
-		bool correctZ = inConstructPos.Value.Z >= 0 && inConstructPos.Value.Z < ModuleSize;
+		Vector3I minModuleWorldPos = moduleLocation.Value * ModuleSize;
+		Vector3I maxModuleWorldPos = (moduleLocation.Value + Vector3I.One) * ModuleSize;
+		bool correctX = inConstructPos.Value.X >= minModuleWorldPos.X && inConstructPos.Value.X < maxModuleWorldPos.X;
+		bool correctY = inConstructPos.Value.Y >= minModuleWorldPos.Y && inConstructPos.Value.Y < maxModuleWorldPos.Y;
+		bool correctZ = inConstructPos.Value.Z >= minModuleWorldPos.Z && inConstructPos.Value.Z < maxModuleWorldPos.Z;
+		return correctX && correctY && correctZ;
+	}
+
+	public bool IsInModule(ModuleGridPos modulePos)
+	{
+		bool correctX = modulePos.Value.X >= 0 && modulePos.Value.X < ModuleSize;
+		bool correctY = modulePos.Value.Y >= 0 && modulePos.Value.Y < ModuleSize;
+		bool correctZ = modulePos.Value.Z >= 0 && modulePos.Value.Z < ModuleSize;
 		return correctX && correctY && correctZ;
 	}
 

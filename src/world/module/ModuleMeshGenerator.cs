@@ -65,7 +65,7 @@ public partial class ModuleMeshGenerator : Node
 						ConstructGridPos adjacentPos = new(blockPos + dir);
 						int adjacentBlock;
 
-						if (module.IsInModule(adjacentPos))
+						if (module.IsInModule(adjacentPos, new(Vector3I.Zero)))
 						{
 							adjacentBlock = module.GetBlock(adjacentPos.ToModule(module.ModuleSize));
 						}

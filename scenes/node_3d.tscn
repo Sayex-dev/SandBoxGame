@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
-[ext_resource type="Resource" path="res://resources/world/biome_construct_generator.tres" id="4_10v3s"]
+[ext_resource type="Resource" uid="uid://bojo5imwp14yb" path="res://resources/world/biome_construct_generator.tres" id="4_10v3s"]
 [ext_resource type="Resource" uid="uid://j1ityh36augs" path="res://resources/blocks/blockStore.tres" id="6_a6664"]
 [ext_resource type="Script" uid="uid://bwg8mi3d737gv" path="res://src/world/construct/Construct.cs" id="7_10v3s"]
 [ext_resource type="Resource" uid="uid://dv8ysmj8tjhtt" path="res://resources/movement/MoveMooove.tres" id="7_cptob"]

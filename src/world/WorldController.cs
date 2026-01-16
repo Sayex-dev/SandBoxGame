@@ -23,7 +23,7 @@ public partial class WorldController : Node3D
         RenderingServer.SetDebugGenerateWireframes(true);
 
         BlockStore.SetBlockIds();
-        WorldGenerator.Init(ModuleSize);
+        WorldGenerator.Init(ModuleSize, Seed);
 
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;

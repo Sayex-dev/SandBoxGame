@@ -15,7 +15,8 @@ public partial class PresetConstructGenerator : ConstructGenerator
 		requiredModules = [];
 		foreach (Vector4I block in Blocks)
 		{
-			requiredModules.Add(new((Vector3I)(new Vector3(block.X, block.Y, block.Z) / moduleSize)));
+			ConstructGridPos constructPos = new(new Vector3I(block.X, block.Y, block.Z));
+			requiredModules.Add(constructPos.ToModuleLocation(moduleSize));
 		}
 	}
 
@@ -34,10 +35,10 @@ public partial class PresetConstructGenerator : ConstructGenerator
 			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(block.X, block.Y, block.Z) + Offset);
 			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(ModuleSize);
 
-			minPos = new(minPos.Value.Min(inModuleBlockPos.Value));
-			maxPos = new(maxPos.Value.Max(inModuleBlockPos.Value));
+			minPos = new(minPos.Value.Min(inConstructBlockPos.Value));
+			maxPos = new(maxPos.Value.Max(inConstructBlockPos.Value));
 
-			if (module.IsInModule(inConstructBlockPos))
+			if (module.IsInModule(inConstructBlockPos, moduleLocation))
 			{
 				module.SetBlock(inModuleBlockPos, block.W);
 			}
