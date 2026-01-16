@@ -5,25 +5,25 @@ using Godot;
 
 public class BiomeWorldGenerator : ConstructGenerator
 {
-	public Godot.Collections.Array<Biome> Biomes { get; }
+	private List<Biome> biomes { get; }
 
-	private FastNoiseLite _noise = new();
+	private FastNoiseLite noise = new();
 	private Dictionary<Vector2I, int> cachedMaxModuleY = [];
 
 	public BiomeWorldGenerator(
 		int moduleSize,
 		int seed,
-		Godot.Collections.Array<Biome> biomes
+		List<Biome> biomes
 	) : base(moduleSize, seed)
 	{
-		Biomes = new Godot.Collections.Array<Biome>(biomes);
+		this.biomes = biomes;
 
-		_noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
-		_noise.Seed = seed;
+		noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
+		noise.Seed = seed;
 
-		for (int i = 0; i < Biomes.Count; i++)
+		for (int i = 0; i < this.biomes.Count; i++)
 		{
-			Biomes[i].SetSeed(seed);
+			this.biomes[i].SetSeed(seed);
 		}
 	}
 
@@ -57,7 +57,7 @@ public class BiomeWorldGenerator : ConstructGenerator
 		{
 			for (int z = 0; z < moduleSize; z++)
 			{
-				Biome biome = Biomes[0]; // biome selection later
+				Biome biome = biomes[0]; // biome selection later
 				Vector2I inConstructLocation =
 					new(moduleOffset.Value.X + x, moduleOffset.Value.Z + z);
 

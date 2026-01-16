@@ -94,6 +94,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			this.constructGenerator = constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
 		}
 
+		if (this.constructGenerator == null)
+		{
+			throw new NullReferenceException("Construct generator could not be created. Missing ConstructGeneratorSettings?");
+		}
+
 		minPos = new ConstructGridPos(Vector3I.Zero);
 		maxPos = new ConstructGridPos(Vector3I.Zero);
 

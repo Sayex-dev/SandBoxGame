@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 [GlobalClass]
@@ -7,6 +8,6 @@ public partial class BiomeWorldGeneratorSettings : ConstructGeneratorSettings
 
     public override ConstructGenerator CreateConstructGenerator(int moduleSize, int seed)
     {
-        return new BiomeWorldGenerator(moduleSize, seed, Biomes);
+        return new BiomeWorldGenerator(moduleSize, seed, Biomes.ToList());
     }
 }

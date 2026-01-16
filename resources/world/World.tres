@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BiomeWorldGeneratorSettings" load_steps=3 format=3 uid="uid://khfpje5q61u1"]
+
+[ext_resource type="Resource" uid="uid://vh6tbdwkh8p1" path="res://resources/world/biomes/biomeTest.tres" id="1_cxrt3"]
+[ext_resource type="Script" uid="uid://cds3rc6tv6xsc" path="res://src/world/ConstructGenerator/BiomeWorldGenerator/BiomeWorldGeneratorSettings.cs" id="1_sbq5p"]
+
+[resource]
+script = ExtResource("1_sbq5p")
+Biomes = Array[Object]([ExtResource("1_cxrt3")])
+metadata/_custom_type_script = "uid://cds3rc6tv6xsc"
