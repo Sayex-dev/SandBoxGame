@@ -118,7 +118,7 @@ public partial class Module : MeshInstance3D
 		return correctX && correctY && correctZ;
 	}
 
-	public void BuildMesh(BlockStore blockStore)
+	public void BuildMesh(BlockStore blockStore, Construct construct, ModuleLocation moduleLocation)
 	{
 		if (!HasBlocks)
 		{
@@ -126,7 +126,9 @@ public partial class Module : MeshInstance3D
 		}
 
 		Mesh = ModuleMeshGenerator.BuildModuleMesh(
+			construct,
 			this,
+			moduleLocation,
 			moduleMaterial,
 			blockStore
 		);

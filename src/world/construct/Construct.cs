@@ -257,7 +257,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	{
 		List<Task<GenerationResponse>> moduleJobs = [];
 		int i = 0;
-		foreach (ModuleLocation modulePos in loadPositions)
+		foreach (ModuleLocation moduleLocation in loadPositions)
 		{
 			i++;
 			if (i % MaxConcurrentModuleLoads == 0)
@@ -267,11 +267,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 			moduleJobs.Add(Task.Run(() =>
 			{
-				GenerationResponse response = constructGenerator.GenerateModules(modulePos, moduleMaterial);
+				GenerationResponse response = constructGenerator.GenerateModules(moduleLocation, moduleMaterial);
 				Dictionary<ModuleLocation, Module> modules = response.generatedModules;
 				foreach (KeyValuePair<ModuleLocation, Module> entry in modules)
 				{
-					entry.Value.BuildMesh(blockStore);
+					entry.Value.BuildMesh(blockStore, this, moduleLocation);
 					entry.Value.Position = (Vector3)(ModuleSize * entry.Key.Value);
 				}
 				return response;

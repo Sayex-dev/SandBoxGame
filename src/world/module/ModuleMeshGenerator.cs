@@ -42,55 +42,9 @@ public partial class ModuleMeshGenerator : Node
 		new Vector2(0, 1)
 	};
 
-	public static Dictionary<Vector3I, bool[]> FindBlockSurfaces(Module module)
+	public static List<Surface> GetSurfaceVectors(Module module, ExposedSurfaceCache cache)
 	{
-		var exposedBlocks = new Dictionary<Vector3I, bool[]>();
-		for (int z = 0; z < module.ModuleSize; z++)
-		{
-			for (int y = 0; y < module.ModuleSize; y++)
-			{
-				for (int x = 0; x < module.ModuleSize; x++)
-				{
-					Vector3I blockPos = new Vector3I(x, y, z);
-
-					if (module.GetBlock(new(blockPos)) == -1)
-						continue;
-
-					bool[] exposedSurfaces = new bool[Normals.Length];
-					bool hasExposed = false;
-
-					for (int i = 0; i < Normals.Length; i++)
-					{
-						Vector3I dir = Normals[i];
-						ConstructGridPos adjacentPos = new(blockPos + dir);
-						int adjacentBlock;
-
-						if (module.IsInModule(adjacentPos, new(Vector3I.Zero)))
-						{
-							adjacentBlock = module.GetBlock(adjacentPos.ToModule(module.ModuleSize));
-						}
-						else
-						{
-							adjacentBlock = -1;
-						}
-
-						if (adjacentBlock == -1)
-						{
-							exposedSurfaces[i] = true;
-							hasExposed = true;
-						}
-					}
-
-					if (hasExposed)
-						exposedBlocks[blockPos] = exposedSurfaces;
-				}
-			}
-		}
-		return exposedBlocks;
-	}
-
-	public static List<Surface> GetSurfaceVectors(Module module, Dictionary<Vector3I, bool[]> exposed)
-	{
+		Dictionary<Direction, IReadOnlyCollection<ConstructGridPos>> blockFaces = cache.ExposedSurfaces;
 		var blockSurfaces = new Dictionary<Vector3I, bool[]>();
 		foreach (var kv in exposed)
 			blockSurfaces[kv.Key] = (bool[])kv.Value.Clone();
@@ -256,12 +210,15 @@ public partial class ModuleMeshGenerator : Node
 	}
 
 	public static Mesh BuildModuleMesh(
+		Construct construct,
 		Module module,
+		ModuleLocation moduleLocation,
 		Material mat,
 		BlockStore blockStore)
 	{
-		var exposed = FindBlockSurfaces(module);
-		var surfaces = GetSurfaceVectors(module, exposed);
+		ExposedSurfaceCache cache = new ExposedSurfaceCache();
+		cache.AddModule(construct, module, moduleLocation);
+		var surfaces = GetSurfaceVectors(module, cache);
 
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);

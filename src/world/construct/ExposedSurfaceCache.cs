@@ -30,6 +30,7 @@ public class ExposedSurfaceCache
     {
         exposedSurfaces.Clear();
         Dictionary<ModuleLocation, Module> modules = construct.GetModules();
+        if (modules.Count == 0) return;
         foreach (KeyValuePair<ModuleLocation, Module> kvp in modules)
         {
             Module module = kvp.Value;
@@ -62,6 +63,8 @@ public class ExposedSurfaceCache
 
     public void AddModule(Construct construct, Module module, ModuleLocation moduleLocation)
     {
+        if (module.BlockCount == 0) return;
+
         int[] blocks = module.GetBlockArray();
 
         for (int i = 0; i < blocks.Length; i++)
@@ -123,7 +126,7 @@ public class ExposedSurfaceCache
         {
             WorldGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionTools.GetWorldDirVec(dir));
             int checkBlockId;
-            if (construct.HasBlock(checkPos, out checkBlockId)) continue;
+            construct.HasBlock(checkPos, out checkBlockId);
             exposedDirections[dir] = checkBlockId != -1;
         }
         return exposedDirections;
