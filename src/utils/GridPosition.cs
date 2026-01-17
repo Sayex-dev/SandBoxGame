@@ -17,6 +17,16 @@ public readonly record struct WorldGridPos(Vector3I Value)
     {
         return ToConstruct(transform).ToModuleLocation(moduleSize);
     }
+
+    public static implicit operator WorldGridPos(Vector3I value)
+    {
+        return new(value);
+    }
+
+    public static implicit operator Vector3I(WorldGridPos value)
+    {
+        return value.Value;
+    }
 }
 
 public readonly record struct ConstructGridPos(Vector3I Value)
@@ -47,6 +57,16 @@ public readonly record struct ConstructGridPos(Vector3I Value)
         );
         return new(moduleLocation);
     }
+
+    public static implicit operator ConstructGridPos(Vector3I value)
+    {
+        return new(value);
+    }
+
+    public static implicit operator Vector3I(ConstructGridPos value)
+    {
+        return value.Value;
+    }
 }
 
 public readonly record struct ModuleLocation(Vector3I Value)
@@ -59,6 +79,16 @@ public readonly record struct ModuleLocation(Vector3I Value)
     public ConstructGridPos ToConstruct(int moduleSize)
     {
         return new(Value * moduleSize);
+    }
+
+    public static implicit operator ModuleLocation(Vector3I value)
+    {
+        return new(value);
+    }
+
+    public static implicit operator Vector3I(ModuleLocation value)
+    {
+        return value.Value;
     }
 }
 
@@ -73,5 +103,15 @@ public readonly record struct ModuleGridPos(Vector3I Value)
     public ConstructGridPos ToConstruct(ModuleLocation moduleLocation, int moduleSize)
     {
         return new(moduleLocation.Value * moduleSize + Value);
+    }
+
+    public static implicit operator ModuleGridPos(Vector3I value)
+    {
+        return new(value);
+    }
+
+    public static implicit operator Vector3I(ModuleGridPos value)
+    {
+        return value.Value;
     }
 }
