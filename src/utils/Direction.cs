@@ -48,6 +48,23 @@ static class DirectionTools
 		}
 	}
 
+	public static Direction Invert(Direction dir)
+	{
+		switch (dir)
+		{
+			case Direction.FORWARD:
+				return Direction.BACKWARD;
+			case Direction.RIGHT:
+				return Direction.LEFT;
+			case Direction.BACKWARD:
+				return Direction.FORWARD;
+			case Direction.LEFT:
+				return Direction.RIGHT;
+			default:
+				return dir;
+		}
+	}
+
 	public static Vector3 GetWorldDirVec(Direction direction)
 	{
 		return direction switch

@@ -15,6 +15,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	public ConstructTransform ConstructTransform { get; private set; }
 	public int ModuleSize { get; private set; }
 
+	private ExposedSurfaceCache exposedSurfaceCache;
 	private ConstructGenerator constructGenerator;
 	private float curRot = 0;
 	private Dictionary<ModuleLocation, Module> loadedModules = new();
@@ -55,49 +56,45 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		int moduleSize,
 		BlockStore blockStore,
 		Material moduleMaterial,
+		ExposedSurfaceCache exposedSurfaceCache = null,
 		ConstructGenerator constructGenerator = null,
 		ConstructTransform constructTransform = null,
 		SecondOrderDynamicsSettings sodSettings = null
 	)
 	{
+		// Basic setup
+		ModuleSize = moduleSize;
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
-		this.ModuleSize = moduleSize;
 
-		if (constructTransform == null)
-		{
-			ConstructTransform = new ConstructTransform(new((Vector3I)Position), Direction.FORWARD);
-		}
-		else
-		{
-			ConstructTransform = constructTransform;
-		}
+		// Exposed surfaces
+		this.exposedSurfaceCache =
+			exposedSurfaceCache ?? new ExposedSurfaceCache();
+
+		// Transform & position
+		ConstructTransform =
+			constructTransform
+			?? new ConstructTransform(
+				new WorldGridPos((Vector3I)Position.Round()),
+				Direction.FORWARD
+			);
+
 		Position = ConstructTransform.WorldPos.Value;
 
-		if (this.sodSettings == null)
-		{
-			moveSod = sodSettings.GetInstance(ConstructTransform.WorldPos.Value);
-			rotSod = sodSettings.GetInstance(0);
-		}
-		else
-		{
-			moveSod = this.sodSettings.GetInstance(ConstructTransform.WorldPos.Value);
-			rotSod = this.sodSettings.GetInstance(0);
-		}
+		var effectiveSodSettings = sodSettings ?? this.sodSettings;
 
-		if (constructGeneratorSettings == null)
-		{
-			this.constructGenerator = constructGenerator;
-		}
-		else
-		{
-			this.constructGenerator = constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
-		}
+		if (effectiveSodSettings == null)
+			throw new NullReferenceException("SecondOrderDynamicsSettings is missing.");
 
-		if (this.constructGenerator == null)
-		{
-			throw new NullReferenceException("Construct generator could not be created. Missing ConstructGeneratorSettings?");
-		}
+		moveSod = effectiveSodSettings.GetInstance(ConstructTransform.WorldPos.Value);
+		rotSod = effectiveSodSettings.GetInstance(0);
+
+		this.constructGenerator =
+			constructGenerator
+			?? constructGeneratorSettings?.CreateConstructGenerator(moduleSize, seed)
+			?? throw new NullReferenceException(
+				"Construct generator could not be created. Missing ConstructGeneratorSettings?"
+			);
 
 		minPos = new ConstructGridPos(Vector3I.Zero);
 		maxPos = new ConstructGridPos(Vector3I.Zero);
@@ -142,9 +139,20 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public void SetBlock(WorldGridPos worldPos, int blockId)
 	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
+		ConstructGridPos constructPos = worldPos.ToConstruct(ConstructTransform);
+		ModuleLocation moduleLocation = constructPos.ToModuleLocation(ModuleSize);
 		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
 		Module module = loadedModules[moduleLocation];
+
+		if (blockId == -1)
+		{
+			exposedSurfaceCache.RemoveBlock(this, constructPos);
+		}
+		else
+		{
+			exposedSurfaceCache.AddBlock(this, constructPos);
+		}
+
 		module.SetBlock(inModulePos, blockId);
 	}
 
