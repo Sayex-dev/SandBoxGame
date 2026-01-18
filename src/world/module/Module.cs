@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class Module : MeshInstance3D
@@ -43,7 +44,7 @@ public partial class Module : MeshInstance3D
 	{
 		int index = InModuleToArrayPos(modulePos);
 		blockId = -1;
-		if (blocks.Length > index)
+		if (blocks.Length > index && index >= 0)
 		{
 			blockId = blocks[index];
 			return blockId != -1;
@@ -118,19 +119,26 @@ public partial class Module : MeshInstance3D
 		return correctX && correctY && correctZ;
 	}
 
-	public void BuildMesh(BlockStore blockStore, Construct construct, ModuleLocation moduleLocation)
+	public ExposedSurfaceCache BuildMesh(
+		ExposedSurfaceCache cache,
+		BlockStore blockStore,
+		ModuleLocation moduleLocation
+	)
 	{
 		if (!HasBlocks)
 		{
-			return;
+			return null;
 		}
 
-		Mesh = ModuleMeshGenerator.BuildModuleMesh(
-			construct,
+		var response = ModuleMeshGenerator.BuildModuleMesh(
+			cache,
 			this,
 			moduleLocation,
 			moduleMaterial,
 			blockStore
 		);
+
+		Mesh = response.Mesh;
+		return response.Cache;
 	}
 }

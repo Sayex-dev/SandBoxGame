@@ -53,13 +53,13 @@ public class PresetConstructGenerator : ConstructGenerator
 
 		return new GenerationResponse
 		{
-			generatedAllModules = false,
-			generatedModules = new Dictionary<ModuleLocation, Module>
+			GeneratedAllModules = false,
+			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			},
-			maxBlockPos = maxPos,
-			minBlockPos = minPos
+			MaxBlockPos = maxPos,
+			MinBlockPos = minPos
 		};
 	}
 

@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 
 public partial class BlockWorld : Node3D
@@ -104,7 +105,7 @@ public partial class BlockWorld : Node3D
 		return constructs.QueryBox(min.Value, max.Value);
 	}
 
-	public void UpdateConstructLoading(WorldGridPos worldPos, Vector3I renderDistance)
+	public async Task UpdateConstructLoading(WorldGridPos worldPos, Vector3I renderDistance)
 	{
 		Vector3I minPos = worldPos.Value - renderDistance * moduleSize;
 		Vector3I maxPos = worldPos.Value + renderDistance * moduleSize;
@@ -112,7 +113,7 @@ public partial class BlockWorld : Node3D
 		List<Construct> nearConstructs = constructs.QueryBox(minPos, maxPos);
 		foreach (Construct construct in nearConstructs)
 		{
-			construct.LoadPosition(worldPos, renderDistance);
+			await construct.LoadPosition(worldPos, renderDistance);
 		}
 	}
 }

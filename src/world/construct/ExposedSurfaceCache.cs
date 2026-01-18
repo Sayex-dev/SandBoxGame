@@ -18,11 +18,18 @@ public class ExposedSurfaceCache
     }
     private Dictionary<Direction, HashSet<ConstructGridPos>> exposedSurfaces = new();
 
-    public ExposedSurfaceCache()
+    public ExposedSurfaceCache(Dictionary<Direction, HashSet<ConstructGridPos>> exposedSurfaces = null)
     {
-        foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+        if (exposedSurfaces == null)
         {
-            exposedSurfaces[dir] = new HashSet<ConstructGridPos>();
+            foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+            {
+                this.exposedSurfaces[dir] = new HashSet<ConstructGridPos>();
+            }
+        }
+        else
+        {
+            this.exposedSurfaces = exposedSurfaces;
         }
     }
 
@@ -36,7 +43,7 @@ public class ExposedSurfaceCache
             Module module = kvp.Value;
             ModuleLocation moduleLocation = kvp.Key;
 
-            AddModule(construct, module, moduleLocation);
+            AddModule(module, moduleLocation);
         }
     }
 
@@ -61,7 +68,7 @@ public class ExposedSurfaceCache
         }
     }
 
-    public void AddModule(Construct construct, Module module, ModuleLocation moduleLocation)
+    public void AddModule(Module module, ModuleLocation moduleLocation)
     {
         if (module.BlockCount == 0) return;
 
@@ -72,18 +79,19 @@ public class ExposedSurfaceCache
             int blockId = blocks[i];
             if (blockId == -1) continue;
             ModuleGridPos modulePos = module.ArrayToInModulePos(i);
-            ConstructGridPos constructPos = modulePos.ToConstruct(moduleLocation, construct.ModuleSize);
-            AddBlock(construct, constructPos);
+            ConstructGridPos constructPos = modulePos.ToConstruct(moduleLocation, module.ModuleSize);
+            AddBlock(constructPos);
         }
     }
 
-    public void AddBlock(Construct construct, ConstructGridPos constructPos)
+    public void AddBlock(ConstructGridPos constructPos)
     {
-        Dictionary<Direction, bool> collideableDirections = GetExposedDirections(construct, constructPos);
-        foreach (KeyValuePair<Direction, bool> kvp in collideableDirections)
+        bool[] exposedDirs = GetExposedDirections(constructPos);
+        for (int i = 0; i < 6; i++)
         {
-            Direction dir = kvp.Key;
-            bool isExposed = kvp.Value;
+            Direction dir = (Direction)i;
+            bool isExposed = exposedDirs[i];
+
             if (isExposed)
             {
                 exposedSurfaces[dir].Add(constructPos);
@@ -98,13 +106,13 @@ public class ExposedSurfaceCache
         }
     }
 
-    public void RemoveBlock(Construct construct, ConstructGridPos constructPos)
+    public void RemoveBlock(ConstructGridPos constructPos)
     {
-        Dictionary<Direction, bool> exposedDirs = GetExposedDirections(construct, constructPos);
-        foreach (KeyValuePair<Direction, bool> kvp in exposedDirs)
+        bool[] exposedDirs = GetExposedDirections(constructPos);
+        for (int i = 0; i < 6; i++)
         {
-            Direction dir = kvp.Key;
-            bool isExposed = kvp.Value;
+            Direction dir = (Direction)i;
+            bool isExposed = exposedDirs[i];
 
             if (!isExposed)
             {
@@ -119,15 +127,16 @@ public class ExposedSurfaceCache
         }
     }
 
-    private Dictionary<Direction, bool> GetExposedDirections(Construct construct, ConstructGridPos constructPos)
+    private bool[] GetExposedDirections(ConstructGridPos constructPos)
     {
-        Dictionary<Direction, bool> exposedDirections = [];
-        foreach (Direction dir in Enum.GetValues(typeof(Direction)))
+        bool[] exposedDirections = new bool[6];
+        for (int i = 0; i < 6; i++)
         {
-            WorldGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionTools.GetWorldDirVec(dir));
-            int checkBlockId;
-            construct.HasBlock(checkPos, out checkBlockId);
-            exposedDirections[dir] = checkBlockId != -1;
+            Direction dir = (Direction)i;
+            ConstructGridPos checkPos = new(constructPos.Value + (Vector3I)DirectionTools.GetWorldDirVec(dir));
+            Direction invertedDir = DirectionTools.Invert(dir);
+            bool isExposed = !exposedSurfaces[invertedDir].Contains(checkPos);
+            exposedDirections[i] = isExposed;
         }
         return exposedDirections;
     }

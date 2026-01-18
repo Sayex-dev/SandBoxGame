@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PresetConstructGeneratorSettings" load_steps=2 format=3 uid="uid://de6fnfogow3ri"]
+
+[ext_resource type="Script" uid="uid://dkh3p467qt600" path="res://src/world/ConstructGenerator/PresetConstructGenerator/PresetConstructGeneratorSettings.cs" id="1_k32tq"]
+
+[resource]
+script = ExtResource("1_k32tq")
+Blocks = Array[Vector4i]([Vector4i(0, 0, 0, 0), Vector4i(0, 0, 1, 0), Vector4i(1, 0, 1, 0), Vector4i(-1, 0, 1, 0)])
+metadata/_custom_type_script = "uid://dkh3p467qt600"

@@ -1,6 +1,15 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+
+public struct ModuleMeshGenerationResponse
+{
+	public Mesh Mesh;
+	public ExposedSurfaceCache Cache;
+}
 
 public partial class ModuleMeshGenerator : Node
 {
@@ -24,16 +33,6 @@ public partial class ModuleMeshGenerator : Node
 		}
 	}
 
-	public static readonly Vector3I[] Normals = new Vector3I[]
-	{
-		new Vector3I(1, 0, 0),
-		new Vector3I(-1, 0, 0),
-		new Vector3I(0, 1, 0),
-		new Vector3I(0, -1, 0),
-		new Vector3I(0, 0, 1),
-		new Vector3I(0, 0, -1)
-	};
-
 	public static readonly Vector2[] UVs = new Vector2[]
 	{
 		new Vector2(0, 0),
@@ -44,41 +43,40 @@ public partial class ModuleMeshGenerator : Node
 
 	public static List<Surface> GetSurfaceVectors(Module module, ExposedSurfaceCache cache)
 	{
-		Dictionary<Direction, IReadOnlyCollection<ConstructGridPos>> blockFaces = cache.ExposedSurfaces;
-		var blockSurfaces = new Dictionary<Vector3I, bool[]>();
-		foreach (var kv in exposed)
-			blockSurfaces[kv.Key] = (bool[])kv.Value.Clone();
-
 		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
 
-		while (blockSurfaces.Count > 0)
+		foreach (var kvp in cache.ExposedSurfaces)
 		{
-			Vector3I startPos = new List<Vector3I>(blockSurfaces.Keys)[0];
-			Direction dirIndex = 0;
-			Vector3I normal = new Vector3I();
+			Direction dir = kvp.Key;
+			ICollection<ConstructGridPos> surfacePositions = kvp.Value.ToHashSet();
+			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, module, surfacePositions);
+			surfaces.AddRange(newSurfaces);
+		}
 
-			for (int i = 0; i < Normals.Length; i++)
-			{
-				if (blockSurfaces[startPos][i])
-				{
-					dirIndex = (Direction)i;
-					normal = Normals[i];
-					break;
-				}
-			}
+		return surfaces;
+	}
 
-			Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
-			Vector3I locYMove = (Vector3I)Embed2DInPlane(new Vector2(0, 1), normal);
+	private static List<Surface> FindDirSurfaces(int moduleSize, Direction dir, Module module, ICollection<ConstructGridPos> surfacePositions)
+	{
+		List<Surface> surfaces = [];
+		HashSet<ModuleGridPos> remaining = surfacePositions.Select(o => o.ToModule(moduleSize)).ToHashSet();
 
-			Vector3I minPos = startPos;
+		Vector3I normal = (Vector3I)DirectionTools.GetWorldDirVec(dir);
+		Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
+		Vector3I locYMove = (Vector3I)Embed2DInPlane(new Vector2(0, 1), normal);
+
+		while (remaining.Count > 0)
+		{
+			ModuleGridPos minPos = remaining.First();
+
 			bool moveX = true;
 			bool failedLast = false;
 
 			for (int i = 0; i < moduleSize * moduleSize; i++)
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
-				bool hasSurface = blockSurfaces.ContainsKey(newPos) && blockSurfaces[newPos][(int)dirIndex];
+				bool hasSurface = remaining.Contains(newPos);
 
 				if (hasSurface)
 				{
@@ -104,14 +102,10 @@ public partial class ModuleMeshGenerator : Node
 				for (int x = 0; x <= moduleSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
-					int blockId = module.IsInModule(new(np)) ? module.GetBlock(new(np)) : -1;
+					module.HasBlock(np, out int blockId);
+					if (surfaceBlockId == -1) surfaceBlockId = blockId;
 
-					if (surfaceBlockId == -1)
-					{
-						surfaceBlockId = blockId;
-					}
-
-					bool hasSurface = blockSurfaces.ContainsKey(np) && blockSurfaces[np][(int)dirIndex];
+					bool hasSurface = remaining.Contains(np);
 					bool sameSurface = blockId == surfaceBlockId;
 					bool firstRow = maxX == -1;
 					bool lastCol = x == maxX;
@@ -147,52 +141,54 @@ public partial class ModuleMeshGenerator : Node
 				for (int y = 0; y <= maxY; y++)
 				{
 					Vector3I rp = minPos + locXMove * x + locYMove * y;
-					blockSurfaces[rp][(int)dirIndex] = false;
-					bool stillHas = false;
-					foreach (bool b in blockSurfaces[rp]) if (b) stillHas = true;
-					if (!stillHas) blockSurfaces.Remove(rp);
+					remaining.Remove(rp);
 				}
 			}
-
-			List<Vector3I> verts = new List<Vector3I>();
-			List<int> inds = new List<int>();
-
-			Vector3 disp = (Vector3)normal * 0.5f + new Vector3(Mathf.Abs(normal.X), Mathf.Abs(normal.Y), Mathf.Abs(normal.Z)) * 0.5f;
-			Vector3I displacement = (Vector3I)disp;
-
-			if (dirIndex == 0)
-				displacement += new Vector3I(0, 1, 0);
-			else if ((int)dirIndex == 3 || (int)dirIndex == 4)
-				displacement += new Vector3I(1, 0, 0);
-
-			Vector3I basePos = minPos + displacement;
-
-			Vector3I c1 = (Vector3I)Embed2DInPlane(new Vector2I(0, 0), normal) + basePos;
-			Vector3I c2 = (Vector3I)Embed2DInPlane(new Vector2I(0, maxY + 1), normal) + basePos;
-			Vector3I c3 = (Vector3I)Embed2DInPlane(new Vector2I(maxX + 1, maxY + 1), normal) + basePos;
-			Vector3I c4 = (Vector3I)Embed2DInPlane(new Vector2I(maxX + 1, 0), normal) + basePos;
-
-			verts.Add(c1);
-			verts.Add(c2);
-			verts.Add(c3);
-			verts.Add(c4);
-
-			inds.AddRange([0, 1, 2, 2, 3, 0]);
-
-			Vector2 surfaceBlockSpan;
-			if (dirIndex == Direction.LEFT || dirIndex == Direction.RIGHT)
-			{
-				surfaceBlockSpan = new Vector2(maxX + 1, maxY + 1);
-			}
-			else
-			{
-				surfaceBlockSpan = new Vector2(maxY + 1, maxX + 1);
-			}
-
-			surfaces.Add(new Surface(verts, inds, normal, surfaceBlockSpan, dirIndex, surfaceBlockId));
+			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceBlockId);
+			surfaces.Add(surface);
 		}
 
 		return surfaces;
+	}
+
+	public static Surface CreateSurface(Vector3I normal, Direction dir, Vector3I minPos, Vector2I maxSurface, int surfaceBlockId)
+	{
+		List<Vector3I> verts = new List<Vector3I>();
+		List<int> inds = new List<int>();
+
+		Vector3 disp = (Vector3)normal * 0.5f + new Vector3(Mathf.Abs(normal.X), Mathf.Abs(normal.Y), Mathf.Abs(normal.Z)) * 0.5f;
+		Vector3I displacement = (Vector3I)disp;
+
+		if (dir == Direction.RIGHT)
+			displacement += new Vector3I(0, 1, 0);
+		else if (dir == Direction.DOWN || dir == Direction.BACKWARD)
+			displacement += new Vector3I(1, 0, 0);
+
+		Vector3I basePos = minPos + displacement;
+
+		Vector3I c1 = (Vector3I)Embed2DInPlane(new Vector2I(0, 0), normal) + basePos;
+		Vector3I c2 = (Vector3I)Embed2DInPlane(new Vector2I(0, maxSurface.Y + 1), normal) + basePos;
+		Vector3I c3 = (Vector3I)Embed2DInPlane(new Vector2I(maxSurface.X + 1, maxSurface.Y + 1), normal) + basePos;
+		Vector3I c4 = (Vector3I)Embed2DInPlane(new Vector2I(maxSurface.X + 1, 0), normal) + basePos;
+
+		verts.Add(c1);
+		verts.Add(c2);
+		verts.Add(c3);
+		verts.Add(c4);
+
+		inds.AddRange([0, 1, 2, 2, 3, 0]);
+
+		Vector2 surfaceBlockSpan;
+		if (dir == Direction.LEFT || dir == Direction.RIGHT)
+		{
+			surfaceBlockSpan = new Vector2(maxSurface.X + 1, maxSurface.Y + 1);
+		}
+		else
+		{
+			surfaceBlockSpan = new Vector2(maxSurface.Y + 1, maxSurface.X + 1);
+		}
+
+		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, surfaceBlockId);
 	}
 
 	public static Vector3 Embed2DInPlane(Vector2 v, Vector3 n)
@@ -209,16 +205,20 @@ public partial class ModuleMeshGenerator : Node
 		return v.X * t1 + v.Y * t2;
 	}
 
-	public static Mesh BuildModuleMesh(
-		Construct construct,
+	public static ModuleMeshGenerationResponse BuildModuleMesh(
+		ExposedSurfaceCache cache,
 		Module module,
 		ModuleLocation moduleLocation,
 		Material mat,
 		BlockStore blockStore)
 	{
-		ExposedSurfaceCache cache = new ExposedSurfaceCache();
-		cache.AddModule(construct, module, moduleLocation);
+		var sw = Stopwatch.StartNew();
+		cache.AddModule(module, moduleLocation);
+		Debug.WriteLine("Add Module Time: " + sw.Elapsed);
+
+		sw.Restart();
 		var surfaces = GetSurfaceVectors(module, cache);
+		Debug.WriteLine("Create Vectors Time: " + sw.Elapsed);
 
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);
@@ -273,6 +273,10 @@ public partial class ModuleMeshGenerator : Node
 				st.AddIndex(i * 4 + ind);
 		}
 
-		return st.Commit();
+		return new ModuleMeshGenerationResponse
+		{
+			Mesh = st.Commit(),
+			Cache = cache
+		};
 	}
 }

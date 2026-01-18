@@ -3,11 +3,11 @@ using Godot;
 
 public class GenerationResponse
 {
-	public bool generatedAllModules = false;
-	public ModuleGridPos maxBlockPos;
-	public ModuleGridPos minBlockPos;
-	public Dictionary<ModuleLocation, Module> generatedModules = [];
-
+	public bool GeneratedAllModules = false;
+	public ModuleGridPos MaxBlockPos;
+	public ModuleGridPos MinBlockPos;
+	public Dictionary<ModuleLocation, Module> GeneratedModules = [];
+	public ExposedSurfaceCache SurfaceCache;
 }
 
 

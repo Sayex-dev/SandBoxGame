@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 
@@ -146,11 +147,11 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 		if (blockId == -1)
 		{
-			exposedSurfaceCache.RemoveBlock(this, constructPos);
+			exposedSurfaceCache.RemoveBlock(constructPos);
 		}
 		else
 		{
-			exposedSurfaceCache.AddBlock(this, constructPos);
+			exposedSurfaceCache.AddBlock(constructPos);
 		}
 
 		module.SetBlock(inModulePos, blockId);
@@ -187,7 +188,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		return loadedModules;
 	}
 
-	public void LoadPosition(WorldGridPos worldPos, Vector3I renderDistance)
+	public async Task LoadPosition(WorldGridPos worldPos, Vector3I renderDistance)
 	{
 		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
 
@@ -228,10 +229,10 @@ public partial class Construct : Node3D, IHaveBoundingBox
 				queuedModulesPositions.Remove(modulePos);
 		}
 
-		UpdateModuleLoading(addModules, removeModules);
+		await UpdateModuleLoading(addModules, removeModules);
 	}
 
-	public void UpdateModuleLoading(
+	public async Task UpdateModuleLoading(
 	List<ModuleLocation> loadPositions = null,
 	List<ModuleLocation> unloadPositions = null
 )
@@ -250,10 +251,10 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		}
 
 		// Spawn async module generation task
-		GenerateModulesAsync(loadPositions);
+		await GenerateModulesAsync(loadPositions);
 	}
 
-	private async void GenerateModulesAsync(List<ModuleLocation> loadPositions)
+	private async Task GenerateModulesAsync(List<ModuleLocation> loadPositions)
 	{
 		List<Task<GenerationResponse>> moduleJobs = [];
 		int i = 0;
@@ -268,10 +269,13 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			moduleJobs.Add(Task.Run(() =>
 			{
 				GenerationResponse response = constructGenerator.GenerateModules(moduleLocation, moduleMaterial);
-				Dictionary<ModuleLocation, Module> modules = response.generatedModules;
+				Dictionary<ModuleLocation, Module> modules = response.GeneratedModules;
+				var convertedCach = exposedSurfaceCache.ExposedSurfaces.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
+				ExposedSurfaceCache cache = new(convertedCach);
+				response.SurfaceCache = cache;
 				foreach (KeyValuePair<ModuleLocation, Module> entry in modules)
 				{
-					entry.Value.BuildMesh(blockStore, this, moduleLocation);
+					entry.Value.BuildMesh(cache, blockStore, moduleLocation);
 					entry.Value.Position = (Vector3)(ModuleSize * entry.Key.Value);
 				}
 				return response;
@@ -288,10 +292,10 @@ public partial class Construct : Node3D, IHaveBoundingBox
 			}
 
 			GenerationResponse response = await job;
-			minPos = new(minPos.Value.Min(response.minBlockPos.Value));
-			maxPos = new(minPos.Value.Max(response.maxBlockPos.Value));
+			minPos = new(minPos.Value.Min(response.MinBlockPos.Value));
+			maxPos = new(minPos.Value.Max(response.MaxBlockPos.Value));
 
-			foreach (KeyValuePair<ModuleLocation, Module> entry in response.generatedModules)
+			foreach (KeyValuePair<ModuleLocation, Module> entry in response.GeneratedModules)
 			{
 				ModuleLocation modulePos = entry.Key;
 				Module module = entry.Value;

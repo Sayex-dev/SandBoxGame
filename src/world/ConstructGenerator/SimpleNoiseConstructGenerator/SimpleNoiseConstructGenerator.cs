@@ -36,13 +36,13 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		SetGround(module, moduleLocation);
 		return new GenerationResponse
 		{
-			generatedAllModules = false,
-			generatedModules = new Dictionary<ModuleLocation, Module>
+			GeneratedAllModules = false,
+			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			},
-			maxBlockPos = new(Vector3I.One * (moduleSize - 1)),
-			minBlockPos = new(Vector3I.Zero),
+			MaxBlockPos = new(Vector3I.One * (moduleSize - 1)),
+			MinBlockPos = new(Vector3I.Zero),
 		};
 	}
 

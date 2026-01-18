@@ -1,14 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=10 format=3 uid="uid://u3l3grnkbtg6"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
+[ext_resource type="Resource" uid="uid://khfpje5q61u1" path="res://resources/world/World.tres" id="6_10v3s"]
 [ext_resource type="Resource" uid="uid://j1ityh36augs" path="res://resources/blocks/blockStore.tres" id="6_a6664"]
-[ext_resource type="Resource" uid="uid://vh6tbdwkh8p1" path="res://resources/world/biomes/biomeTest.tres" id="6_b2yaj"]
-[ext_resource type="Script" uid="uid://cds3rc6tv6xsc" path="res://src/world/ConstructGenerator/BiomeWorldGenerator/BiomeWorldGeneratorSettings.cs" id="6_cptob"]
 [ext_resource type="Script" uid="uid://bwg8mi3d737gv" path="res://src/world/construct/Construct.cs" id="7_10v3s"]
-[ext_resource type="Script" uid="uid://dkh3p467qt600" path="res://src/world/ConstructGenerator/PresetConstructGenerator/PresetConstructGeneratorSettings.cs" id="7_b2yaj"]
 [ext_resource type="Resource" uid="uid://dv8ysmj8tjhtt" path="res://resources/movement/MoveMooove.tres" id="7_cptob"]
+[ext_resource type="Resource" uid="uid://de6fnfogow3ri" path="res://resources/world/thingy.tres" id="8_cptob"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 ambient_light_color = Color(1, 1, 1, 1)
@@ -19,16 +18,6 @@ fog_enabled = true
 fog_light_energy = 0.16
 volumetric_fog_density = 1.0
 volumetric_fog_length = 0.01
-
-[sub_resource type="Resource" id="Resource_b2yaj"]
-script = ExtResource("6_cptob")
-Biomes = Array[Object]([ExtResource("6_b2yaj")])
-metadata/_custom_type_script = "uid://cds3rc6tv6xsc"
-
-[sub_resource type="Resource" id="Resource_q712h"]
-script = ExtResource("7_b2yaj")
-Blocks = Array[Vector4i]([Vector4i(0, 0, 0, 1), Vector4i(0, 0, 1, 1), Vector4i(1, 0, 1, 1), Vector4i(-1, 0, 1, 1)])
-metadata/_custom_type_script = "uid://dkh3p467qt600"
 
 [node name="Node3D" type="Node3D"]
 
@@ -45,18 +34,19 @@ ModuleMat = ExtResource("3_5t4e2")
 BlockStore = ExtResource("6_a6664")
 DebugDraw = 0
 
-[node name="World" type="Node3D" parent="WorldController"]
+[node name="Thingy" type="Node3D" parent="WorldController"]
+transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
 script = ExtResource("7_10v3s")
-constructGeneratorSettings = SubResource("Resource_b2yaj")
+constructGeneratorSettings = ExtResource("8_cptob")
 sodSettings = ExtResource("7_cptob")
-IsGlobal = true
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
-[node name="Thingy" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.99999976, 0, 0, 0, 1, 0, 0, 0, 0.99999976, 0, 4.845497, -4.9999995)
+[node name="World" type="Node3D" parent="WorldController"]
+transform = Transform3D(0.9999999, -2.9802322e-08, 0, 2.9802322e-08, 1.0000001, 0, -2.9802322e-08, 0, 0.9999999, -9.536743e-07, -4.7683716e-07, -9.536743e-07)
 script = ExtResource("7_10v3s")
-constructGeneratorSettings = SubResource("Resource_q712h")
+constructGeneratorSettings = ExtResource("6_10v3s")
 sodSettings = ExtResource("7_cptob")
+IsGlobal = true
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]

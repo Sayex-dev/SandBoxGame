@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 
 public partial class WorldController : Node3D
@@ -16,7 +17,7 @@ public partial class WorldController : Node3D
 
     private Vector3I prevCameraModulePos = Vector3I.MaxValue;
 
-    public override void _Ready()
+    public override async void _Ready()
     {
         SetPhysicsProcess(false);
         RenderingServer.SetDebugGenerateWireframes(true);
@@ -36,18 +37,18 @@ public partial class WorldController : Node3D
 
         GatherConstuctChildren();
 
-        blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
+        await blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
         SetPhysicsProcess(true);
     }
 
-    public override void _PhysicsProcess(double delta)
+    public override async void _PhysicsProcess(double delta)
     {
         Vector3I cameraModulePos = (Vector3I)FocusPosition.Position / ModuleSize;
 
         if (cameraModulePos != prevCameraModulePos)
         {
             prevCameraModulePos = cameraModulePos;
-            blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
+            await blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance);
         }
     }
 
