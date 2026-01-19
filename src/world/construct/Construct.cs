@@ -16,7 +16,7 @@ public partial class Construct : Node3D, IHaveBoundingBox
 	public ConstructTransform ConstructTransform { get; private set; }
 	public int ModuleSize { get; private set; }
 
-	private ExposedSurfaceCache exposedSurfaceCache;
+	public ExposedSurfaceCache exposedSurfaceCache { get; private set; }
 	private ConstructGenerator constructGenerator;
 	private float curRot = 0;
 	private Dictionary<ModuleLocation, Module> loadedModules = new();
@@ -68,9 +68,8 @@ public partial class Construct : Node3D, IHaveBoundingBox
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
 
-		// Exposed surfaces
-		this.exposedSurfaceCache =
-			exposedSurfaceCache ?? new ExposedSurfaceCache();
+
+		this.exposedSurfaceCache = exposedSurfaceCache ?? new ExposedSurfaceCache();
 
 		// Transform & position
 		ConstructTransform =

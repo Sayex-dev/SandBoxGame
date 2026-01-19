@@ -34,19 +34,19 @@ ModuleMat = ExtResource("3_5t4e2")
 BlockStore = ExtResource("6_a6664")
 DebugDraw = 0
 
+[node name="World" type="Node3D" parent="WorldController"]
+transform = Transform3D(0.9999998, -2.980232e-08, 0, 2.9802322e-08, 1.0000001, 0, -2.980232e-08, 0, 0.9999998, -9.5367426e-07, -4.7683716e-07, -9.5367426e-07)
+script = ExtResource("7_10v3s")
+constructGeneratorSettings = ExtResource("6_10v3s")
+sodSettings = ExtResource("7_cptob")
+IsGlobal = true
+metadata/_custom_type_script = "uid://bwg8mi3d737gv"
+
 [node name="Thingy" type="Node3D" parent="WorldController"]
 transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
 script = ExtResource("7_10v3s")
 constructGeneratorSettings = ExtResource("8_cptob")
 sodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="World" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999999, -2.9802322e-08, 0, 2.9802322e-08, 1.0000001, 0, -2.9802322e-08, 0, 0.9999999, -9.536743e-07, -4.7683716e-07, -9.536743e-07)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("6_10v3s")
-sodSettings = ExtResource("7_cptob")
-IsGlobal = true
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
