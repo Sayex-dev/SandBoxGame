@@ -27,13 +27,12 @@ public class PresetConstructGenerator : ConstructGenerator
 		}
 	}
 
-	public override GenerationResponse GenerateModules(
+	public override ModuleGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
-		Material moduleMaterial,
 		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
-		Module module = new Module(moduleSize, moduleMaterial);
+		Module module = new Module(moduleSize);
 
 		ModuleGridPos minPos = new(Vector3I.One * moduleSize);
 		ModuleGridPos maxPos = new(Vector3I.Zero);
@@ -51,7 +50,7 @@ public class PresetConstructGenerator : ConstructGenerator
 			}
 		}
 
-		return new GenerationResponse
+		return new ModuleGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>

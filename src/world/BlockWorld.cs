@@ -38,8 +38,8 @@ public partial class BlockWorld : Node3D
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
 		{
-			int blockId = construct.GetBlock(worldPos);
-			if (blockId != -1)
+			int blockId;
+			if (construct.TryGetBlock(worldPos, out blockId))
 			{
 				return blockId;
 			}
@@ -52,8 +52,7 @@ public partial class BlockWorld : Node3D
 		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
 		foreach (Construct construct in nearConstructs)
 		{
-			int blockId = construct.GetBlock(worldPos);
-			if (blockId != -1)
+			if (construct.TryGetBlock(worldPos, out _))
 			{
 				return construct;
 			}
@@ -113,7 +112,7 @@ public partial class BlockWorld : Node3D
 		List<Construct> nearConstructs = constructs.QueryBox(minPos, maxPos);
 		foreach (Construct construct in nearConstructs)
 		{
-			await construct.LoadPosition(worldPos, renderDistance);
+			await construct.LoadAround(worldPos, renderDistance);
 		}
 	}
 }

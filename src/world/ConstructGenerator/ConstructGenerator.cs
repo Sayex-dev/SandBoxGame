@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using Godot;
 
-public class GenerationResponse
+public class ModuleGenerationResponse
 {
 	public bool GeneratedAllModules = false;
-	public ModuleGridPos MaxBlockPos;
-	public ModuleGridPos MinBlockPos;
+	public ConstructBoundsController bounds;
+	public ExposedSurfaceCache cache;
 	public Dictionary<ModuleLocation, Module> GeneratedModules = [];
-	public ExposedSurfaceCache SurfaceCache;
 }
 
 
@@ -21,9 +20,8 @@ public abstract partial class ConstructGenerator
 		this.seed = seed;
 	}
 
-	public abstract GenerationResponse GenerateModules(
+	public abstract ModuleGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
-		Material moduleMaterial,
 		HashSet<ModuleLocation> prevLoaded = null
 	);
 	public abstract bool IsModuleNeeded(ModuleLocation moduleLocation);

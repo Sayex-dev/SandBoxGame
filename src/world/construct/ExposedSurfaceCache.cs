@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 public class ExposedSurfaceCache
 {
+    public ConstructGridPos MinPos { get; private set; }
+    public ConstructGridPos MaxPos { get; private set; }
+
     public IReadOnlyDictionary<Direction, IReadOnlyCollection<ConstructGridPos>> ExposedSurfaces
     {
         get
@@ -36,7 +39,7 @@ public class ExposedSurfaceCache
     public void SetupConstruct(Construct construct)
     {
         exposedSurfaces.Clear();
-        Dictionary<ModuleLocation, Module> modules = construct.GetModules();
+        Dictionary<ModuleLocation, Module> modules = construct.Modules.Modules;
         if (modules.Count == 0) return;
         foreach (KeyValuePair<ModuleLocation, Module> kvp in modules)
         {

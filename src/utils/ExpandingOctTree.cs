@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public interface IHaveBoundingBox
+public interface IHaveBounds
 {
     public Vector3I GetRootPos();
     public Vector3I GetMin();
     public Vector3I GetMax();
 }
 
-public class ExpandingOctTree<T> where T : IHaveBoundingBox
+public class ExpandingOctTree<T> where T : IHaveBounds
 {
     private class Node
     {

@@ -1,36 +1,39 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 
-[GlobalClass]
-public partial class Construct : Node3D, IHaveBoundingBox
+public partial class Construct : Node3D, IHaveBounds
 {
-	[Export] private ConstructGeneratorSettings constructGeneratorSettings;
-	[Export] private SecondOrderDynamicsSettings sodSettings;
-	[Export] private int seed;
-	[Export] public bool IsGlobal = false;
-
-	public ConstructTransform ConstructTransform { get; private set; }
-	public int ModuleSize { get; private set; }
-
+	public ConstructGridTransform ConstructTransform { get; private set; }
 	public ExposedSurfaceCache exposedSurfaceCache { get; private set; }
+	public ConstructModuleController Modules { get; private set; }
+	private ConstructVisualsController visuals;
+	private ConstructMotionController motion;
+	private ConstructBoundsController bounds;
 	private ConstructGenerator constructGenerator;
-	private float curRot = 0;
-	private Dictionary<ModuleLocation, Module> loadedModules = new();
-	private List<ModuleLocation> queuedModulesPositions = new();
-	private ConstructGridPos minPos;
-	private ConstructGridPos maxPos;
+	private ConstructModuleBuilder moduleBuilder;
+
 	private BlockStore blockStore;
 	private Material moduleMaterial;
-	private const int MaxConcurrentModuleLoads = 5;
-	private SecondOrderDynamics<Vector3> moveSod;
-	private SecondOrderDynamics<float> rotSod;
 	private bool isStatic;
 
+	public void Initialize(
+		ConstructVisualsController visuals,
+		ConstructMotionController motion,
+		ConstructGridTransform gridTransform
+	)
+	{
+		this.visuals = visuals;
+		this.motion = motion;
+		this.ConstructTransform = gridTransform;
 
+		Position = gridTransform.WorldPos.Value;
+		Rotation = motion.Rotation;
+
+		SetPhysicsProcess(true);
+	}
 	public override void _Ready()
 	{
 		SetPhysicsProcess(false);
@@ -38,293 +41,125 @@ public partial class Construct : Node3D, IHaveBoundingBox
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (Position != ConstructTransform.WorldPos.Value)
-			Position = moveSod.Update((float)delta, ConstructTransform.WorldPos.Value);
-
-		if (curRot != ConstructTransform.Rotation)
+		if (motion != null)
 		{
-			if (Math.Abs(curRot - ConstructTransform.Rotation) > 180)
-			{
-				curRot -= (float)Math.CopySign(360, curRot - ConstructTransform.Rotation);
-				rotSod.SetPrevious(curRot);
-			}
-			curRot = rotSod.Update((float)delta, ConstructTransform.Rotation);
-			Rotation = new Vector3(Rotation.X, Mathf.DegToRad(curRot), Rotation.Z);
+			motion.Update(delta, ConstructTransform.WorldPos, ConstructTransform.YRotation);
+			Position = motion.Position;
+			Rotation = motion.Rotation;
 		}
 	}
 
-	public void SetupConstruct(
-		int moduleSize,
-		BlockStore blockStore,
-		Material moduleMaterial,
-		ExposedSurfaceCache exposedSurfaceCache = null,
-		ConstructGenerator constructGenerator = null,
-		ConstructTransform constructTransform = null,
-		SecondOrderDynamicsSettings sodSettings = null
-	)
+	public async Task LoadAround(WorldGridPos worldPos, Vector3I renderDistance)
 	{
-		// Basic setup
-		ModuleSize = moduleSize;
-		this.blockStore = blockStore;
-		this.moduleMaterial = moduleMaterial;
-
-
-		this.exposedSurfaceCache = exposedSurfaceCache ?? new ExposedSurfaceCache();
-
-		// Transform & position
-		ConstructTransform =
-			constructTransform
-			?? new ConstructTransform(
-				new WorldGridPos((Vector3I)Position.Round()),
-				Direction.FORWARD
-			);
-
-		Position = ConstructTransform.WorldPos.Value;
-
-		var effectiveSodSettings = sodSettings ?? this.sodSettings;
-
-		if (effectiveSodSettings == null)
-			throw new NullReferenceException("SecondOrderDynamicsSettings is missing.");
-
-		moveSod = effectiveSodSettings.GetInstance(ConstructTransform.WorldPos.Value);
-		rotSod = effectiveSodSettings.GetInstance(0);
-
-		this.constructGenerator =
+		var context = new ModuleLoadContext(
+			Modules.ModuleSize,
+			blockStore,
+			moduleMaterial,
+			exposedSurfaceCache,
 			constructGenerator
-			?? constructGeneratorSettings?.CreateConstructGenerator(moduleSize, seed)
-			?? throw new NullReferenceException(
-				"Construct generator could not be created. Missing ConstructGeneratorSettings?"
-			);
+		);
+		var tasks = await moduleBuilder.LoadAroundPosition(worldPos, renderDistance, ConstructTransform, Modules, context);
 
-		minPos = new ConstructGridPos(Vector3I.Zero);
-		maxPos = new ConstructGridPos(Vector3I.Zero);
+		foreach (Task<ModuleGenerationResponse> task in tasks)
+		{
+			var response = await task;
+			bounds.CombineWith(response.bounds);
 
-		SetPhysicsProcess(true);
+			foreach (var kvp in response.GeneratedModules)
+			{
+
+			}
+		}
 	}
 
-	public void MoveTo(WorldGridPos worldPos)
+	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds)
 	{
-		if (worldPos == ConstructTransform.WorldPos) return;
-		ConstructTransform.MoveTo(worldPos);
-	}
+		for (int i = 0; i < worldPositions.Length; i++)
+		{
+			WorldGridPos worldPos = worldPositions[i];
+			int blockId = blockIds[i];
 
-	public void RotateTo(Direction dir)
-	{
-		if (dir == Direction.UP || dir == Direction.DOWN) return;
-	}
+			ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
 
-	public void SetBlockState(WorldGridPos worldPos, BlockState blockState)
-	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module = loadedModules[moduleLocation];
-		module.SetBlockState(inModulePos, blockState);
-	}
+			exposedSurfaceCache.AddBlock(conPos);
+			Modules.SetBlock(conPos, blockId);
 
-	public BlockState GetBlockState(WorldGridPos worldPos)
-	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module = loadedModules[moduleLocation];
-		return module.GetBlockState(inModulePos);
-	}
-
-	public bool HasBlockState(WorldGridPos worldPos)
-	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module = loadedModules[moduleLocation];
-		return module.HasBlockState(inModulePos);
+			if (blockId == -1)
+			{
+				UpdateBoundsOnRemove(conPos);
+			}
+			else
+			{
+				bounds.AddPosition(conPos);
+			}
+		}
+		UpdateModules().FireAndForget();
 	}
 
 	public void SetBlock(WorldGridPos worldPos, int blockId)
 	{
-		ConstructGridPos constructPos = worldPos.ToConstruct(ConstructTransform);
-		ModuleLocation moduleLocation = constructPos.ToModuleLocation(ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module = loadedModules[moduleLocation];
-
-		if (blockId == -1)
-		{
-			exposedSurfaceCache.RemoveBlock(constructPos);
-		}
-		else
-		{
-			exposedSurfaceCache.AddBlock(constructPos);
-		}
-
-		module.SetBlock(inModulePos, blockId);
+		ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
+		exposedSurfaceCache.AddBlock(conPos);
+		bounds.AddPosition(conPos);
+		Modules.SetBlock(conPos, blockId);
+		UpdateModules().FireAndForget();
 	}
 
-	public int GetBlock(WorldGridPos worldPos)
+	public bool TryGetBlock(WorldGridPos worldPos, out int blockId)
 	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module = loadedModules[moduleLocation];
-		return module.GetBlock(inModulePos);
-	}
-
-	public bool HasBlock(WorldGridPos worldPos, out int blockId)
-	{
-		blockId = -1;
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-		ModuleGridPos inModulePos = worldPos.ToModule(ConstructTransform, ModuleSize);
-		Module module;
-
-		if (!loadedModules.TryGetValue(moduleLocation, out module)) return false;
-		if (!module.HasBlock(inModulePos)) return false;
-		blockId = module.GetBlock(inModulePos);
-		return blockId != -1;
-	}
-
-	public bool HasBlock(WorldGridPos worldPos)
-	{
-		return HasBlock(worldPos, out _);
-	}
-
-	public Dictionary<ModuleLocation, Module> GetModules()
-	{
-		return loadedModules;
-	}
-
-	public async Task LoadPosition(WorldGridPos worldPos, Vector3I renderDistance)
-	{
-		ModuleLocation moduleLocation = worldPos.ToModuleLocation(ConstructTransform, ModuleSize);
-
-		var desiredModules = new List<ModuleLocation>();
-		var addModules = new List<ModuleLocation>();
-		var removeModules = new List<ModuleLocation>();
-
-		for (int x = -renderDistance.X; x < renderDistance.X; x++)
-		{
-			for (int y = -renderDistance.Y; y < renderDistance.Y; y++)
-			{
-				for (int z = -renderDistance.Z; z < renderDistance.Z; z++)
-				{
-					ModuleLocation newModulePos = new(moduleLocation.Value + new Vector3I(x, y, z));
-					if (constructGenerator.IsModuleNeeded(newModulePos))
-					{
-						desiredModules.Add(newModulePos);
-					}
-				}
-			}
-		}
-
-		foreach (var modulePos in desiredModules)
-		{
-			if (!loadedModules.ContainsKey(modulePos) && !queuedModulesPositions.Contains(modulePos))
-			{
-				queuedModulesPositions.Add(modulePos);
-				addModules.Add(modulePos);
-			}
-		}
-
-		foreach (var modulePos in new List<ModuleLocation>(loadedModules.Keys))
-		{
-			if (!desiredModules.Contains(modulePos))
-				removeModules.Add(modulePos);
-
-			if (queuedModulesPositions.Contains(modulePos))
-				queuedModulesPositions.Remove(modulePos);
-		}
-
-		await UpdateModuleLoading(addModules, removeModules);
-	}
-
-	public async Task UpdateModuleLoading(
-	List<ModuleLocation> loadPositions = null,
-	List<ModuleLocation> unloadPositions = null
-)
-	{
-		loadPositions ??= new List<ModuleLocation>();
-		unloadPositions ??= new List<ModuleLocation>();
-
-		// Unload immediately on main thread
-		foreach (var modulePos in unloadPositions)
-		{
-			if (loadedModules.TryGetValue(modulePos, out var module))
-			{
-				loadedModules.Remove(modulePos);
-				module.QueueFree();
-			}
-		}
-
-		// Spawn async module generation task
-		await GenerateModulesAsync(loadPositions);
-	}
-
-	private async Task GenerateModulesAsync(List<ModuleLocation> loadPositions)
-	{
-		List<Task<GenerationResponse>> moduleJobs = [];
-		int i = 0;
-		foreach (ModuleLocation moduleLocation in loadPositions)
-		{
-			i++;
-			if (i % MaxConcurrentModuleLoads == 0)
-			{
-				await ToSignal(GetTree(), "process_frame");
-			}
-
-			moduleJobs.Add(Task.Run(() =>
-			{
-				GenerationResponse response = constructGenerator.GenerateModules(moduleLocation, moduleMaterial);
-				Dictionary<ModuleLocation, Module> modules = response.GeneratedModules;
-				var convertedCach = exposedSurfaceCache.ExposedSurfaces.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
-				ExposedSurfaceCache cache = new(convertedCach);
-				response.SurfaceCache = cache;
-				foreach (KeyValuePair<ModuleLocation, Module> entry in modules)
-				{
-					entry.Value.BuildMesh(cache, blockStore, moduleLocation);
-					entry.Value.Position = (Vector3)(ModuleSize * entry.Key.Value);
-				}
-				return response;
-			}));
-		}
-
-		i = 0;
-		foreach (Task<GenerationResponse> job in moduleJobs)
-		{
-			i++;
-			if (i % MaxConcurrentModuleLoads == 0)
-			{
-				await ToSignal(GetTree(), "process_frame");
-			}
-
-			GenerationResponse response = await job;
-			minPos = new(minPos.Value.Min(response.MinBlockPos.Value));
-			maxPos = new(minPos.Value.Max(response.MaxBlockPos.Value));
-
-			foreach (KeyValuePair<ModuleLocation, Module> entry in response.GeneratedModules)
-			{
-				ModuleLocation modulePos = entry.Key;
-				Module module = entry.Value;
-
-				if (queuedModulesPositions.Contains(modulePos))
-				{
-					queuedModulesPositions.Remove(modulePos);
-					loadedModules[modulePos] = module;
-					AddChild(module);
-				}
-				else
-				{
-					module.QueueFree();
-				}
-			}
-		}
+		ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
+		return Modules.TryGetBlock(conPos, out blockId);
 	}
 
 	public Vector3I GetRootPos()
 	{
-		return ConstructTransform.WorldPos.Value;
+		return ConstructTransform.WorldPos;
 	}
 
 	public Vector3I GetMin()
 	{
-		return minPos.ToWorld(ConstructTransform).Value;
+		return bounds.MinPos.ToWorld(ConstructTransform);
 	}
 
 	public Vector3I GetMax()
 	{
-		return maxPos.ToWorld(ConstructTransform).Value;
+		return bounds.MaxPos.ToWorld(ConstructTransform);
+	}
+
+	private async Task UpdateModules()
+	{
+		var context = new ModuleLoadContext(
+			Modules.ModuleSize,
+			blockStore,
+			moduleMaterial,
+			exposedSurfaceCache,
+			constructGenerator
+		);
+		var tasks = await moduleBuilder.LoadAroundPosition(worldPos, renderDistance, ConstructTransform, Modules, context);
+
+		foreach (Task<ModuleGenerationResponse> task in tasks)
+		{
+			var response = await task;
+			bounds.CombineWith(response.bounds);
+
+			foreach (var kvp in response.GeneratedModules)
+			{
+
+			}
+		}
+	}
+
+	private void UpdateBoundsOnRemove(ConstructGridPos pos)
+	{
+		if (!bounds.IsOnBounds(pos)) return;
+
+		bounds.Clear();
+		foreach (var kvp in Modules.Modules)
+		{
+			var moduleLocation = kvp.Key;
+			var module = kvp.Value;
+
+			bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
+		}
 	}
 }

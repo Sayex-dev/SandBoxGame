@@ -25,24 +25,31 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		noise.NoiseType = noiseType;
 	}
 
-	public override GenerationResponse GenerateModules(
+	public override ModuleGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
-		Material moduleMat,
 		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
 
-		var module = new Module(moduleSize, moduleMat);
+		var module = new Module(moduleSize);
 		SetGround(module, moduleLocation);
-		return new GenerationResponse
+
+		var bounds = new ConstructBoundsController();
+		bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
+		bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize));
+
+		var cache = new ExposedSurfaceCache();
+		cache.AddModule(module, moduleLocation);
+
+		return new ModuleGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			},
-			MaxBlockPos = new(Vector3I.One * (moduleSize - 1)),
-			MinBlockPos = new(Vector3I.Zero),
+			bounds = new ConstructBoundsController(),
+			cache = cache
 		};
 	}
 

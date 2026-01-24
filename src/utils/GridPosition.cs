@@ -2,18 +2,18 @@ using Godot;
 
 public readonly record struct WorldGridPos(Vector3I Value)
 {
-    public ConstructGridPos ToConstruct(ConstructTransform transform)
+    public ConstructGridPos ToConstruct(ConstructGridTransform transform)
     {
-        float radRot = Mathf.DegToRad(transform.Rotation);
+        float radRot = Mathf.DegToRad(transform.YRotation);
         return new((Vector3I)((Vector3)(Value - transform.WorldPos.Value)).Rotated(Vector3.Up, -radRot));
     }
 
-    public ModuleGridPos ToModule(ConstructTransform transform, int moduleSize)
+    public ModuleGridPos ToModule(ConstructGridTransform transform, int moduleSize)
     {
         return ToConstruct(transform).ToModule(moduleSize);
     }
 
-    public ModuleLocation ToModuleLocation(ConstructTransform transform, int moduleSize)
+    public ModuleLocation ToModuleLocation(ConstructGridTransform transform, int moduleSize)
     {
         return ToConstruct(transform).ToModuleLocation(moduleSize);
     }
@@ -32,9 +32,9 @@ public readonly record struct WorldGridPos(Vector3I Value)
 public readonly record struct ConstructGridPos(Vector3I Value)
 {
 
-    public WorldGridPos ToWorld(ConstructTransform transform)
+    public WorldGridPos ToWorld(ConstructGridTransform transform)
     {
-        Vector3I rotated = (Vector3I)((Vector3)Value).Rotated(Vector3.Up, transform.Rotation).Round();
+        Vector3I rotated = (Vector3I)((Vector3)Value).Rotated(Vector3.Up, transform.YRotation).Round();
         return new(transform.WorldPos.Value + rotated);
     }
 
@@ -71,7 +71,7 @@ public readonly record struct ConstructGridPos(Vector3I Value)
 
 public readonly record struct ModuleLocation(Vector3I Value)
 {
-    public WorldGridPos ToWorld(int moduleSize, ConstructTransform transform)
+    public WorldGridPos ToWorld(int moduleSize, ConstructGridTransform transform)
     {
         return ToConstruct(moduleSize).ToWorld(transform);
     }
@@ -95,7 +95,7 @@ public readonly record struct ModuleLocation(Vector3I Value)
 
 public readonly record struct ModuleGridPos(Vector3I Value)
 {
-    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructTransform transform, int moduleSize)
+    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransform transform, int moduleSize)
     {
         return ToConstruct(moduleLocation, moduleSize).ToWorld(transform);
     }

@@ -27,7 +27,7 @@ public class BiomeWorldGenerator : ConstructGenerator
 		}
 	}
 
-	public override GenerationResponse GenerateModules(
+	public override ModuleGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		Material moduleMaterial,
 		HashSet<ModuleLocation> prevLoaded
@@ -36,7 +36,7 @@ public class BiomeWorldGenerator : ConstructGenerator
 		Module module = new Module(moduleSize, moduleMaterial);
 		PopulateModule(module, moduleLocation, moduleSize);
 
-		return new GenerationResponse
+		return new ModuleGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>

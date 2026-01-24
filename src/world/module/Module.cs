@@ -1,11 +1,11 @@
 using Godot;
-using System;
-using System.Collections.Generic;
 
-public partial class Module : MeshInstance3D
+public partial class Module
 {
 	public int ModuleSize { get; private set; }
 	public int BlockCount { get; private set; }
+	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
+	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
 	public bool HasBlocks
 	{
 		get
@@ -14,12 +14,12 @@ public partial class Module : MeshInstance3D
 		}
 	}
 	private int[] blocks = [];
-	public Dictionary<ModuleGridPos, BlockState> BlockStates { get; private set; } = new();
-	private Material moduleMaterial;
-	public Module(int moduleSize, Material moduleMaterial)
+	private Vector3IBounds bounds;
+
+	public Module(int moduleSize)
 	{
 		ModuleSize = moduleSize;
-		this.moduleMaterial = moduleMaterial;
+		bounds = new Vector3IBounds(moduleSize);
 
 		int blockCount = (int)Mathf.Pow(moduleSize, 3);
 		blocks = new int[blockCount];
@@ -65,25 +65,21 @@ public partial class Module : MeshInstance3D
 
 		if (prevBlockId != blockId)
 		{
-			BlockCount += prevBlockId == -1 ? 1 : -1;
+			if (prevBlockId == -1 && blockId != -1)
+			{
+				// Adding a block
+				BlockCount++;
+				bounds.AddPoint(modulePos.Value, BlockCount);
+			}
+			else if (prevBlockId != -1 && blockId == -1)
+			{
+				// Removing a block
+				BlockCount--;
+				bounds.RemovePoint(modulePos.Value, BlockCount);
+			}
 		}
 
 		blocks[index] = blockId;
-	}
-
-	public BlockState GetBlockState(ModuleGridPos modulePos)
-	{
-		return BlockStates.GetValueOrDefault(modulePos);
-	}
-
-	public void SetBlockState(ModuleGridPos modulePos, BlockState blockState)
-	{
-		BlockStates[modulePos] = blockState;
-	}
-
-	public bool HasBlockState(ModuleGridPos modulePos)
-	{
-		return BlockStates.ContainsKey(modulePos);
 	}
 
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
@@ -113,32 +109,22 @@ public partial class Module : MeshInstance3D
 
 	public bool IsInModule(ModuleGridPos modulePos)
 	{
-		bool correctX = modulePos.Value.X >= 0 && modulePos.Value.X < ModuleSize;
-		bool correctY = modulePos.Value.Y >= 0 && modulePos.Value.Y < ModuleSize;
-		bool correctZ = modulePos.Value.Z >= 0 && modulePos.Value.Z < ModuleSize;
-		return correctX && correctY && correctZ;
+		return bounds.IsValidPoint(modulePos.Value);
 	}
 
-	public ExposedSurfaceCache BuildMesh(
-		ExposedSurfaceCache cache,
-		BlockStore blockStore,
-		ModuleLocation moduleLocation
-	)
+	// Additional utility methods using the generic bounds
+	public Vector3I GetBoundsSize()
 	{
-		if (!HasBlocks)
-		{
-			return null;
-		}
+		return bounds.GetBoundsSize();
+	}
 
-		var response = ModuleMeshGenerator.BuildModuleMesh(
-			cache,
-			this,
-			moduleLocation,
-			moduleMaterial,
-			blockStore
-		);
+	public int GetBoundsVolume()
+	{
+		return bounds.GetBoundsVolume();
+	}
 
-		Mesh = response.Mesh;
-		return response.Cache;
+	public bool IsBlockOnBoundary(ModuleGridPos modulePos)
+	{
+		return bounds.IsPointOnBoundary(modulePos.Value);
 	}
 }
