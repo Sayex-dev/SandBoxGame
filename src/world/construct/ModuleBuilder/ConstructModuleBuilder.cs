@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,20 +7,33 @@ using Godot;
 
 public class GenerationReference
 {
-    public int moduleSize;
-    public BlockStore blockStore;
-    public Material moduleMaterial;
-    public ExposedSurfaceCache exposedSurfaceCache;
-    public ConstructGenerator generator;
-    public Dictionary<ModuleLocation, Module> loadedModules;
+    public int ModuleSize;
+    public BlockStore BlockStore;
+    public Material ModuleMaterial;
+    public ConstructGenerator Generator;
+    public Dictionary<ModuleLocation, Module> LoadedModules;
 }
 
-public partial class ConstructModuleBuilder
+public class GenerateModulesResponse
+{
+    public bool GeneratedAllModules = false;
+    public Dictionary<ModuleLocation, Module> GeneratedModules = [];
+    public ExposedModuleSurfaceCache Cache;
+    public Dictionary<ModuleLocation, Mesh> Meshes;
+
+    public void AddBlockResponse(ModuleBlockGenerationResponse blockGenResponse)
+    {
+        GeneratedAllModules = blockGenResponse.GeneratedAllModules;
+        GeneratedModules = blockGenResponse.GeneratedModules;
+    }
+}
+
+public class ConstructModuleBuilder
 {
     private const int MaxConcurrentModuleLoads = 5;
     private readonly HashSet<ModuleLocation> _queued = new();
 
-    public async Task<IEnumerable<Task<ModuleGenerationResponse>>> LoadAroundPosition(
+    public async Task<IEnumerable<Task<GenerateModulesResponse>>> GenerateModulesAround(
         WorldGridPos worldPos,
         Vector3I renderDistance,
         ConstructGridTransform transform,
@@ -29,114 +43,32 @@ public partial class ConstructModuleBuilder
         var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);
         var diff = CalculateLoadSet(center, renderDistance, modules.Modules, context.Generator);
 
-        UnloadModules(diff.ToUnload, modules.Modules);
-        return await LoadModulesAsync(diff.ToLoad, modules.Modules, context);
+        UnloadModules(diff.ToUnload, modules);
+        return await GenerateModules(diff.ToLoad, modules.Modules, context);
     }
 
-    public async Task<IEnumerable<Task<ModuleGenerationResponse>>> BuildModuleMeshes(
-
+    public async Task<Mesh> GenerateModuleMesh(
+        ModuleMeshGenerateContext context
     )
     {
+        using var semaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
-    }
-
-    private Task<ModuleGenerationResponse> GenerateAsync(
-        BlockStore blockStore,
-        Material moduleMaterial,
-        ModuleLocation location,
-        ModuleLoadContext context)
-    {
-        return Task.Run(() =>
+        await semaphore.WaitAsync();
+        try
         {
-            var response = context.Generator.GenerateModules(
-                location,
-                context.ModuleMaterial);
-
-            var cacheCopy = context.SurfaceCache.ExposedSurfaces
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
-
-            var cache = new ExposedSurfaceCache(cacheCopy);
-            response.SurfaceCache = cache;
-
-            foreach (var module in response.GeneratedModules)
-            {
-                if (!module.Value.HasBlocks) continue;
-                var generationResponse = ModuleMeshGenerator.BuildModuleMesh(
-                    cache,
-                    module.Value,
-                    location,
-                    moduleMaterial,
-                    blockStore
-                );
-            }
-
-            return response;
-        });
-    }
-
-    private Task<ModuleGenerationResponse> GenerateAsync(
-    BlockStore blockStore,
-    Material moduleMaterial,
-    ModuleLocation location,
-    ModuleLoadContext context)
-    {
-        return Task.Run(() =>
-        {
-            var response = context.Generator.GenerateModules(
-                location,
-                context.ModuleMaterial);
-
-            var cacheCopy = context.SurfaceCache.ExposedSurfaces
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToHashSet());
-
-            var cache = new ExposedSurfaceCache(cacheCopy);
-            response.SurfaceCache = cache;
-
-            foreach (var module in response.GeneratedModules)
-            {
-                if (!module.Value.HasBlocks) continue;
-                var generationResponse = ModuleMeshGenerator.BuildModuleMesh(
-                    cache,
-                    module.Value,
-                    location,
-                    moduleMaterial,
-                    blockStore
-                );
-            }
-
-            return response;
-        });
-    }
-
-
-    public ExposedSurfaceCache BuildMesh(
-        ExposedSurfaceCache cache,
-        BlockStore blockStore,
-        ModuleLocation moduleLocation
-    )
-    {
-        if (!HasBlocks)
-        {
-            return null;
+            return await GenerateModuleMeshThreaded(context);
         }
-
-        var response = ModuleMeshGenerator.BuildModuleMesh(
-            cache,
-            this,
-            moduleLocation,
-            moduleMaterial,
-            blockStore
-        );
-
-        Mesh = response.Mesh;
-        return response.Cache;
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
-    private async Task<IEnumerable<Task<ModuleGenerationResponse>>> LoadModulesAsync(
-        List<ModuleLocation> positions,
-        Dictionary<ModuleLocation, Module> loaded,
-        ModuleLoadContext context
-    )
+    private async Task<IEnumerable<Task<GenerateModulesResponse>>> GenerateModules(
+    List<ModuleLocation> positions,
+    Dictionary<ModuleLocation, Module> loaded,
+    ModuleLoadContext context
+)
     {
         using var semaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
@@ -145,7 +77,7 @@ public partial class ConstructModuleBuilder
             await semaphore.WaitAsync();
             try
             {
-                return await GenerateAsync(pos, context);
+                return await GenerateModulesThreaded(pos, context);
             }
             finally
             {
@@ -156,15 +88,53 @@ public partial class ConstructModuleBuilder
         return tasks;
     }
 
+    private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context)
+    {
+        return Task.Run(() =>
+        {
+            return ModuleMeshGenerator.BuildModuleMesh(context);
+        });
+    }
+
+    private Task<GenerateModulesResponse> GenerateModulesThreaded(
+    ModuleLocation location,
+    ModuleLoadContext context)
+    {
+        return Task.Run(() =>
+        {
+            var response = new GenerateModulesResponse();
+            var blockGenResponse = context.Generator.GenerateModules(location);
+
+            foreach (var kvp in response.GeneratedModules)
+            {
+                ModuleLocation moduleLoc = kvp.Key;
+                Module module = kvp.Value;
+
+                if (!module.HasBlocks) continue;
+                var meshContext = new ModuleMeshGenerateContext(
+                    module,
+                    moduleLoc,
+                    context.BlockStore,
+                    context.ModuleMaterial
+                );
+                var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);
+
+                response.Meshes[moduleLoc] = moduleMesh;
+            }
+
+            return response;
+        });
+    }
+
+
     private void UnloadModules(
         IEnumerable<ModuleLocation> positions,
-        Dictionary<ModuleLocation, Module> loaded
+        ConstructModuleController modules
     )
     {
         foreach (var pos in positions)
         {
-            if (loaded.Remove(pos, out var module))
-                module.QueueFree();
+            modules.Remove(pos, out _);
         }
     }
 

@@ -27,24 +27,21 @@ public class BiomeWorldGenerator : ConstructGenerator
 		}
 	}
 
-	public override ModuleGenerationResponse GenerateModules(
+	public override ModuleBlockGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
-		Material moduleMaterial,
 		HashSet<ModuleLocation> prevLoaded
 	)
 	{
-		Module module = new Module(moduleSize, moduleMaterial);
+		Module module = new Module(moduleSize);
 		PopulateModule(module, moduleLocation, moduleSize);
 
-		return new ModuleGenerationResponse
+		return new ModuleBlockGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{ moduleLocation, module }
 			},
-			MaxBlockPos = new(Vector3I.One * (moduleSize - 1)),
-			MinBlockPos = new(Vector3I.Zero),
 		};
 	}
 

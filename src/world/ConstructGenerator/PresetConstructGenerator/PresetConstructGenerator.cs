@@ -27,7 +27,7 @@ public class PresetConstructGenerator : ConstructGenerator
 		}
 	}
 
-	public override ModuleGenerationResponse GenerateModules(
+	public override ModuleBlockGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		HashSet<ModuleLocation> prevLoaded = null
 	)
@@ -50,15 +50,13 @@ public class PresetConstructGenerator : ConstructGenerator
 			}
 		}
 
-		return new ModuleGenerationResponse
+		return new ModuleBlockGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			},
-			MaxBlockPos = maxPos,
-			MinBlockPos = minPos
 		};
 	}
 

@@ -5,12 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 
 
-public struct ModuleMeshGenerationResponse
-{
-	public Mesh Mesh;
-	public ExposedSurfaceCache Cache;
-}
-
 public partial class ModuleMeshGenerator : Node
 {
 	public class Surface
@@ -41,7 +35,7 @@ public partial class ModuleMeshGenerator : Node
 		new Vector2(0, 1)
 	};
 
-	public static List<Surface> GetSurfaceVectors(Module module, ExposedSurfaceCache cache)
+	public static List<Surface> GetSurfaceVectors(Module module, ExposedModuleSurfaceCache cache)
 	{
 		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
@@ -49,7 +43,7 @@ public partial class ModuleMeshGenerator : Node
 		foreach (var kvp in cache.ExposedSurfaces)
 		{
 			Direction dir = kvp.Key;
-			ICollection<ConstructGridPos> surfacePositions = kvp.Value.ToHashSet();
+			ICollection<ModuleGridPos> surfacePositions = kvp.Value.ToHashSet();
 			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, module, surfacePositions);
 			surfaces.AddRange(newSurfaces);
 		}
@@ -57,10 +51,10 @@ public partial class ModuleMeshGenerator : Node
 		return surfaces;
 	}
 
-	private static List<Surface> FindDirSurfaces(int moduleSize, Direction dir, Module module, ICollection<ConstructGridPos> surfacePositions)
+	private static List<Surface> FindDirSurfaces(int moduleSize, Direction dir, Module module, ICollection<ModuleGridPos> surfacePositions)
 	{
 		List<Surface> surfaces = [];
-		HashSet<ModuleGridPos> remaining = surfacePositions.Select(o => o.ToModule(moduleSize)).ToHashSet();
+		HashSet<ModuleGridPos> remaining = surfacePositions.ToHashSet();
 
 		Vector3I normal = (Vector3I)DirectionTools.GetWorldDirVec(dir);
 		Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
@@ -205,30 +199,24 @@ public partial class ModuleMeshGenerator : Node
 		return v.X * t1 + v.Y * t2;
 	}
 
-	public static ModuleMeshGenerationResponse BuildModuleMesh(
-		ExposedSurfaceCache cache,
-		Module module,
-		ModuleLocation moduleLocation,
-		Material mat,
-		BlockStore blockStore)
+	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context)
 	{
 		var sw = Stopwatch.StartNew();
-		cache.AddModule(module, moduleLocation);
 		Debug.WriteLine("Add Module Time: " + sw.Elapsed);
 
 		sw.Restart();
-		var surfaces = GetSurfaceVectors(module, cache);
+		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache);
 		Debug.WriteLine("Create Vectors Time: " + sw.Elapsed);
 
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);
-		st.SetMaterial(mat);
+		st.SetMaterial(context.ModuleMaterial);
 		int rotOffset = 0;
 
 		for (int i = 0; i < surfaces.Count; i++)
 		{
 			Surface s = surfaces[i];
-			BlockDefault blockDefault = blockStore.blockDefaults[s.BlockId];
+			BlockDefault blockDefault = context.BlockStore.blockDefaults[s.BlockId];
 			Color surfaceColor = Color.Color8(0, 0, 0, 0);
 
 			switch (s.Dir)
@@ -273,10 +261,6 @@ public partial class ModuleMeshGenerator : Node
 				st.AddIndex(i * 4 + ind);
 		}
 
-		return new ModuleMeshGenerationResponse
-		{
-			Mesh = st.Commit(),
-			Cache = cache
-		};
+		return st.Commit();
 	}
 }

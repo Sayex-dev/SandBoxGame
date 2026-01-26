@@ -37,6 +37,19 @@ public partial class ConstructVisualsController
         modulePool.AddFirst(module);
     }
 
+    public void CreateOrUpdateModule(ModuleLocation moduleLoc, Mesh mesh)
+    {
+        MeshInstance3D module;
+        if (!activeModules.TryGetValue(moduleLoc, out module))
+        {
+            AddModule(moduleLoc, mesh);
+        }
+        else
+        {
+            module.Mesh = mesh;
+        }
+    }
+
     private void ExtendModulePool()
     {
         MeshInstance3D newModule = new MeshInstance3D();

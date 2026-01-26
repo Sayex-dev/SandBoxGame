@@ -25,7 +25,7 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		noise.NoiseType = noiseType;
 	}
 
-	public override ModuleGenerationResponse GenerateModules(
+	public override ModuleBlockGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		HashSet<ModuleLocation> prevLoaded = null
 	)
@@ -34,22 +34,13 @@ public partial class SimpleNoiseConstructGenerator : ConstructGenerator
 		var module = new Module(moduleSize);
 		SetGround(module, moduleLocation);
 
-		var bounds = new ConstructBoundsController();
-		bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
-		bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize));
-
-		var cache = new ExposedSurfaceCache();
-		cache.AddModule(module, moduleLocation);
-
-		return new ModuleGenerationResponse
+		return new ModuleBlockGenerationResponse
 		{
 			GeneratedAllModules = false,
 			GeneratedModules = new Dictionary<ModuleLocation, Module>
 			{
 				{moduleLocation, module}
 			},
-			bounds = new ConstructBoundsController(),
-			cache = cache
 		};
 	}
 

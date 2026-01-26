@@ -1,6 +1,6 @@
 using Godot;
 
-public class ConstructGridTransform
+public partial class ConstructGridTransform : Node
 {
     public WorldGridPos WorldPos { get; private set; }
     public float YRotation

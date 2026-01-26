@@ -1,14 +1,4 @@
 using System.Collections.Generic;
-using Godot;
-
-public class ModuleGenerationResponse
-{
-	public bool GeneratedAllModules = false;
-	public ConstructBoundsController bounds;
-	public ExposedSurfaceCache cache;
-	public Dictionary<ModuleLocation, Module> GeneratedModules = [];
-}
-
 
 public abstract partial class ConstructGenerator
 {
@@ -20,7 +10,7 @@ public abstract partial class ConstructGenerator
 		this.seed = seed;
 	}
 
-	public abstract ModuleGenerationResponse GenerateModules(
+	public abstract ModuleBlockGenerationResponse GenerateModules(
 		ModuleLocation moduleLocation,
 		HashSet<ModuleLocation> prevLoaded = null
 	);

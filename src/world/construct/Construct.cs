@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 public partial class Construct : Node3D, IHaveBounds
 {
 	public ConstructGridTransform ConstructTransform { get; private set; }
-	public ExposedSurfaceCache exposedSurfaceCache { get; private set; }
 	public ConstructModuleController Modules { get; private set; }
 	private ConstructVisualsController visuals;
 	private ConstructMotionController motion;
@@ -25,6 +23,8 @@ public partial class Construct : Node3D, IHaveBounds
 		ConstructGridTransform gridTransform
 	)
 	{
+		ConstructTransform = FindChildOfType<ConstructGridTransform>();
+
 		this.visuals = visuals;
 		this.motion = motion;
 		this.ConstructTransform = gridTransform;
@@ -49,60 +49,29 @@ public partial class Construct : Node3D, IHaveBounds
 		}
 	}
 
-	public async Task LoadAround(WorldGridPos worldPos, Vector3I renderDistance)
-	{
-		var context = new ModuleLoadContext(
-			Modules.ModuleSize,
-			blockStore,
-			moduleMaterial,
-			exposedSurfaceCache,
-			constructGenerator
-		);
-		var tasks = await moduleBuilder.LoadAroundPosition(worldPos, renderDistance, ConstructTransform, Modules, context);
-
-		foreach (Task<ModuleGenerationResponse> task in tasks)
-		{
-			var response = await task;
-			bounds.CombineWith(response.bounds);
-
-			foreach (var kvp in response.GeneratedModules)
-			{
-
-			}
-		}
-	}
-
 	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds)
 	{
+		HashSet<ModuleLocation> moduleLocations = [];
 		for (int i = 0; i < worldPositions.Length; i++)
 		{
 			WorldGridPos worldPos = worldPositions[i];
 			int blockId = blockIds[i];
-
-			ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
-
-			exposedSurfaceCache.AddBlock(conPos);
-			Modules.SetBlock(conPos, blockId);
-
-			if (blockId == -1)
-			{
-				UpdateBoundsOnRemove(conPos);
-			}
-			else
-			{
-				bounds.AddPosition(conPos);
-			}
+			ModuleLocation moduleLoc = worldPos.ToModuleLocation(ConstructTransform, Modules.ModuleSize);
+			moduleLocations.Add(moduleLoc);
+			SetBlockInternal(worldPos, blockId);
 		}
-		UpdateModules().FireAndForget();
+
+		foreach (var moduleLoc in moduleLocations)
+		{
+			UpdateModuleMesh(moduleLoc).FireAndForget();
+		}
 	}
 
 	public void SetBlock(WorldGridPos worldPos, int blockId)
 	{
-		ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
-		exposedSurfaceCache.AddBlock(conPos);
-		bounds.AddPosition(conPos);
-		Modules.SetBlock(conPos, blockId);
-		UpdateModules().FireAndForget();
+		SetBlockInternal(worldPos, blockId);
+		ModuleLocation moduleLoc = worldPos.ToModuleLocation(ConstructTransform, Modules.ModuleSize);
+		UpdateModuleMesh(moduleLoc).FireAndForget();
 	}
 
 	public bool TryGetBlock(WorldGridPos worldPos, out int blockId)
@@ -126,25 +95,66 @@ public partial class Construct : Node3D, IHaveBounds
 		return bounds.MaxPos.ToWorld(ConstructTransform);
 	}
 
-	private async Task UpdateModules()
+	private void SetBlockInternal(WorldGridPos worldPos, int blockId)
+	{
+		ConstructGridPos conPos = worldPos.ToConstruct(ConstructTransform);
+
+		Modules.SetBlock(conPos, blockId);
+
+		if (blockId == -1)
+		{
+			UpdateBoundsOnRemove(conPos);
+		}
+		else
+		{
+			bounds.AddPosition(conPos);
+		}
+	}
+
+	private async Task UpdateModuleMesh(ModuleLocation moduleLoc)
+	{
+		Module module;
+		if (!Modules.TryGet(moduleLoc, out module)) return;
+
+
+		var context = new ModuleMeshGenerateContext(
+			module,
+			moduleLoc,
+			blockStore,
+			moduleMaterial
+		);
+		var mesh = await moduleBuilder.GenerateModuleMesh(context);
+		visuals.RemoveModule(moduleLoc);
+	}
+
+	public async Task LoadAround(WorldGridPos worldPos, Vector3I renderDistance)
 	{
 		var context = new ModuleLoadContext(
 			Modules.ModuleSize,
 			blockStore,
 			moduleMaterial,
-			exposedSurfaceCache,
 			constructGenerator
 		);
-		var tasks = await moduleBuilder.LoadAroundPosition(worldPos, renderDistance, ConstructTransform, Modules, context);
+		var tasks = await moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
 
-		foreach (Task<ModuleGenerationResponse> task in tasks)
+		foreach (Task<GenerateModulesResponse> task in tasks)
 		{
 			var response = await task;
-			bounds.CombineWith(response.bounds);
-
 			foreach (var kvp in response.GeneratedModules)
 			{
+				ModuleLocation moduleLocation = kvp.Key;
+				Module module = kvp.Value;
+				Mesh mesh = response.Meshes[moduleLocation];
 
+				// Update bounds
+				bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
+				bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize));
+
+				// Update modules
+				Modules.Add(moduleLocation, module);
+
+				// Update visuals
+				visuals.AddModule(moduleLocation, mesh);
 			}
 		}
 	}
@@ -153,6 +163,7 @@ public partial class Construct : Node3D, IHaveBounds
 	{
 		if (!bounds.IsOnBounds(pos)) return;
 
+		// Rebuild bounds
 		bounds.Clear();
 		foreach (var kvp in Modules.Modules)
 		{

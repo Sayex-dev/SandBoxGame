@@ -60,32 +60,32 @@ public partial class BlockWorld : Node3D
 		return null;
 	}
 
-	public void SetBlockState(Construct construct, WorldGridPos worldPos, BlockState blockState)
-	{
-		construct.SetBlockState(worldPos, blockState);
-	}
-
-	public BlockState GetBlockState(WorldGridPos worldPos)
-	{
-		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
-		foreach (Construct construct in nearConstructs)
-		{
-			BlockState blockState = construct.GetBlockState(worldPos);
-			if (blockState != null) return blockState;
-		}
-		return null;
-	}
-
-	public Construct HasBlockState(WorldGridPos worldPos)
-	{
-		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
-		foreach (Construct construct in nearConstructs)
-		{
-			BlockState blockState = construct.GetBlockState(worldPos);
-			if (blockState != null) return construct;
-		}
-		return null;
-	}
+	//	public void SetBlockState(Construct construct, WorldGridPos worldPos, BlockState blockState)
+	//	{
+	//		construct.SetBlockState(worldPos, blockState);
+	//	}
+	//
+	//	public BlockState GetBlockState(WorldGridPos worldPos)
+	//	{
+	//		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+	//		foreach (Construct construct in nearConstructs)
+	//		{
+	//			BlockState blockState = construct.GetBlockState(worldPos);
+	//			if (blockState != null) return blockState;
+	//		}
+	//		return null;
+	//	}
+	//
+	//	public Construct HasBlockState(WorldGridPos worldPos)
+	//	{
+	//		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
+	//		foreach (Construct construct in nearConstructs)
+	//		{
+	//			BlockState blockState = construct.GetBlockState(worldPos);
+	//			if (blockState != null) return construct;
+	//		}
+	//		return null;
+	//	}
 
 	public void AddConstruct(Construct construct)
 	{
