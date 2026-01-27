@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
+using Godot;
 
-public class ConstructModuleController
+public partial class ConstructModuleController
 {
-    public int ModuleSize { get; }
+    public int ModuleSize { get; private set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 

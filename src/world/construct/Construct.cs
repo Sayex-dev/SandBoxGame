@@ -1,21 +1,20 @@
 using Godot;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 public partial class Construct : Node3D, IHaveBounds
 {
-	public ConstructGridTransform ConstructTransform { get; private set; }
-	public ConstructModuleController Modules { get; private set; }
-	private ConstructVisualsController visuals;
-	private ConstructMotionController motion;
-	private ConstructBoundsController bounds;
-	private ConstructGenerator constructGenerator;
-	private ConstructModuleBuilder moduleBuilder;
+	[Export] public ConstructGridTransform ConstructTransform { get; private set; }
+	[Export] private ConstructVisualsController visuals;
+	[Export] private ConstructMotionController motion;
+	[Export] private ConstructBoundsController bounds;
+	[Export] private ConstructGenerator constructGenerator;
 
+	public ConstructModuleController Modules { get; private set; }
+	private ConstructModuleBuilder moduleBuilder;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
-	private bool isStatic;
 
 	public void Initialize(
 		ConstructVisualsController visuals,
@@ -34,6 +33,12 @@ public partial class Construct : Node3D, IHaveBounds
 
 		SetPhysicsProcess(true);
 	}
+
+	private T FindChildOfType<T>()
+	{
+		throw new NotImplementedException();
+	}
+
 	public override void _Ready()
 	{
 		SetPhysicsProcess(false);

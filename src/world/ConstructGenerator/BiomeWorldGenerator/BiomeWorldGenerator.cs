@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 
 
-public class BiomeWorldGenerator : ConstructGenerator
+public partial class BiomeWorldGenerator : ConstructGenerator
 {
-	private List<Biome> biomes { get; }
+	[Export] public Godot.Collections.Array<Biome> biomes { get; private set; } = [];
+	[Export] private FastNoiseLite noise = new();
 
-	private FastNoiseLite noise = new();
 	private Dictionary<Vector2I, int> cachedMaxModuleY = [];
 
 	public BiomeWorldGenerator(

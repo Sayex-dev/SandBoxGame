@@ -1,13 +1,14 @@
 using System.Collections.Generic;
+using Godot;
 
-public abstract partial class ConstructGenerator
+public abstract partial class ConstructGenerator : Node
 {
+	[Export] public int seed { get; private set; }
 	protected int moduleSize;
-	protected int seed;
-	public ConstructGenerator(int moduleSize, int seed)
+
+	public void Initialize(int moduleSize)
 	{
 		this.moduleSize = moduleSize;
-		this.seed = seed;
 	}
 
 	public abstract ModuleBlockGenerationResponse GenerateModules(
