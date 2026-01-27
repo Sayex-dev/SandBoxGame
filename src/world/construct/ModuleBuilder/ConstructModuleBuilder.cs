@@ -36,7 +36,7 @@ public class ConstructModuleBuilder
     public async Task<IEnumerable<Task<GenerateModulesResponse>>> GenerateModulesAround(
         WorldGridPos worldPos,
         Vector3I renderDistance,
-        ConstructGridTransform transform,
+        ConstructTransform transform,
         ConstructModuleController modules,
         ModuleLoadContext context)
     {
@@ -44,7 +44,7 @@ public class ConstructModuleBuilder
         var diff = CalculateLoadSet(center, renderDistance, modules.Modules, context.Generator);
 
         UnloadModules(diff.ToUnload, modules);
-        return await GenerateModules(diff.ToLoad, modules.Modules, context);
+        return GenerateModuleTasks(diff.ToLoad, context);
     }
 
     public async Task<Mesh> GenerateModuleMesh(
@@ -64,11 +64,10 @@ public class ConstructModuleBuilder
         }
     }
 
-    private async Task<IEnumerable<Task<GenerateModulesResponse>>> GenerateModules(
-    List<ModuleLocation> positions,
-    Dictionary<ModuleLocation, Module> loaded,
-    ModuleLoadContext context
-)
+    private IEnumerable<Task<GenerateModulesResponse>> GenerateModuleTasks(
+        List<ModuleLocation> positions,
+        ModuleLoadContext context
+    )
     {
         using var semaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 

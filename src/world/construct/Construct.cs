@@ -3,32 +3,66 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+[GlobalClass]
 public partial class Construct : Node3D, IHaveBounds
 {
-	[Export] public ConstructGridTransform ConstructTransform { get; private set; }
-	[Export] private ConstructVisualsController visuals;
-	[Export] private ConstructMotionController motion;
-	[Export] private ConstructBoundsController bounds;
-	[Export] private ConstructGenerator constructGenerator;
+	[Export] public bool IsGlobal { get; private set; }
+	[Export] private ConstructGeneratorSettings constructGeneratorSettings;
+	[Export] private SecondOrderDynamicsSettings rotSodSettings;
+	[Export] private SecondOrderDynamicsSettings moveSodSettings;
 
 	public ConstructModuleController Modules { get; private set; }
+	public ConstructTransform ConstructTransform { get; private set; }
+
+	private ConstructGenerator constructGenerator;
+	private ConstructMotionController motion;
+	private ConstructVisualsController visuals;
+	private ConstructBoundsController bounds;
 	private ConstructModuleBuilder moduleBuilder;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
 
+	public void InitializePrebuilt(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial)
+	{
+		SecondOrderDynamics<float> rotSod = rotSodSettings.GetInstance(0);
+		SecondOrderDynamics<Vector3> moveSod = moveSodSettings.GetInstance(Position);
+
+		Initialize(
+			new ConstructTransform((Vector3I)Position),
+			new ConstructModuleController(moduleSize),
+			constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed),
+			new ConstructMotionController(moveSod, rotSod, Position, Rotation),
+			new ConstructVisualsController(moduleSize, this),
+			new ConstructBoundsController(),
+			new ConstructModuleBuilder(),
+			blockStore,
+			moduleMaterial
+		);
+	}
+
 	public void Initialize(
-		ConstructVisualsController visuals,
+		ConstructTransform constructTransform,
+		ConstructModuleController modules,
+		ConstructGenerator constructGenerator,
 		ConstructMotionController motion,
-		ConstructGridTransform gridTransform
+		ConstructVisualsController visuals,
+		ConstructBoundsController bounds,
+		ConstructModuleBuilder moduleBuilder,
+		BlockStore blockStore,
+		Material moduleMaterial
 	)
 	{
-		ConstructTransform = FindChildOfType<ConstructGridTransform>();
-
-		this.visuals = visuals;
+		this.ConstructTransform = constructTransform;
+		this.Modules = modules;
+		this.constructGenerator = constructGenerator;
 		this.motion = motion;
-		this.ConstructTransform = gridTransform;
+		this.visuals = visuals;
+		this.bounds = bounds;
+		this.moduleBuilder = moduleBuilder;
+		this.blockStore = blockStore;
+		this.moduleMaterial = moduleMaterial;
 
-		Position = gridTransform.WorldPos.Value;
+		Position = ConstructTransform.WorldPos.Value;
 		Rotation = motion.Rotation;
 
 		SetPhysicsProcess(true);

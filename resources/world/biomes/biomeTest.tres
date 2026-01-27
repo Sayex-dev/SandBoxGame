@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Biome" load_steps=7 format=3 uid="uid://vh6tbdwkh8p1"]
+[gd_resource type="Resource" script_class="Biome" load_steps=8 format=3 uid="uid://vh6tbdwkh8p1"]
 
 [ext_resource type="Script" uid="uid://kc5w8be8jk8c" path="res://src/world/ConstructGenerator/BiomeWorldGenerator/Biomes/NoiseLayer.cs" id="1_4jvog"]
 [ext_resource type="Resource" uid="uid://coihw0qwhor3q" path="res://resources/blocks/defaultBlock.tres" id="2_6uwss"]
@@ -21,6 +21,8 @@ script = ExtResource("1_4jvog")
 NoiseScale = 20.0
 NoiseHeight = 3.0
 metadata/_custom_type_script = "uid://kc5w8be8jk8c"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7wqi5"]
 
 [resource]
 script = ExtResource("2_7wqi5")

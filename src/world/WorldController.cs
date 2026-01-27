@@ -57,10 +57,12 @@ public partial class WorldController : Node3D
         foreach (var construct in GetChildren().OfType<Construct>())
         {
             RemoveChild(construct);
-            construct.Initialize(
-                new ConstructVisualsController(ModuleSize, construct),
-                new ConstructMotionController(),
-                BlockStore, ModuleMat);
+            construct.InitializePrebuilt(
+                ModuleSize,
+                Seed,
+                BlockStore,
+                ModuleMat
+            );
             if (construct.IsGlobal)
                 blockWorld.AddGlobalConstruct(construct);
             else

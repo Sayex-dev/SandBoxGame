@@ -7,9 +7,9 @@ public partial class SecondOrderDynamicsSettings : Resource
     [Export] public float z = 0;
     [Export] public float r = 0;
 
-    public SecondOrderDynamics<Vector3> GetInstance(Vector3 worldPos)
+    public SecondOrderDynamics<Vector3> GetInstance(Vector3 pos)
     {
-        return new(f, z, r, worldPos, new Vector3SodMath());
+        return new(f, z, r, pos, new Vector3SodMath());
     }
 
     public SecondOrderDynamics<float> GetInstance(float start)

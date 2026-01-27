@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 
 public partial class BiomeWorldGenerator : ConstructGenerator
 {
-	[Export] public Godot.Collections.Array<Biome> biomes { get; private set; } = [];
-	[Export] private FastNoiseLite noise = new();
+	private List<Biome> biomes;
+	private FastNoiseLite noise = new();
 
 	private Dictionary<Vector2I, int> cachedMaxModuleY = [];
 
@@ -19,11 +20,6 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 		noise.NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex;
 		noise.Seed = seed;
-
-		for (int i = 0; i < this.biomes.Count; i++)
-		{
-			this.biomes[i].SetSeed(seed);
-		}
 	}
 
 	public override ModuleBlockGenerationResponse GenerateModules(
@@ -57,7 +53,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				Vector2I inConstructLocation =
 					new(moduleOffset.Value.X + x, moduleOffset.Value.Z + z);
 
-				int groundHeight = biome.GetGroundHeight(inConstructLocation);
+				int groundHeight = biome.GetGroundHeight(inConstructLocation, seed);
 				int maxY = Math.Min(
 					groundHeight - moduleLocation.Value.Y * moduleSize,
 					moduleSize
@@ -71,7 +67,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 					ConstructGridPos worldPos =
 						inModulePos.ToConstruct(moduleLocation, moduleSize);
 
-					int blockId = biome.GetBlockId(worldPos, groundHeight);
+					int blockId = biome.GetBlockId(worldPos, groundHeight, seed);
 					module.SetBlock(inModulePos, blockId);
 				}
 			}

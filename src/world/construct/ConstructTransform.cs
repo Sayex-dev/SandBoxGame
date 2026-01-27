@@ -1,6 +1,6 @@
 using Godot;
 
-public partial class ConstructGridTransform : Node
+public partial class ConstructTransform
 {
     public WorldGridPos WorldPos { get; private set; }
     public float YRotation
@@ -38,7 +38,7 @@ public partial class ConstructGridTransform : Node
     private Vector3I positionSum;
     private int blockCount;
 
-    public ConstructGridTransform(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
+    public ConstructTransform(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
     {
         WorldPos = constructWorldPos;
         FacingDirection = FacingDir;

@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-public class ConstructMotionController
+public partial class ConstructMotionController
 {
     public Vector3 Position { get; private set; }
     public Vector3 Rotation { get; private set; }
@@ -10,10 +10,18 @@ public class ConstructMotionController
     private SecondOrderDynamics<Vector3> moveSecondOrderDynamics;
     private SecondOrderDynamics<float> rotationSecondOrderDynamics;
 
-    public ConstructMotionController(Vector3 initPosition = default, Vector3 initRotation = default)
+    public ConstructMotionController(
+        SecondOrderDynamics<Vector3> moveSod,
+        SecondOrderDynamics<float> rotSod,
+        Vector3 initPosition = default,
+        Vector3 initRotation = default
+    )
     {
         Position = initPosition;
         Rotation = initRotation;
+
+        moveSecondOrderDynamics = moveSod;
+        rotationSecondOrderDynamics = rotSod;
     }
 
     public void Update(double delta, WorldGridPos targetWorldPos, float degTargetYRotation)
