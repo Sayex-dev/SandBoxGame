@@ -174,7 +174,7 @@ public partial class Construct : Node3D, IHaveBounds
 			moduleMaterial,
 			constructGenerator
 		);
-		var tasks = await moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
+		var tasks = moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
 
 		foreach (Task<GenerateModulesResponse> task in tasks)
 		{

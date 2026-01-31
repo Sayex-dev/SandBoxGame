@@ -1,11 +1,10 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 
-public partial class ModuleMeshGenerator : Node
+public class ModuleMeshGenerator
 {
 	public class Surface
 	{
@@ -27,7 +26,7 @@ public partial class ModuleMeshGenerator : Node
 		}
 	}
 
-	public static readonly Vector2[] UVs = new Vector2[]
+	public static readonly Vector2[] UVs =
 	{
 		new Vector2(0, 0),
 		new Vector2(1, 0),

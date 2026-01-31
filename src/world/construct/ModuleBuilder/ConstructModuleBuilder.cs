@@ -19,7 +19,7 @@ public class GenerateModulesResponse
     public bool GeneratedAllModules = false;
     public Dictionary<ModuleLocation, Module> GeneratedModules = [];
     public ExposedModuleSurfaceCache Cache;
-    public Dictionary<ModuleLocation, Mesh> Meshes;
+    public Dictionary<ModuleLocation, Mesh> Meshes = new();
 
     public void AddBlockResponse(ModuleBlockGenerationResponse blockGenResponse)
     {
@@ -32,8 +32,9 @@ public class ConstructModuleBuilder
 {
     private const int MaxConcurrentModuleLoads = 5;
     private readonly HashSet<ModuleLocation> _queued = new();
+    SemaphoreSlim loadSemaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
-    public async Task<IEnumerable<Task<GenerateModulesResponse>>> GenerateModulesAround(
+    public IEnumerable<Task<GenerateModulesResponse>> GenerateModulesAround(
         WorldGridPos worldPos,
         Vector3I renderDistance,
         ConstructTransform transform,
@@ -51,16 +52,14 @@ public class ConstructModuleBuilder
         ModuleMeshGenerateContext context
     )
     {
-        using var semaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
-
-        await semaphore.WaitAsync();
+        await loadSemaphore.WaitAsync();
         try
         {
             return await GenerateModuleMeshThreaded(context);
         }
         finally
         {
-            semaphore.Release();
+            loadSemaphore.Release();
         }
     }
 
@@ -69,18 +68,16 @@ public class ConstructModuleBuilder
         ModuleLoadContext context
     )
     {
-        using var semaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
-
         var tasks = positions.Select(async pos =>
         {
-            await semaphore.WaitAsync();
+            await loadSemaphore.WaitAsync();
             try
             {
                 return await GenerateModulesThreaded(pos, context);
             }
             finally
             {
-                semaphore.Release();
+                loadSemaphore.Release();
             }
         });
 
@@ -103,13 +100,16 @@ public class ConstructModuleBuilder
         {
             var response = new GenerateModulesResponse();
             var blockGenResponse = context.Generator.GenerateModules(location);
+            response.GeneratedAllModules = blockGenResponse.GeneratedAllModules;
 
-            foreach (var kvp in response.GeneratedModules)
+            foreach (var kvp in blockGenResponse.GeneratedModules)
             {
                 ModuleLocation moduleLoc = kvp.Key;
                 Module module = kvp.Value;
 
                 if (!module.HasBlocks) continue;
+
+                response.GeneratedModules[moduleLoc] = module;
                 var meshContext = new ModuleMeshGenerateContext(
                     module,
                     moduleLoc,
