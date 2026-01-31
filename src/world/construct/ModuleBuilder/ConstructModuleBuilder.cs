@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public class GenerateModulesResponse
     }
 }
 
-public class ConstructModuleBuilder
+public class ConstructModuleBuilder : IDisposable
 {
     private const int MaxConcurrentModuleLoads = 5;
     private readonly HashSet<ModuleLocation> _queued = new();
@@ -45,7 +46,7 @@ public class ConstructModuleBuilder
         var diff = CalculateLoadSet(center, renderDistance, modules.Modules, context.Generator);
 
         UnloadModules(diff.ToUnload, modules);
-        return GenerateModuleTasks(diff.ToLoad, context);
+        return GenerateModuleGenerationTasks(diff.ToLoad, context);
     }
 
     public async Task<Mesh> GenerateModuleMesh(
@@ -63,7 +64,7 @@ public class ConstructModuleBuilder
         }
     }
 
-    private IEnumerable<Task<GenerateModulesResponse>> GenerateModuleTasks(
+    private IEnumerable<Task<GenerateModulesResponse>> GenerateModuleGenerationTasks(
         List<ModuleLocation> positions,
         ModuleLoadContext context
     )
@@ -73,7 +74,7 @@ public class ConstructModuleBuilder
             await loadSemaphore.WaitAsync();
             try
             {
-                return await GenerateModulesThreaded(pos, context);
+                return await StartModuleGenerationThread(pos, context);
             }
             finally
             {
@@ -87,19 +88,21 @@ public class ConstructModuleBuilder
     private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context)
     {
         return Task.Run(() =>
-        {
-            return ModuleMeshGenerator.BuildModuleMesh(context);
-        });
+            {
+                return ModuleMeshGenerator.BuildModuleMesh(context);
+            });
     }
 
-    private Task<GenerateModulesResponse> GenerateModulesThreaded(
+    private Task<GenerateModulesResponse> StartModuleGenerationThread(
     ModuleLocation location,
     ModuleLoadContext context)
     {
         return Task.Run(() =>
         {
             var response = new GenerateModulesResponse();
+            var sw = Stopwatch.StartNew();
             var blockGenResponse = context.Generator.GenerateModules(location);
+            Debug.WriteLine("Generate Modules Time: " + sw.Elapsed);
             response.GeneratedAllModules = blockGenResponse.GeneratedAllModules;
 
             foreach (var kvp in blockGenResponse.GeneratedModules)
@@ -116,7 +119,9 @@ public class ConstructModuleBuilder
                     context.BlockStore,
                     context.ModuleMaterial
                 );
+                sw.Restart();
                 var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);
+                Debug.WriteLine("Generate Mesh Time: " + sw.Elapsed);
 
                 response.Meshes[moduleLoc] = moduleMesh;
             }
@@ -166,4 +171,6 @@ public class ConstructModuleBuilder
 
         return result;
     }
+
+    public void Dispose() => loadSemaphore?.Dispose();
 }

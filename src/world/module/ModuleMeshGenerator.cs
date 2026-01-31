@@ -201,9 +201,6 @@ public class ModuleMeshGenerator
 	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context)
 	{
 		var sw = Stopwatch.StartNew();
-		Debug.WriteLine("Add Module Time: " + sw.Elapsed);
-
-		sw.Restart();
 		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache);
 		Debug.WriteLine("Create Vectors Time: " + sw.Elapsed);
 
