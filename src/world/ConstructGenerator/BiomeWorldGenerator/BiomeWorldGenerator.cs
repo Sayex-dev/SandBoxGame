@@ -45,39 +45,46 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 		int maxMaxY = 0;
 		ConstructGridPos moduleOffset = moduleLocation.ToConstruct(moduleSize);
 
+		// Collect all block data first
+		var blockDataList = new List<BlockData>();
+
+		// Pre-calculate module Y offset
+		int moduleYOffset = moduleLocation.Value.Y * moduleSize;
+
 		for (int x = 0; x < moduleSize; x++)
 		{
+			int worldX = moduleOffset.Value.X + x;
+
 			for (int z = 0; z < moduleSize; z++)
 			{
+				int worldZ = moduleOffset.Value.Z + z;
 				Biome biome = biomes[0]; // biome selection later
-				Vector2I inConstructLocation =
-					new(moduleOffset.Value.X + x, moduleOffset.Value.Z + z);
+				Vector2I inConstructLocation = new(worldX, worldZ);
 
 				int groundHeight = biome.GetGroundHeight(inConstructLocation, seed);
-				int maxY = Math.Min(
-					groundHeight - moduleLocation.Value.Y * moduleSize,
-					moduleSize
-				);
+				int maxY = Math.Min(groundHeight - moduleYOffset, moduleSize);
+
+				if (maxY <= 0) continue; // Skip empty columns
 
 				maxMaxY = Math.Max(maxMaxY, maxY);
 
 				for (int y = 0; y < maxY; y++)
 				{
 					ModuleGridPos inModulePos = new(new Vector3I(x, y, z));
-					ConstructGridPos worldPos =
-						inModulePos.ToConstruct(moduleLocation, moduleSize);
+					ConstructGridPos worldPos = inModulePos.ToConstruct(moduleLocation, moduleSize);
 
 					int blockId = biome.GetBlockId(worldPos, groundHeight, seed);
-					module.SetBlock(inModulePos, blockId);
+					blockDataList.Add(new BlockData(inModulePos, blockId));
 				}
 			}
 		}
 
+		// Apply all blocks at once
+		module.SetAllBlocks(blockDataList);
+
 		if (maxMaxY > 0 && maxMaxY < moduleSize * 0.75f)
 		{
-			cachedMaxModuleY[
-				new Vector2I(moduleLocation.Value.X, moduleLocation.Value.Z)
-			] = moduleLocation.Value.Y;
+			cachedMaxModuleY[new Vector2I(moduleLocation.Value.X, moduleLocation.Value.Z)] = moduleLocation.Value.Y;
 		}
 	}
 

@@ -1,4 +1,18 @@
+using System.Collections.Generic;
 using Godot;
+
+
+public struct BlockData
+{
+	public ModuleGridPos Position;
+	public int BlockId;
+
+	public BlockData(ModuleGridPos position, int blockId)
+	{
+		Position = position;
+		BlockId = blockId;
+	}
+}
 
 public partial class Module
 {
@@ -85,6 +99,42 @@ public partial class Module
 		}
 
 		blocks[index] = blockId;
+	}
+
+	public void SetAllBlocks(IEnumerable<BlockData> blockDataList)
+	{
+		// Disable surface cache updates during bulk operation
+		bool originalCacheEnabled = SurfaceCache != null;
+		var originalSurfaceCache = SurfaceCache;
+		SurfaceCache = null;
+
+		// Store old block count for bounds calculation
+		int oldBlockCount = BlockCount;
+		BlockCount = 0;
+
+		// Clear bounds for recalculation
+		bounds = new Vector3IBounds(ModuleSize);
+
+		// Apply all block changes
+		foreach (var blockData in blockDataList)
+		{
+			int index = InModuleToArrayPos(blockData.Position);
+			blocks[index] = blockData.BlockId;
+
+			if (blockData.BlockId != -1)
+			{
+				BlockCount++;
+				bounds.AddPoint(blockData.Position.Value, BlockCount);
+			}
+		}
+
+		// Restore surface cache and rebuild it
+		if (originalCacheEnabled)
+		{
+			SurfaceCache = originalSurfaceCache;
+			SurfaceCache = new ExposedModuleSurfaceCache(); // Clear and rebuild
+			SurfaceCache.RebuildModule(this);
+		}
 	}
 
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
