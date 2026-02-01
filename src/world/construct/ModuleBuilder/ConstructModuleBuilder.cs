@@ -80,7 +80,7 @@ public class ConstructModuleBuilder : IDisposable
             {
                 loadSemaphore.Release();
             }
-        });
+        }).ToList();
 
         return tasks;
     }

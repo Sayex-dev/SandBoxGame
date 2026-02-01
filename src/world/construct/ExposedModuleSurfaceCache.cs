@@ -38,7 +38,28 @@ public class ExposedModuleSurfaceCache
 
     public void RebuildModule(Module module)
     {
+        // Empty module case
         if (module.BlockCount == 0) return;
+
+        // Filled module case
+        int size = module.ModuleSize;
+        if (module.BlockCount == Math.Pow(size, 3))
+        {
+            foreach (var kvp in exposedSurfaces)
+            {
+                Direction dir = kvp.Key;
+                HashSet<ModuleGridPos> surfaceSet = kvp.Value;
+
+                for (int u = 0; u < size; u++)
+                {
+                    for (int v = 0; v < size; v++)
+                    {
+                        Vector3I position = GetSurfacePosition(dir, u, v, size);
+                        surfaceSet.Add(position);
+                    }
+                }
+            }
+        }
 
         int[] blocks = module.GetBlockArray();
 
@@ -106,5 +127,19 @@ public class ExposedModuleSurfaceCache
             exposedDirections[i] = isExposed;
         }
         return exposedDirections;
+    }
+
+    private Vector3I GetSurfacePosition(Direction direction, int u, int v, int size)
+    {
+        return direction switch
+        {
+            Direction.FORWARD => new Vector3I(u, v, size - 1),
+            Direction.BACKWARD => new Vector3I(u, v, 0),
+            Direction.RIGHT => new Vector3I(size - 1, u, v),
+            Direction.LEFT => new Vector3I(0, u, v),
+            Direction.UP => new Vector3I(u, size - 1, v),
+            Direction.DOWN => new Vector3I(u, 0, v),
+            _ => throw new ArgumentException($"Invalid direction: {direction}")
+        };
     }
 }
