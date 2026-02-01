@@ -42,6 +42,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 	private void PopulateModule(Module module, ModuleLocation moduleLocation, int moduleSize)
 	{
+		TimeTracker.Start("Module Block Generation", TimeTracker.TrackingType.Average);
 		int maxMaxY = 0;
 		ConstructGridPos moduleOffset = moduleLocation.ToConstruct(moduleSize);
 
@@ -78,6 +79,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				}
 			}
 		}
+		TimeTracker.End("Module Block Generation");
 
 		// Apply all blocks at once
 		module.SetAllBlocks(blockDataList);

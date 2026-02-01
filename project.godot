@@ -15,6 +15,10 @@ run/main_scene="res://scenes/node_3d.tscn"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+TimeTracker="*res://src/utils/TimeTracking/TimeTracker.cs"
+
 [dotnet]
 
 project/assembly_name="SandBoxGame"

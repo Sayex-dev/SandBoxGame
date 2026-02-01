@@ -200,9 +200,7 @@ public class ModuleMeshGenerator
 
 	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context)
 	{
-		var sw = Stopwatch.StartNew();
 		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache);
-		Debug.WriteLine("Create Vectors Time: " + sw.Elapsed);
 
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);

@@ -100,9 +100,9 @@ public class ConstructModuleBuilder : IDisposable
         return Task.Run(() =>
         {
             var response = new GenerateModulesResponse();
-            var sw = Stopwatch.StartNew();
+            TimeTracker.Start("Module Generation", TimeTracker.TrackingType.Average);
             var blockGenResponse = context.Generator.GenerateModules(location);
-            Debug.WriteLine("Generate Modules Time: " + sw.Elapsed);
+            TimeTracker.End("Module Generation");
             response.GeneratedAllModules = blockGenResponse.GeneratedAllModules;
 
             foreach (var kvp in blockGenResponse.GeneratedModules)
@@ -119,9 +119,9 @@ public class ConstructModuleBuilder : IDisposable
                     context.BlockStore,
                     context.ModuleMaterial
                 );
-                sw.Restart();
+                TimeTracker.Start("Build Module Mesh", TimeTracker.TrackingType.Average);
                 var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);
-                Debug.WriteLine("Generate Mesh Time: " + sw.Elapsed);
+                TimeTracker.End("Build Module Mesh");
 
                 response.Meshes[moduleLoc] = moduleMesh;
             }

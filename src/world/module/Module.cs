@@ -103,6 +103,7 @@ public partial class Module
 
 	public void SetAllBlocks(IEnumerable<BlockData> blockDataList)
 	{
+		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
 		// Disable surface cache updates during bulk operation
 		bool originalCacheEnabled = SurfaceCache != null;
 		var originalSurfaceCache = SurfaceCache;
@@ -127,7 +128,9 @@ public partial class Module
 				bounds.AddPoint(blockData.Position.Value, BlockCount);
 			}
 		}
+		TimeTracker.End("Module Block put");
 
+		TimeTracker.Start("Module Surface Cache generation", TimeTracker.TrackingType.Average);
 		// Restore surface cache and rebuild it
 		if (originalCacheEnabled)
 		{
@@ -135,6 +138,7 @@ public partial class Module
 			SurfaceCache = new ExposedModuleSurfaceCache(); // Clear and rebuild
 			SurfaceCache.RebuildModule(this);
 		}
+		TimeTracker.End("Module Surface Cache generation");
 	}
 
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
