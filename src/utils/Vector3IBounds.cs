@@ -45,6 +45,30 @@ public class Vector3IBounds
 
     public bool HasValidBounds => MinPos.X != int.MaxValue;
 
+    public Vector3I GetBoundsSize()
+    {
+        if (!HasValidBounds)
+            return Vector3I.Zero;
+
+        return MaxPos - MinPos + Vector3I.One;
+    }
+
+    public int GetBoundsVolume()
+    {
+        Vector3I size = GetBoundsSize();
+        return size.X * size.Y * size.Z;
+    }
+
+    public bool IsPointOnBoundary(Vector3I point)
+    {
+        if (!HasValidBounds)
+            return false;
+
+        return point.X == MinPos.X || point.X == MaxPos.X ||
+               point.Y == MinPos.Y || point.Y == MaxPos.Y ||
+               point.Z == MinPos.Z || point.Z == MaxPos.Z;
+    }
+
     private void UpdatePlaneCountsOnAdd(Vector3I point)
     {
         xPlaneCounts[point.X]++;
@@ -141,29 +165,5 @@ public class Vector3IBounds
             }
         }
         return startIndex; // Fallback (shouldn't happen if totalPointCount > 0)
-    }
-
-    public Vector3I GetBoundsSize()
-    {
-        if (!HasValidBounds)
-            return Vector3I.Zero;
-
-        return MaxPos - MinPos + Vector3I.One;
-    }
-
-    public int GetBoundsVolume()
-    {
-        Vector3I size = GetBoundsSize();
-        return size.X * size.Y * size.Z;
-    }
-
-    public bool IsPointOnBoundary(Vector3I point)
-    {
-        if (!HasValidBounds)
-            return false;
-
-        return point.X == MinPos.X || point.X == MaxPos.X ||
-               point.Y == MinPos.Y || point.Y == MaxPos.Y ||
-               point.Z == MinPos.Z || point.Z == MaxPos.Z;
     }
 }

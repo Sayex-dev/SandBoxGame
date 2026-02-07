@@ -42,12 +42,13 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 	private void PopulateModule(Module module, ModuleLocation moduleLocation, int moduleSize)
 	{
-		TimeTracker.Start("Module Block Generation", TimeTracker.TrackingType.Average);
+		TimeTracker.Start("Biome Block Generation", TimeTracker.TrackingType.Average);
 		int maxMaxY = 0;
 		ConstructGridPos moduleOffset = moduleLocation.ToConstruct(moduleSize);
 
 		// Collect all block data first
-		var blockDataList = new List<BlockData>();
+		int[] blockArray = new int[(int)Math.Pow(moduleSize, 3)];
+		Array.Fill(blockArray, -2);
 
 		// Pre-calculate module Y offset
 		int moduleYOffset = moduleLocation.Value.Y * moduleSize;
@@ -75,14 +76,14 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 					ConstructGridPos worldPos = inModulePos.ToConstruct(moduleLocation, moduleSize);
 
 					int blockId = biome.GetBlockId(worldPos, groundHeight, seed);
-					blockDataList.Add(new BlockData(inModulePos, blockId));
+					blockArray[x + y * moduleSize + z * moduleSize * moduleSize] = blockId;
 				}
 			}
 		}
-		TimeTracker.End("Module Block Generation");
+		TimeTracker.End("Biome Block Generation");
 
 		// Apply all blocks at once
-		module.SetAllBlocks(blockDataList);
+		module.SetAllBlocks(blockArray);
 
 		if (maxMaxY > 0 && maxMaxY < moduleSize * 0.75f)
 		{

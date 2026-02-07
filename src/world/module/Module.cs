@@ -2,18 +2,6 @@ using System.Collections.Generic;
 using Godot;
 
 
-public struct BlockData
-{
-	public ModuleGridPos Position;
-	public int BlockId;
-
-	public BlockData(ModuleGridPos position, int blockId)
-	{
-		Position = position;
-		BlockId = blockId;
-	}
-}
-
 public partial class Module
 {
 	public int ModuleSize { get; private set; }
@@ -101,43 +89,42 @@ public partial class Module
 		blocks[index] = blockId;
 	}
 
-	public void SetAllBlocks(IEnumerable<BlockData> blockDataList)
+	public void SetAllBlocks(int[] blockArray)
 	{
 		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
-		// Disable surface cache updates during bulk operation
-		bool originalCacheEnabled = SurfaceCache != null;
-		var originalSurfaceCache = SurfaceCache;
-		SurfaceCache = null;
-
-		// Store old block count for bounds calculation
-		int oldBlockCount = BlockCount;
-		BlockCount = 0;
-
-		// Clear bounds for recalculation
-		bounds = new Vector3IBounds(ModuleSize);
 
 		// Apply all block changes
-		foreach (var blockData in blockDataList)
+		for (int i = 0; i < blockArray.Length; i++)
 		{
-			int index = InModuleToArrayPos(blockData.Position);
-			blocks[index] = blockData.BlockId;
+			int newBlockId = blockArray[i];
+			int oldBlockId = blocks[i];
 
-			if (blockData.BlockId != -1)
+			if (newBlockId == -2)
 			{
-				BlockCount++;
-				bounds.AddPoint(blockData.Position.Value, BlockCount);
+				continue;
 			}
+
+			ModuleGridPos modPos = ArrayToInModulePos(i);
+			if (oldBlockId == -1 && newBlockId != -1)
+			{
+				// Adding a block
+				BlockCount++;
+				bounds.AddPoint(modPos, BlockCount);
+			}
+			else if (oldBlockId != -1 && newBlockId == -1)
+			{
+				// Removing a block
+				BlockCount--;
+				bounds.AddPoint(modPos, BlockCount);
+			}
+
+			blocks[i] = blockArray[i];
 		}
 		TimeTracker.End("Module Block put");
 
-		TimeTracker.Start("Module Surface Cache generation", TimeTracker.TrackingType.Average);
 		// Restore surface cache and rebuild it
-		if (originalCacheEnabled)
-		{
-			SurfaceCache = originalSurfaceCache;
-			SurfaceCache = new ExposedModuleSurfaceCache(); // Clear and rebuild
-			SurfaceCache.RebuildModule(this);
-		}
+		TimeTracker.Start("Module Surface Cache generation", TimeTracker.TrackingType.Average);
+		SurfaceCache.RebuildModule(this);
 		TimeTracker.End("Module Surface Cache generation");
 	}
 

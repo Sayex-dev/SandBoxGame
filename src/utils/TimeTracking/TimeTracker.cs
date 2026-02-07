@@ -69,7 +69,7 @@ public partial class TimeTracker : Node
                 _trackers[name] = new TrackerData { Type = type };
             }
 
-            _trackers[name].StartTime = Time.GetUnixTimeFromSystem();
+            _trackers[name].StartTime = Time.GetUnixTimeFromSystem() * 1000;
         }
         finally
         {
@@ -84,7 +84,7 @@ public partial class TimeTracker : Node
         {
             if (_trackers.TryGetValue(name, out var tracker))
             {
-                var elapsed = Time.GetUnixTimeFromSystem() - tracker.StartTime;
+                var elapsed = Time.GetUnixTimeFromSystem() * 1000 - tracker.StartTime;
                 tracker.TotalTime += elapsed;
                 tracker.Count++;
                 return tracker.GetResult();
@@ -161,7 +161,7 @@ public partial class TimeTracker : Node
                 var value = data.GetResult();
                 var count = data.Count;
 
-                GD.Print($"{name}: {value:F3}s ({typeStr}, {count} calls)");
+                GD.Print($"{name}: {value:F3}ms ({typeStr}, {count} calls)");
             }
             GD.Print("===========================");
         }
