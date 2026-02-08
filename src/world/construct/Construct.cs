@@ -164,6 +164,7 @@ public partial class Construct : Node3D, IHaveBounds
 		);
 		var mesh = await moduleBuilder.GenerateModuleMesh(context);
 		visuals.RemoveModule(moduleLoc);
+		visuals.AddModule(moduleLoc, mesh);
 	}
 
 	public async Task LoadAround(WorldGridPos worldPos, Vector3I renderDistance)
