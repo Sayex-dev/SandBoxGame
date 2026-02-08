@@ -115,7 +115,7 @@ public partial class Module
 			{
 				// Removing a block
 				BlockCount--;
-				bounds.AddPoint(modPos, BlockCount);
+				bounds.RemovePoint(modPos, BlockCount);
 			}
 
 			blocks[i] = blockArray[i];
