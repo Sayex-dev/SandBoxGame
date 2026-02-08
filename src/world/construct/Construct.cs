@@ -175,9 +175,10 @@ public partial class Construct : Node3D, IHaveBounds
 			moduleMaterial,
 			constructGenerator
 		);
-		var tasks = moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
+		var generationResponse = moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
 
-		foreach (Task<GenerateModulesResponse> task in tasks)
+		// Load new modules
+		foreach (Task<GenerateModulesResponse> task in generationResponse.GenerationTaskHandles)
 		{
 			var response = await task;
 			foreach (var kvp in response.GeneratedModules)
@@ -196,6 +197,40 @@ public partial class Construct : Node3D, IHaveBounds
 				// Update visuals
 				visuals.AddModule(moduleLocation, mesh);
 			}
+		}
+		
+		// Unload modules that are out of range
+		foreach (ModuleLocation moduleLocation in generationResponse.ToUnload)
+		{
+			// Remove from modules
+			if (Modules.Remove(moduleLocation, out Module module))
+			{
+				// Update bounds if necessary
+				if (module.HasBlocks)
+				{
+					ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation, module.ModuleSize);
+					ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize);
+					
+					if (bounds.IsOnBounds(minPos) || bounds.IsOnBounds(maxPos))
+					{
+						// Rebuild bounds since we removed a module on the boundary
+						bounds.Clear();
+						foreach (var kvp in Modules.Modules)
+						{
+							var remainingModule = kvp.Value;
+							var remainingLocation = kvp.Key;
+							if (remainingModule.HasBlocks)
+							{
+								bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+								bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+							}
+						}
+					}
+				}
+			}
+
+			// Remove visuals
+			visuals.RemoveModule(moduleLocation);
 		}
 	}
 

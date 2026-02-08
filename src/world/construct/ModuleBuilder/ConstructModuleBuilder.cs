@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
+
+public class LoadAroundResponse
+{
+    public IEnumerable<Task<GenerateModulesResponse>> GenerationTaskHandles = new List<Task<GenerateModulesResponse>>();
+    public List<ModuleLocation> ToUnload = new();
+}
 
 public class GenerationReference
 {
@@ -35,7 +40,7 @@ public class ConstructModuleBuilder : IDisposable
     private readonly HashSet<ModuleLocation> _queued = new();
     SemaphoreSlim loadSemaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
-    public IEnumerable<Task<GenerateModulesResponse>> GenerateModulesAround(
+    public LoadAroundResponse GenerateModulesAround(
         WorldGridPos worldPos,
         Vector3I renderDistance,
         ConstructTransform transform,
@@ -45,8 +50,12 @@ public class ConstructModuleBuilder : IDisposable
         var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);
         var diff = CalculateLoadSet(center, renderDistance, modules.Modules, context.Generator);
 
-        UnloadModules(diff.ToUnload, modules);
-        return GenerateModuleGenerationTasks(diff.ToLoad, context);
+        var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, context);
+        return new LoadAroundResponse()
+        {
+            GenerationTaskHandles = genTaskHandles,
+            ToUnload = diff.ToUnload,
+        };
     }
 
     public async Task<Mesh> GenerateModuleMesh(
@@ -128,18 +137,6 @@ public class ConstructModuleBuilder : IDisposable
 
             return response;
         });
-    }
-
-
-    private void UnloadModules(
-        IEnumerable<ModuleLocation> positions,
-        ConstructModuleController modules
-    )
-    {
-        foreach (var pos in positions)
-        {
-            modules.Remove(pos, out _);
-        }
     }
 
     private ModuleLoadSet CalculateLoadSet(
