@@ -147,7 +147,7 @@ public partial class Construct : Node3D, IHaveBounds
 
 		if (blockId == -1)
 		{
-			UpdateBoundsOnRemove(conPos);
+			bounds.RemovePosition(conPos, Modules.Modules);
 		}
 		else
 		{
@@ -258,22 +258,6 @@ public partial class Construct : Node3D, IHaveBounds
 					bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
 				}
 			}
-		}
-	}
-
-	private void UpdateBoundsOnRemove(ConstructGridPos pos)
-	{
-		if (!bounds.IsOnBounds(pos))
-			return;
-
-		// Rebuild bounds
-		bounds.Clear();
-		foreach (var kvp in Modules.Modules)
-		{
-			var moduleLocation = kvp.Key;
-			var module = kvp.Value;
-
-			bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
 		}
 	}
 }

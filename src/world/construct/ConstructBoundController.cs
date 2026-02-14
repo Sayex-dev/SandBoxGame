@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 public class ConstructBoundsController
@@ -36,6 +37,23 @@ public class ConstructBoundsController
             Math.Max(MaxPos.Value.Y, v.Y),
             Math.Max(MaxPos.Value.Z, v.Z)
         ));
+    }
+
+    public void RemovePosition(ConstructGridPos pos, Dictionary<ModuleLocation, Module> modules)
+    {
+
+        if (!IsOnBounds(pos))
+            return;
+
+        // Rebuild bounds
+        Clear();
+        foreach (var kvp in modules)
+        {
+            var moduleLocation = kvp.Key;
+            var module = kvp.Value;
+
+            AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
+        }
     }
 
     public void CombineWith(ConstructBoundsController other)
