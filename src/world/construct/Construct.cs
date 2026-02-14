@@ -13,7 +13,7 @@ public partial class Construct : Node3D, IHaveBounds
 
 	public ConstructModuleController Modules { get; private set; }
 	public ConstructTransform ConstructTransform { get; private set; }
-	public ConstructPhysicsController PhysicsController {get; private set; }
+	public ConstructPhysicsController PhysicsController { get; private set; }
 
 	private ConstructGenerator constructGenerator;
 	private ConstructMotionController motion;
@@ -22,6 +22,7 @@ public partial class Construct : Node3D, IHaveBounds
 	private ConstructModuleBuilder moduleBuilder;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
+	private bool loadComplete = true;
 
 	public void InitializePrebuilt(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial)
 	{
@@ -157,7 +158,8 @@ public partial class Construct : Node3D, IHaveBounds
 	private async Task UpdateModuleMesh(ModuleLocation moduleLoc)
 	{
 		Module module;
-		if (!Modules.TryGet(moduleLoc, out module)) return;
+		if (!Modules.TryGet(moduleLoc, out module))
+			return;
 
 
 		var context = new ModuleMeshGenerateContext(
@@ -171,7 +173,22 @@ public partial class Construct : Node3D, IHaveBounds
 		visuals.AddModule(moduleLoc, mesh);
 	}
 
-	public async Task LoadAround(WorldGridPos worldPos, Vector3I renderDistance)
+	public async Task UpdateLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
+	{
+		loadComplete = false;
+		await LoadAround(worldPos, simulationDistance);
+		loadComplete = true;
+
+		// Lazy loading of modules
+		//for (int i = simulationDistance; i < renderDistance; i++)
+		//{
+		//	if (!loadComplete)
+		//		return;
+		//	await LoadAround(worldPos, i);
+		//}
+	}
+
+	public async Task LoadAround(WorldGridPos worldPos, int loadDistance)
 	{
 		var context = new ModuleLoadContext(
 			Modules.ModuleSize,
@@ -179,7 +196,7 @@ public partial class Construct : Node3D, IHaveBounds
 			moduleMaterial,
 			constructGenerator
 		);
-		var generationResponse = moduleBuilder.GenerateModulesAround(worldPos, renderDistance, ConstructTransform, Modules, context);
+		var generationResponse = moduleBuilder.GenerateModulesAround(worldPos, loadDistance, ConstructTransform, Modules, context);
 
 		// Load new modules
 		foreach (Task<GenerateModulesResponse> task in generationResponse.GenerationTaskHandles)
@@ -202,7 +219,7 @@ public partial class Construct : Node3D, IHaveBounds
 				visuals.AddModule(moduleLocation, mesh);
 			}
 		}
-		
+
 		// Unload modules that are out of range
 		bool needsBoundsRebuild = false;
 		foreach (ModuleLocation moduleLocation in generationResponse.ToUnload)
@@ -215,7 +232,7 @@ public partial class Construct : Node3D, IHaveBounds
 				{
 					ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation, module.ModuleSize);
 					ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize);
-					
+
 					if (bounds.IsOnBounds(minPos) || bounds.IsOnBounds(maxPos))
 					{
 						needsBoundsRebuild = true;
@@ -246,7 +263,8 @@ public partial class Construct : Node3D, IHaveBounds
 
 	private void UpdateBoundsOnRemove(ConstructGridPos pos)
 	{
-		if (!bounds.IsOnBounds(pos)) return;
+		if (!bounds.IsOnBounds(pos))
+			return;
 
 		// Rebuild bounds
 		bounds.Clear();

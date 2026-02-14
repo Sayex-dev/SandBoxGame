@@ -42,13 +42,13 @@ public class ConstructModuleBuilder : IDisposable
 
     public LoadAroundResponse GenerateModulesAround(
         WorldGridPos worldPos,
-        Vector3I renderDistance,
+        int loadDistance,
         ConstructTransform transform,
         ConstructModuleController modules,
         ModuleLoadContext context)
     {
         var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);
-        var diff = CalculateLoadSet(center, renderDistance, modules.Modules, context.Generator);
+        var diff = CalculateLoadSet(center, loadDistance, modules.Modules, context.Generator);
 
         var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, context);
         return new LoadAroundResponse()
@@ -142,7 +142,7 @@ public class ConstructModuleBuilder : IDisposable
 
     private ModuleLoadSet CalculateLoadSet(
         ModuleLocation center,
-        Vector3I renderDistance,
+        int renderDistance,
         Dictionary<ModuleLocation, Module> loaded,
         ConstructGenerator generator
     )
@@ -150,12 +150,13 @@ public class ConstructModuleBuilder : IDisposable
         var result = new ModuleLoadSet();
         var desired = new HashSet<ModuleLocation>();
 
-        for (int x = -renderDistance.X; x < renderDistance.X; x++)
-            for (int y = -renderDistance.Y; y < renderDistance.Y; y++)
-                for (int z = -renderDistance.Z; z < renderDistance.Z; z++)
+        for (int x = -renderDistance; x < renderDistance; x++)
+            for (int z = -renderDistance; z < renderDistance; z++)
+                for (int y = -renderDistance; y < renderDistance; y++)
                 {
-                    var pos = new ModuleLocation(center.Value + new Vector3I(x, y, z));
-                    if (generator.IsModuleNeeded(pos))
+                    var distVec = new Vector3I(x, y, z);
+                    var pos = new ModuleLocation(center.Value + distVec);
+                    if (generator.IsModuleNeeded(pos) && distVec.Length() <= renderDistance)
                         desired.Add(pos);
                 }
 

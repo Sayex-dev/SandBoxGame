@@ -93,13 +93,15 @@ public class ExpandingOctTree<T> where T : IHaveBounds
 
     public void Remove(T t)
     {
-        if (globalObjects.Contains(t)) globalObjects.Remove(t);
+        if (globalObjects.Contains(t))
+            globalObjects.Remove(t);
         RemoveInternal(root, rootOrigin, rootSize, t);
     }
 
     private void RemoveInternal(Node node, Vector3I origin, int size, T t)
     {
-        if (node.IsEmpty) return;
+        if (node.IsEmpty)
+            return;
 
         if (node.BoundObjects.Contains(t))
         {
@@ -126,7 +128,8 @@ public class ExpandingOctTree<T> where T : IHaveBounds
 
     private void TryCollapse(Node node)
     {
-        if (node.HasChildren) return;
+        if (node.HasChildren)
+            return;
 
         foreach (Node child in node.Children)
         {
@@ -141,7 +144,8 @@ public class ExpandingOctTree<T> where T : IHaveBounds
 
     private void QueryInternal(Node node, Vector3I origin, int size, Vector3I min, Vector3I max, List<T> outList)
     {
-        if (node.IsEmpty) return;
+        if (node.IsEmpty)
+            return;
 
         if (!BoxesOverlap(origin, origin + new Vector3I(size, size, size), min, max))
             return;
@@ -152,13 +156,15 @@ public class ExpandingOctTree<T> where T : IHaveBounds
                 outList.Add(t);
         }
 
-        if (!node.HasChildren) return;
+        if (!node.HasChildren)
+            return;
 
         int half = size / 2;
         for (int i = 0; i < 8; i++)
         {
             Node child = node.Children[i];
-            if (child.IsEmpty) continue;
+            if (child.IsEmpty)
+                continue;
             Vector3I childOrigin = GetChildOrigin(origin, half, i);
             QueryInternal(child, childOrigin, half, min, max, outList);
         }
@@ -181,7 +187,8 @@ public class ExpandingOctTree<T> where T : IHaveBounds
                 Vector3I childOrigin = GetChildOrigin(origin, childSize, i);
                 if (FitsInside(childOrigin, childSize, t))
                 {
-                    if (node.HasChildren) node.Populate();
+                    if (!node.HasChildren)
+                        node.Populate();
                     Node child = node.Children[i];
                     RecursiveInsert(child, childOrigin, childSize, t);
                     return;
@@ -221,9 +228,12 @@ public class ExpandingOctTree<T> where T : IHaveBounds
     {
         Vector3I o = origin;
 
-        if ((index & 1) != 0) o.X += half;
-        if ((index & 2) != 0) o.Y += half;
-        if ((index & 4) != 0) o.Z += half;
+        if ((index & 1) != 0)
+            o.X += half;
+        if ((index & 2) != 0)
+            o.Y += half;
+        if ((index & 4) != 0)
+            o.Z += half;
 
         return o;
     }
@@ -234,17 +244,23 @@ public class ExpandingOctTree<T> where T : IHaveBounds
         Vector3I newOrigin = rootOrigin;
 
         Vector3I min = t.GetMin();
-        if (min.X < rootOrigin.X) newOrigin.X -= rootSize;
-        if (min.Y < rootOrigin.Y) newOrigin.Y -= rootSize;
-        if (min.Z < rootOrigin.Z) newOrigin.Z -= rootSize;
+        if (min.X < rootOrigin.X)
+            newOrigin.X -= rootSize;
+        if (min.Y < rootOrigin.Y)
+            newOrigin.Y -= rootSize;
+        if (min.Z < rootOrigin.Z)
+            newOrigin.Z -= rootSize;
 
         Node newRoot = new Node();
         newRoot.Children = new Node[8];
 
         int idx = 0;
-        if (rootOrigin.X >= newOrigin.X + rootSize) idx |= 1;
-        if (rootOrigin.Y >= newOrigin.Y + rootSize) idx |= 2;
-        if (rootOrigin.Z >= newOrigin.Z + rootSize) idx |= 4;
+        if (rootOrigin.X >= newOrigin.X + rootSize)
+            idx |= 1;
+        if (rootOrigin.Y >= newOrigin.Y + rootSize)
+            idx |= 2;
+        if (rootOrigin.Z >= newOrigin.Z + rootSize)
+            idx |= 4;
 
         newRoot.Children[idx] = root;
 
@@ -254,7 +270,8 @@ public class ExpandingOctTree<T> where T : IHaveBounds
 
         for (int i = 0; i < 8; i++)
         {
-            if (i == idx) continue;
+            if (i == idx)
+                continue;
             root.Children[i] = new Node();
         }
     }

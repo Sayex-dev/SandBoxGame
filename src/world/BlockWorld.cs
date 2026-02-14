@@ -104,15 +104,16 @@ public partial class BlockWorld : Node3D
 		return constructs.QueryBox(min.Value, max.Value);
 	}
 
-	public async Task UpdateConstructLoading(WorldGridPos worldPos, Vector3I renderDistance)
+	public async Task UpdateConstructLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
 	{
-		Vector3I minPos = worldPos.Value - renderDistance * moduleSize;
-		Vector3I maxPos = worldPos.Value + renderDistance * moduleSize;
+		Vector3I renderDistVec = Vector3I.One * renderDistance;
+		Vector3I minPos = worldPos.Value - renderDistVec * moduleSize;
+		Vector3I maxPos = worldPos.Value + renderDistVec * moduleSize;
 
 		List<Construct> nearConstructs = constructs.QueryBox(minPos, maxPos);
 		foreach (Construct construct in nearConstructs)
 		{
-			await construct.LoadAround(worldPos, renderDistance);
+			await construct.UpdateLoading(worldPos, renderDistance, simulationDistance);
 		}
 	}
 }
