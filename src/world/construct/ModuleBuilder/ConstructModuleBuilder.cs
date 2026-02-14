@@ -165,7 +165,10 @@ public class ConstructModuleBuilder : IDisposable
 
         foreach (var pos in loaded.Keys.ToList())
             if (!desired.Contains(pos))
+            {
+                _queued.Remove(pos);
                 result.ToUnload.Add(pos);
+            }
 
         return result;
     }
