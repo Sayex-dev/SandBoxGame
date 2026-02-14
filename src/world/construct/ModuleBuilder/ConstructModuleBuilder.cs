@@ -36,7 +36,7 @@ public class GenerateModulesResponse
 
 public class ConstructModuleBuilder : IDisposable
 {
-    private const int MaxConcurrentModuleLoads = 20;
+    private const int MaxConcurrentModuleLoads = 5;
     private readonly HashSet<ModuleLocation> _queued = new();
     SemaphoreSlim loadSemaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 

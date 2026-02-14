@@ -1,13 +1,12 @@
 using Godot;
 using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 [GlobalClass]
 public partial class BlockDefault : Resource
 {
 	[Export] public string Name { get; set; }
 	[Export] public int Health { get; set; }
+	[Export] public float Weight { get; set; }
 
 	[Export] public Godot.Collections.Array<PassiveAbility> PassiveAbilities { get; set; }
 	[Export] public Godot.Collections.Array<ActiveAbility> ActiveAbilities { get; set; }

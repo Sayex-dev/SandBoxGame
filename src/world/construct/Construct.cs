@@ -13,6 +13,7 @@ public partial class Construct : Node3D, IHaveBounds
 
 	public ConstructModuleController Modules { get; private set; }
 	public ConstructTransform ConstructTransform { get; private set; }
+	public ConstructPhysicsController PhysicsController {get; private set; }
 
 	private ConstructGenerator constructGenerator;
 	private ConstructMotionController motion;
@@ -35,6 +36,7 @@ public partial class Construct : Node3D, IHaveBounds
 			new ConstructVisualsController(moduleSize, this),
 			new ConstructBoundsController(),
 			new ConstructModuleBuilder(),
+			new ConstructPhysicsController(),
 			blockStore,
 			moduleMaterial
 		);
@@ -48,6 +50,7 @@ public partial class Construct : Node3D, IHaveBounds
 		ConstructVisualsController visuals,
 		ConstructBoundsController bounds,
 		ConstructModuleBuilder moduleBuilder,
+		ConstructPhysicsController physicsController,
 		BlockStore blockStore,
 		Material moduleMaterial
 	)
@@ -59,6 +62,7 @@ public partial class Construct : Node3D, IHaveBounds
 		this.visuals = visuals;
 		this.bounds = bounds;
 		this.moduleBuilder = moduleBuilder;
+		this.PhysicsController = physicsController;
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
 
@@ -200,6 +204,7 @@ public partial class Construct : Node3D, IHaveBounds
 		}
 		
 		// Unload modules that are out of range
+		bool needsBoundsRebuild = false;
 		foreach (ModuleLocation moduleLocation in generationResponse.ToUnload)
 		{
 			// Remove from modules
@@ -213,24 +218,29 @@ public partial class Construct : Node3D, IHaveBounds
 					
 					if (bounds.IsOnBounds(minPos) || bounds.IsOnBounds(maxPos))
 					{
-						// Rebuild bounds since we removed a module on the boundary
-						bounds.Clear();
-						foreach (var kvp in Modules.Modules)
-						{
-							var remainingModule = kvp.Value;
-							var remainingLocation = kvp.Key;
-							if (remainingModule.HasBlocks)
-							{
-								bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
-								bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
-							}
-						}
+						needsBoundsRebuild = true;
 					}
 				}
 			}
 
 			// Remove visuals
 			visuals.RemoveModule(moduleLocation);
+		}
+
+		if (needsBoundsRebuild)
+		{
+			// Rebuild bounds since we removed a module on the boundary
+			bounds.Clear();
+			foreach (var kvp in Modules.Modules)
+			{
+				var remainingModule = kvp.Value;
+				var remainingLocation = kvp.Key;
+				if (remainingModule.HasBlocks)
+				{
+					bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+					bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+				}
+			}
 		}
 	}
 
