@@ -39,7 +39,8 @@ public class ExposedModuleSurfaceCache
     public void RebuildModule(Module module)
     {
         // Empty module case
-        if (module.BlockCount == 0) return;
+        if (module.BlockCount == 0)
+            return;
 
         // Filled module case
         int size = module.ModuleSize;
@@ -59,14 +60,16 @@ public class ExposedModuleSurfaceCache
                     }
                 }
             }
+            return;
         }
 
+        // Default case
         int[] blocks = module.GetBlockArray();
-
         for (int i = 0; i < blocks.Length; i++)
         {
             int blockId = blocks[i];
-            if (blockId == -1) continue;
+            if (blockId == -1)
+                continue;
             ModuleGridPos modulePos = module.ArrayToInModulePos(i);
             AddBlock(modulePos);
         }

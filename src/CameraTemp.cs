@@ -3,9 +3,9 @@ using System;
 
 public partial class CameraTemp : Node3D
 {
-	private float speed = 5f;
-	private float sprintSpeed = 50f;
-	private float rotationSpeed = 0.0001f;
+	[Export] private float speed = 5f;
+	[Export] private float sprintSpeed = 50f;
+	[Export] private float rotationSpeed = 0.0001f;
 
 	public override void _PhysicsProcess(double delta)
 	{

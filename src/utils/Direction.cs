@@ -60,6 +60,10 @@ static class DirectionTools
 				return Direction.FORWARD;
 			case Direction.LEFT:
 				return Direction.RIGHT;
+			case Direction.UP:
+				return Direction.DOWN;
+			case Direction.DOWN:
+				return Direction.UP;
 			default:
 				return dir;
 		}

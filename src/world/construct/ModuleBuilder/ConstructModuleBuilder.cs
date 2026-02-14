@@ -36,7 +36,7 @@ public class GenerateModulesResponse
 
 public class ConstructModuleBuilder : IDisposable
 {
-    private const int MaxConcurrentModuleLoads = 5;
+    private const int MaxConcurrentModuleLoads = 7;
     private readonly HashSet<ModuleLocation> _queued = new();
     SemaphoreSlim loadSemaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
@@ -119,7 +119,8 @@ public class ConstructModuleBuilder : IDisposable
                 ModuleLocation moduleLoc = kvp.Key;
                 Module module = kvp.Value;
 
-                if (!module.HasBlocks) continue;
+                if (!module.HasBlocks)
+                    continue;
 
                 response.GeneratedModules[moduleLoc] = module;
                 var meshContext = new ModuleMeshGenerateContext(
