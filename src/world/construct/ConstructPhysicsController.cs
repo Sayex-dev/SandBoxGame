@@ -3,24 +3,48 @@ using Godot;
 
 public class ConstructPhysicsController
 {
-    public float BlockMass {get; private set;} = 0;
+    public float Gravity = 0.1f;
+    public float BlockMass { get; private set; } = 0;
 
     private Vector3 velocity = Vector3.Zero;
+    private Vector3 physicsPosition = Vector3.Zero;
+    private bool isStatic;
 
-    public ConstructPhysicsController()
+    public ConstructPhysicsController(Vector3 initPos, bool isStatic)
     {
-        
+        physicsPosition = initPos;
+        this.isStatic = isStatic;
     }
 
-    public void Update(double deltaTime)
+    public void Update(double deltaTime, ConstructTransform transform)
     {
-        
+        if (isStatic)
+            return;
+
+        // Gravity
+        velocity += Vector3.Down * (Gravity * (float)deltaTime);
+
+
+        // Apply
+        physicsPosition += velocity;
+        Vector3 absDif = (physicsPosition - (Vector3I)transform.WorldPos).Abs();
+        if (absDif.X > 1 || absDif.Y > 1 || absDif.Z > 1)
+            transform.MoveTo((Vector3I)physicsPosition);
+    }
+
+    public void SetPosition(WorldGridPos pos)
+    {
+        physicsPosition = (Vector3I)pos;
     }
 
     public void ApplyForce(Vector3 direction, float force)
     {
-        // f = m * a => a = f / m
         velocity += direction * (force / BlockMass);
+    }
+
+    public void CancleVelocity()
+    {
+        velocity = Vector3.Zero;
     }
 
     public void ChangeWeightBy(float weight)

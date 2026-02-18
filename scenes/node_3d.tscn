@@ -33,7 +33,6 @@ script = ExtResource("2_ns6u7")
 FocusPosition = NodePath("../Camera3D")
 ModuleMat = ExtResource("3_5t4e2")
 BlockStore = ExtResource("6_a6664")
-SimulationDistance = 10
 RenderDistance = 20
 DebugDraw = 0
 

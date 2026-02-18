@@ -147,30 +147,45 @@ public class ConstructModuleBuilder : IDisposable
         ConstructGenerator generator
     )
     {
+        var sphereArea = (int)Math.Ceiling(4.0 / 3.0 * Math.PI * Math.Pow(renderDistance, 3));
         var result = new ModuleLoadSet();
-        var desired = new HashSet<ModuleLocation>();
+        (ModuleLocation, float)[] desired = new (ModuleLocation, float)[sphereArea];
+        HashSet<ModuleLocation> desiredLookup = new();
 
+        int i = 0;
         for (int x = -renderDistance; x < renderDistance; x++)
             for (int z = -renderDistance; z < renderDistance; z++)
                 for (int y = -renderDistance; y < renderDistance; y++)
                 {
                     var distVec = new Vector3I(x, y, z);
                     var pos = new ModuleLocation(center.Value + distVec);
-                    if (generator.IsModuleNeeded(pos) && distVec.Length() <= renderDistance)
-                        desired.Add(pos);
+                    var dist = distVec.Length();
+                    if (generator.IsModuleNeeded(pos) && dist <= renderDistance)
+                    {
+                        desired[i] = (pos, dist);
+                        desiredLookup.Add(pos);
+                        i++;
+                    }
                 }
 
-        foreach (var pos in desired)
+        // Add case
+        List<(ModuleLocation, float)> resultList = new();
+        foreach (var (pos, dist) in desired)
             if (!loaded.ContainsKey(pos) && _queued.Add(pos))
-                result.ToLoad.Add(pos);
+                resultList.Add((pos, dist));
 
+        // Sort and assign
+        resultList.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+        foreach (var (pos, dist) in resultList)
+            result.ToLoad.Add(pos);
+
+        // Remove case
         foreach (var pos in loaded.Keys.ToList())
-            if (!desired.Contains(pos))
+            if (!desiredLookup.Contains(pos))
             {
                 _queued.Remove(pos);
                 result.ToUnload.Add(pos);
             }
-
         return result;
     }
 

@@ -16,7 +16,7 @@ public partial class Construct : Node3D, IHaveBounds
 	public ConstructPhysicsController PhysicsController { get; private set; }
 
 	private ConstructGenerator constructGenerator;
-	private ConstructMotionController motion;
+	private ConstructMotionController visualMotion;
 	private ConstructVisualsController visuals;
 	private ConstructBoundsController bounds;
 	private ConstructModuleBuilder moduleBuilder;
@@ -37,7 +37,7 @@ public partial class Construct : Node3D, IHaveBounds
 			new ConstructVisualsController(moduleSize, this),
 			new ConstructBoundsController(),
 			new ConstructModuleBuilder(),
-			new ConstructPhysicsController(),
+			new ConstructPhysicsController(Position, IsGlobal),
 			blockStore,
 			moduleMaterial
 		);
@@ -59,7 +59,7 @@ public partial class Construct : Node3D, IHaveBounds
 		this.ConstructTransform = constructTransform;
 		this.Modules = modules;
 		this.constructGenerator = constructGenerator;
-		this.motion = motion;
+		this.visualMotion = motion;
 		this.visuals = visuals;
 		this.bounds = bounds;
 		this.moduleBuilder = moduleBuilder;
@@ -85,12 +85,14 @@ public partial class Construct : Node3D, IHaveBounds
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (motion != null)
+		if (visualMotion != null)
 		{
-			motion.Update(delta, ConstructTransform.WorldPos, ConstructTransform.YRotation);
-			Position = motion.Position;
-			Rotation = motion.Rotation;
+			visualMotion.Update(delta, ConstructTransform.WorldPos, ConstructTransform.YRotation);
+			Position = visualMotion.Position;
+			Rotation = visualMotion.Rotation;
 		}
+
+		PhysicsController.Update(delta, ConstructTransform);
 	}
 
 	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds)
