@@ -136,8 +136,8 @@ public class ExposedModuleSurfaceCache
     {
         return direction switch
         {
-            Direction.FORWARD => new Vector3I(u, v, size - 1),
-            Direction.BACKWARD => new Vector3I(u, v, 0),
+            Direction.FORWARD => new Vector3I(u, v, 0),
+            Direction.BACKWARD => new Vector3I(u, v, size - 1),
             Direction.RIGHT => new Vector3I(size - 1, u, v),
             Direction.LEFT => new Vector3I(0, u, v),
             Direction.UP => new Vector3I(u, size - 1, v),
