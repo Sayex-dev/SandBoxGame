@@ -81,7 +81,8 @@ public class ModuleMeshGenerator
 					failedLast = true;
 					moveX = !moveX;
 				}
-				else break;
+				else
+					break;
 			}
 
 
@@ -96,7 +97,8 @@ public class ModuleMeshGenerator
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
 					module.HasBlock(np, out int blockId);
-					if (surfaceBlockId == -1) surfaceBlockId = blockId;
+					if (surfaceBlockId == -1)
+						surfaceBlockId = blockId;
 
 					bool hasSurface = remaining.Contains(np);
 					bool sameSurface = blockId == surfaceBlockId;
@@ -202,16 +204,26 @@ public class ModuleMeshGenerator
 	{
 		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache);
 
-		var st = new SurfaceTool();
-		st.Begin(Mesh.PrimitiveType.Triangles);
-		st.SetMaterial(context.ModuleMaterial);
+		if (surfaces.Count == 0)
+			return null;
+
+		int vertexCount = surfaces.Count * 4;
+		int indexCount = surfaces.Count * 6;
+
+		// Pre-allocate flat arrays for all mesh data
+		var vertices = new Vector3[vertexCount];
+		var normals = new Vector3[vertexCount];
+		var uvs = new Vector2[vertexCount];
+		var colors = new Color[vertexCount];
+		var indices = new int[indexCount];
+
 		int rotOffset = 0;
 
 		for (int i = 0; i < surfaces.Count; i++)
 		{
 			Surface s = surfaces[i];
 			BlockDefault blockDefault = context.BlockStore.blockDefaults[s.BlockId];
-			Color surfaceColor = Color.Color8(0, 0, 0, 0);
+			Color surfaceColor;
 
 			switch (s.Dir)
 			{
@@ -239,22 +251,48 @@ public class ModuleMeshGenerator
 					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceBackward.X, (byte)blockDefault.TextureAtlasFaceBackward.Y, 0, 0);
 					rotOffset = 2;
 					break;
+				default:
+					surfaceColor = Color.Color8(0, 0, 0, 0);
+					rotOffset = 0;
+					break;
 			}
 
-			st.SetNormal(s.Normal);
+			int vBase = i * 4;
+			Vector3 normal = s.Normal;
 
 			for (int j = 0; j < 4; j++)
 			{
+				int idx = vBase + j;
 				int uvId = (j + rotOffset) % 4;
-				st.SetUV(UVs[uvId] * s.SurfaceBlockSpan);
-				st.SetColor(surfaceColor);
-				st.AddVertex(s.Vertices[j]);
+
+				vertices[idx] = s.Vertices[j];
+				normals[idx] = normal;
+				uvs[idx] = UVs[uvId] * s.SurfaceBlockSpan;
+				colors[idx] = surfaceColor;
 			}
 
-			foreach (int ind in s.Indices)
-				st.AddIndex(i * 4 + ind);
+			int iBase = i * 6;
+			indices[iBase] = vBase;
+			indices[iBase + 1] = vBase + 1;
+			indices[iBase + 2] = vBase + 2;
+			indices[iBase + 3] = vBase + 2;
+			indices[iBase + 4] = vBase + 3;
+			indices[iBase + 5] = vBase;
 		}
 
-		return st.Commit();
+		// Build the ArrayMesh directly from arrays
+		var arrays = new Godot.Collections.Array();
+		arrays.Resize((int)Mesh.ArrayType.Max);
+		arrays[(int)Mesh.ArrayType.Vertex] = vertices;
+		arrays[(int)Mesh.ArrayType.Normal] = normals;
+		arrays[(int)Mesh.ArrayType.TexUV] = uvs;
+		arrays[(int)Mesh.ArrayType.Color] = colors;
+		arrays[(int)Mesh.ArrayType.Index] = indices;
+
+		var arrayMesh = new ArrayMesh();
+		arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+		arrayMesh.SurfaceSetMaterial(0, context.ModuleMaterial);
+
+		return arrayMesh;
 	}
 }
