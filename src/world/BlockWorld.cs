@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public partial class BlockWorld : Node3D
+public partial class BlockWorld : Node3D, IWorldCollisionQuery
 {
 	private int seed;
 	private int moduleSize;
@@ -97,6 +97,11 @@ public partial class BlockWorld : Node3D
 	{
 		constructs.InsertGlobal(construct);
 		AddChild(construct);
+	}
+
+	public bool HasBlockAt(WorldGridPos worldPos)
+	{
+		return HasBlock(worldPos) != null;
 	}
 
 	public List<Construct> GetConstructsInArea(WorldGridPos min, WorldGridPos max)

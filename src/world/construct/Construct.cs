@@ -14,9 +14,11 @@ public partial class Construct : Node3D, IHaveBounds
 
 	private ConstructLoadingService loading;
 	private ConstructPhysicsController physics;
-	private ConstructMotionController visualMotion;
+	private ConstructVisualMotionController visualMotion;
+	private ConstructMotionController motionController;
+	private bool runPhysicsProcess = false;
 
-	public void InitializePrebuilt(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial)
+	public void Initialize(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
 		var modules = new ConstructModuleController(moduleSize);
@@ -24,11 +26,12 @@ public partial class Construct : Node3D, IHaveBounds
 
 		Data = new ConstructData(transform, modules, bounds, blockStore, moduleMaterial);
 
-		physics = new ConstructPhysicsController(Data, Position, IsGlobal);
+		motionController = new ConstructMotionController(Data, collisionQuery);
+		physics = new ConstructPhysicsController(Data, motionController, Position, IsGlobal);
 
 		SecondOrderDynamics<float> rotSod = rotSodSettings.GetInstance(0);
 		SecondOrderDynamics<Vector3> moveSod = moveSodSettings.GetInstance(Position);
-		visualMotion = new ConstructMotionController(moveSod, rotSod, Position, Rotation);
+		visualMotion = new ConstructVisualMotionController(Data, moveSod, rotSod);
 
 		var visuals = new ConstructVisualsController(moduleSize, this);
 		var moduleBuilder = new ConstructModuleBuilder();
@@ -52,7 +55,7 @@ public partial class Construct : Node3D, IHaveBounds
 	{
 		if (visualMotion != null)
 		{
-			visualMotion.Update(delta, Data.Transform.WorldPos, Data.Transform.YRotation);
+			visualMotion.Update(delta);
 			Position = visualMotion.Position;
 			Rotation = visualMotion.Rotation;
 		}

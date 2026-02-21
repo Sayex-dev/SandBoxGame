@@ -36,19 +36,19 @@ BlockStore = ExtResource("6_a6664")
 RenderDistance = 20
 DebugDraw = 0
 
-[node name="Thingy" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
+[node name="World" type="Node3D" parent="WorldController"]
+transform = Transform3D(0.99999976, -5.960464e-08, 2.980232e-08, 0, 1.0000002, 2.9802322e-08, -5.960464e-08, 2.980232e-08, 0.9999998, -9.5367426e-07, -9.536743e-07, -1.9073485e-06)
 script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
+IsGlobal = true
+constructGeneratorSettings = ExtResource("6_10v3s")
 rotSodSettings = ExtResource("7_cptob")
 moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
-[node name="World" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999998, -5.9604645e-08, 2.9802322e-08, 0, 1.0000002, 2.9802322e-08, -5.9604645e-08, 2.9802322e-08, 0.9999999, -9.536743e-07, -9.536743e-07, -1.9073486e-06)
+[node name="Thingy" type="Node3D" parent="WorldController"]
+transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
 script = ExtResource("7_10v3s")
-IsGlobal = true
-constructGeneratorSettings = ExtResource("6_10v3s")
+constructGeneratorSettings = ExtResource("8_cptob")
 rotSodSettings = ExtResource("7_cptob")
 moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"

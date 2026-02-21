@@ -1,46 +1,91 @@
-using System;
 using Godot;
 
-public partial class ConstructMotionController
+public class ConstructMotionController
 {
-    public Vector3 Position { get; private set; }
-    public Vector3 Rotation { get; private set; }
+    private readonly ConstructData data;
+    private readonly IWorldCollisionQuery collisionQuery;
 
-
-    private SecondOrderDynamics<Vector3> moveSecondOrderDynamics;
-    private SecondOrderDynamics<float> rotationSecondOrderDynamics;
-
-    public ConstructMotionController(
-        SecondOrderDynamics<Vector3> moveSod,
-        SecondOrderDynamics<float> rotSod,
-        Vector3 initPosition = default,
-        Vector3 initRotation = default
-    )
+    public ConstructMotionController(ConstructData data, IWorldCollisionQuery collisionQuery)
     {
-        Position = initPosition;
-        Rotation = initRotation;
-
-        moveSecondOrderDynamics = moveSod;
-        rotationSecondOrderDynamics = rotSod;
+        this.data = data;
+        this.collisionQuery = collisionQuery;
     }
 
-    public void Update(double delta, WorldGridPos targetWorldPos, float degTargetYRotation)
+    public void RotateTo(Direction newDir, WorldGridPos rotationCenter)
     {
-        float currentRot = Mathf.RadToDeg(Rotation.Y);
+        if (newDir == data.Transform.FacingDirection)
+            return;
 
-        if (Position != targetWorldPos.Value)
-            Position = moveSecondOrderDynamics.Update((float)delta, targetWorldPos.Value);
+        Vector3 oldFacing = DirectionTools.GetWorldDirVec(data.Transform.FacingDirection);
+        Vector3 newFacing = DirectionTools.GetWorldDirVec(newDir);
 
-        if (currentRot != degTargetYRotation)
+        float deltaAngle = oldFacing.SignedAngleTo(newFacing, Vector3.Up);
+        data.Transform.WorldPos = new(rotationCenter.Value + (Vector3I)((Vector3)(data.Transform.WorldPos.Value - rotationCenter.Value)).Rotated(Vector3.Up, deltaAngle));
+        data.Transform.FacingDirection = newDir;
+    }
+
+    public void RotateLeft(WorldGridPos rotationCenter)
+    {
+        RotateTo(DirectionTools.RotateLeft(data.Transform.FacingDirection), rotationCenter);
+    }
+
+    public void RotateRight(WorldGridPos rotationCenter)
+    {
+        RotateTo(DirectionTools.RotateRight(data.Transform.FacingDirection), rotationCenter);
+    }
+
+    public bool TryMoveTo(WorldGridPos newPos)
+    {
+        Vector3I div = data.Transform.WorldPos.Value - newPos.Value;
+        return TryMoveBy(div);
+    }
+
+    public bool TryMoveBy(Vector3I div)
+    {
+        bool isStep = div.Length() == 1;
+        if (isStep)
         {
-            if (Math.Abs(currentRot - degTargetYRotation) > 180)
+            Direction dir = DirectionTools.GetClosestDirection(div);
+            return TryTakeStep(dir);
+        }
+        return false;
+    }
+
+    public bool TryTakeStep(Direction dir)
+    {
+        if (CanStepIntoDir(dir))
+        {
+            data.Transform.WorldPos += (Vector3I)DirectionTools.GetWorldDirVec(dir);
+            return true;
+        }
+        return false;
+    }
+
+    private bool CanStepIntoDir(Direction dir)
+    {
+        Vector3I step = (Vector3I)DirectionTools.GetWorldDirVec(dir);
+        WorldGridPos targetMin = new(data.Bounds.MinPos.ToWorld(data.Transform).Value + step);
+        WorldGridPos targetMax = new(data.Bounds.MaxPos.ToWorld(data.Transform).Value + step);
+
+        var nearConstructs = collisionQuery.GetConstructsInArea(targetMin, targetMax);
+        foreach (var other in nearConstructs)
+        {
+            if (other.Data == data)
+                continue;
+
+            foreach (var (moduleLocation, module) in data.Modules.Modules)
             {
-                currentRot -= (float)Math.CopySign(360, currentRot - degTargetYRotation);
-                rotationSecondOrderDynamics.SetPrevious(currentRot);
+                foreach (var facePos in module.SurfaceCache.ExposedSurfaces[dir])
+                {
+                    var faceWorldPos = facePos.ToWorld(moduleLocation, data.Transform, data.Modules.ModuleSize);
+                    if (other.TryGetBlock(faceWorldPos + step, out _))
+                    {
+                        return false;
+                    }
+                }
             }
-            currentRot = rotationSecondOrderDynamics.Update((float)delta, degTargetYRotation);
         }
 
-        Rotation = new Vector3(Rotation.X, Mathf.DegToRad(degTargetYRotation), Rotation.Z);
+        return true;
     }
 }

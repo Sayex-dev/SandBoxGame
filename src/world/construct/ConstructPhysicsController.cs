@@ -7,13 +7,15 @@ public class ConstructPhysicsController
     public float BlockMass { get; private set; } = 0;
 
     private readonly ConstructData data;
+    private readonly ConstructMotionController motionController;
     private Vector3 velocity = Vector3.Zero;
     private Vector3 physicsPosition = Vector3.Zero;
     private bool isStatic;
 
-    public ConstructPhysicsController(ConstructData data, Vector3 initPos, bool isStatic)
+    public ConstructPhysicsController(ConstructData data, ConstructMotionController motionController, Vector3 initPos, bool isStatic)
     {
         this.data = data;
+        this.motionController = motionController;
         physicsPosition = initPos;
         this.isStatic = isStatic;
     }
@@ -28,9 +30,17 @@ public class ConstructPhysicsController
 
         // Apply
         physicsPosition += velocity;
-        Vector3 absDif = (physicsPosition - (Vector3I)data.Transform.WorldPos).Abs();
-        if (absDif.X > 1 || absDif.Y > 1 || absDif.Z > 1)
-            data.Transform.MoveTo((Vector3I)physicsPosition);
+        Vector3 div = physicsPosition - (Vector3I)data.Transform.WorldPos;
+        Vector3 absDiv = div.Abs();
+        bool couldMove = true;
+        if (absDiv.X > 1 || absDiv.Y > 1 || absDiv.Z > 1)
+            couldMove = motionController.TryTakeStep(DirectionTools.GetClosestDirection(absDiv));
+
+        if (!couldMove)
+        {
+            velocity = Vector3.Zero;
+            physicsPosition = data.Transform.WorldPos.Value;
+        }
     }
 
     public void SetPosition(WorldGridPos pos)

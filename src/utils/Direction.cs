@@ -83,6 +83,26 @@ static class DirectionTools
 		};
 	}
 
+	public static Direction GetClosestDirection(Vector3 vector)
+	{
+		float absX = Mathf.Abs(vector.X);
+		float absY = Mathf.Abs(vector.Y);
+		float absZ = Mathf.Abs(vector.Z);
+
+		if (absX >= absY && absX >= absZ)
+		{
+			return vector.X >= 0 ? Direction.RIGHT : Direction.LEFT;
+		}
+		else if (absY >= absX && absY >= absZ)
+		{
+			return vector.Y >= 0 ? Direction.UP : Direction.DOWN;
+		}
+		else
+		{
+			return vector.Z >= 0 ? Direction.BACKWARD : Direction.FORWARD;
+		}
+	}
+
 	public static Vector3 GetVecFromForward(Vector3 forwardVec, Direction direction)
 	{
 		Vector3 forward = forwardVec.Normalized();

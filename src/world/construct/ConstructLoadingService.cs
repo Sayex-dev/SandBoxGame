@@ -8,7 +8,6 @@ public class ConstructLoadingService
     private readonly ConstructModuleBuilder moduleBuilder;
     private readonly ConstructVisualsController visuals;
     private readonly ConstructGenerator generator;
-    private bool loadComplete = true;
 
     public ConstructLoadingService(
         ConstructData data,
@@ -24,9 +23,7 @@ public class ConstructLoadingService
 
     public async Task UpdateLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
     {
-        loadComplete = false;
         await LoadAround(worldPos, simulationDistance);
-        loadComplete = true;
 
         // Lazy loading of modules
         //for (int i = simulationDistance; i < renderDistance; i++)
