@@ -14,7 +14,6 @@ public partial class WorldController : Node3D
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
     private ConstructWorld blockWorld;
     private MeshInstance3D worldMesh;
-    private WorldClock worldClock;
 
     private Vector3I prevCameraModulePos = Vector3I.MaxValue;
 
@@ -28,12 +27,7 @@ public partial class WorldController : Node3D
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
 
-        worldClock = new WorldClock();
-        AddChild(worldClock);
-
-        var abilityManager = new AbilityManager(worldClock);
-
-        blockWorld = new ConstructWorld(Seed, ModuleSize, BlockStore, ModuleMat, abilityManager);
+        blockWorld = new ConstructWorld(Seed, ModuleSize, BlockStore, ModuleMat);
         AddChild(blockWorld);
 
         await GatherConstuctChildren();

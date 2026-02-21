@@ -53,11 +53,13 @@ public class ConstructMotionController
 
     public bool TryTakeStep(Direction dir)
     {
+        TimeTracker.Start("Take step time", TimeTracker.TrackingType.Average);
         if (CanStepIntoDir(dir))
         {
             data.Transform.WorldPos += (Vector3I)DirectionTools.GetWorldDirVec(dir);
             return true;
         }
+        TimeTracker.End("Take step time");
         return false;
     }
 

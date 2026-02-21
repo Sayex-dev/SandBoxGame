@@ -9,7 +9,6 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	private int moduleSize;
 	private BlockStore blockStore;
 	private Material moduleMaterial;
-	private AbilityManager abilityManager;
 	private ExpandingOctTree<Construct> constructs;
 
 	// Streaming loaders for global constructs (keyed by construct)
@@ -19,15 +18,13 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		int seed,
 		int moduleSize,
 		BlockStore blockStore,
-		Material moduleMaterial,
-		AbilityManager abilityManager
+		Material moduleMaterial
 	)
 	{
 		this.seed = seed;
 		this.moduleSize = moduleSize;
 		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
-		this.abilityManager = abilityManager;
 
 		constructs = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
 	}
