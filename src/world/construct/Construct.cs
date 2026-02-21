@@ -21,8 +21,8 @@ public partial class Construct : Node3D, IHaveBounds
 	public void Initialize(int moduleSize, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
-		var modules = new ConstructModuleController(moduleSize);
-		var bounds = new ConstructBoundsController();
+		var modules = new ConstructModules(moduleSize);
+		var bounds = new ConstructBounds();
 
 		Data = new ConstructData(transform, modules, bounds, blockStore, moduleMaterial);
 

@@ -44,7 +44,7 @@ public class ConstructModuleBuilder : IDisposable
         WorldGridPos worldPos,
         int loadDistance,
         ConstructTransform transform,
-        ConstructModuleController modules,
+        ConstructModules modules,
         ModuleLoadContext context)
     {
         var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);

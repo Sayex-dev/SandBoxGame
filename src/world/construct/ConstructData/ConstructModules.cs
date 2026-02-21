@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 
-public partial class ConstructModuleController
+public partial class ConstructModules
 {
     public bool FullyLoaded { get; private set; }
     public int ModuleSize { get; private set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 
-    public ConstructModuleController(int moduleSize)
+    public ConstructModules(int moduleSize)
     {
         ModuleSize = moduleSize;
     }

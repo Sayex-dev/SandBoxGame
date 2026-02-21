@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class ConstructBoundsController
+public class ConstructBounds
 {
     public ConstructGridPos MinPos { get; private set; }
     public ConstructGridPos MaxPos { get; private set; }
@@ -56,7 +56,7 @@ public class ConstructBoundsController
         }
     }
 
-    public void CombineWith(ConstructBoundsController other)
+    public void CombineWith(ConstructBounds other)
     {
         if (!other.HasAnyBlocks)
             return;
