@@ -8,16 +8,14 @@ using System.Threading.Tasks;
 public static class ConstructOneTimeLoader
 {
     /// <summary>
-    /// Loads all modules for the construct at the given position with the specified load distance.
+    /// Loads all modules for the construct by querying the generator for its required modules.
     /// Returns once all modules have been generated and integrated.
     /// </summary>
     public static async Task LoadAll(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,
-        ConstructGenerator generator,
-        WorldGridPos worldPos,
-        int loadDistance)
+        ConstructGenerator generator)
     {
         var context = new ModuleLoadContext(
             data.Modules.ModuleSize,
@@ -25,11 +23,11 @@ public static class ConstructOneTimeLoader
             data.ModuleMaterial,
             generator
         );
-        var generationResponse = moduleBuilder.GenerateModulesAround(
-            worldPos, loadDistance, data.Transform, data.Modules, context);
+
+        var generationTasks = moduleBuilder.GenerateAllModules(context);
 
         // Load all modules
         await ModuleIntegrationHelper.IntegrateGeneratedModules(
-            generationResponse.GenerationTaskHandles, data, visuals);
+            generationTasks, data, visuals);
     }
 }

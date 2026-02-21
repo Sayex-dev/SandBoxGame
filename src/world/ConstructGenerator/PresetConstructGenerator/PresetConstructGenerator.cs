@@ -64,4 +64,9 @@ public class PresetConstructGenerator : ConstructGenerator
 	{
 		return requiredModules.Contains(moduleLocation);
 	}
+
+	public override HashSet<ModuleLocation> GetAllRequiredModules()
+	{
+		return requiredModules;
+	}
 }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Godot;
 
 public abstract partial class ConstructGenerator
 {
@@ -17,4 +16,11 @@ public abstract partial class ConstructGenerator
 		HashSet<ModuleLocation> prevLoaded = null
 	);
 	public abstract bool IsModuleNeeded(ModuleLocation moduleLocation);
+
+	/// <summary>
+	/// Returns all module locations that this generator requires.
+	/// Used by one-time loaders to load all modules at once.
+	/// Returns null if the generator has an unbounded/infinite set of modules (e.g. world terrain).
+	/// </summary>
+	public virtual HashSet<ModuleLocation> GetAllRequiredModules() => null;
 }

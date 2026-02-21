@@ -18,7 +18,7 @@ public partial class Construct : Node3D, IHaveBounds
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
 
-	public void Initialize(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
+	public void Initialize(int moduleSize, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
 		var modules = new ConstructModuleController(moduleSize);

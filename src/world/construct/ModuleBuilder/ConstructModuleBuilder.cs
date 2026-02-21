@@ -58,6 +58,27 @@ public class ConstructModuleBuilder : IDisposable
         };
     }
 
+    /// <summary>
+    /// Generates all modules that the generator reports as needed.
+    /// Unlike GenerateModulesAround, this does not use distance-based loading/unloading.
+    /// It queries the generator for every required module and generates them all.
+    /// Used for finite constructs that need to be fully loaded once.
+    /// </summary>
+    public IEnumerable<Task<GenerateModulesResponse>> GenerateAllModules(
+        ModuleLoadContext context)
+    {
+        var allNeeded = context.Generator.GetAllRequiredModules();
+        var toLoad = new List<ModuleLocation>();
+
+        foreach (var pos in allNeeded)
+        {
+            if (_queued.Add(pos))
+                toLoad.Add(pos);
+        }
+
+        return GenerateModuleGenerationTasks(toLoad, context);
+    }
+
     public async Task<Mesh> GenerateModuleMesh(
         ModuleMeshGenerateContext context
     )

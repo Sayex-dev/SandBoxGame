@@ -60,7 +60,6 @@ public partial class WorldController : Node3D
             RemoveChild(construct);
             construct.Initialize(
                     ModuleSize,
-                    Seed,
                     BlockStore,
                     ModuleMat,
                     blockWorld

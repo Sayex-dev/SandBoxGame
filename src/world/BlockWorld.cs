@@ -64,6 +64,9 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 		return null;
 	}
 
+	/// <summary>
+	/// Adds a finite construct and loads all its modules once.
+	/// </summary>
 	public async Task AddConstruct(Construct construct)
 	{
 		constructs.Insert(construct);
@@ -71,11 +74,8 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 
 		// One-time load for finite constructs
 		var generator = construct.ConstructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
-		var worldPos = new WorldGridPos(construct.Data.Transform.WorldPos.Value);
-		int loadDistance = 1; // Enough to cover the construct's required modules
 		await ConstructOneTimeLoader.LoadAll(
-			construct.Data, construct.ModuleBuilder, construct.Visuals,
-			generator, worldPos, loadDistance);
+			construct.Data, construct.ModuleBuilder, construct.Visuals, generator);
 	}
 
 	/// <summary>
