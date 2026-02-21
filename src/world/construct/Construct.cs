@@ -12,7 +12,7 @@ public partial class Construct : Node3D, IHaveBounds
 	public ConstructData Data { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
 
-	private ConstructLoadingService loading;
+	private ConstructLoadingController loading;
 	private ConstructPhysicsController physics;
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
@@ -38,7 +38,7 @@ public partial class Construct : Node3D, IHaveBounds
 		var generator = constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
 
 		Blocks = new ConstructBlockService(Data, moduleBuilder, visuals);
-		loading = new ConstructLoadingService(Data, moduleBuilder, visuals, generator);
+		loading = new ConstructLoadingController(Data, moduleBuilder, visuals, generator);
 
 		Position = transform.WorldPos.Value;
 		Rotation = visualMotion.Rotation;

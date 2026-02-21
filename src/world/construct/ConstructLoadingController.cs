@@ -1,15 +1,15 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
-public class ConstructLoadingService
+public class ConstructLoadingController
 {
+    public bool isFullyLoaded = false;
     private readonly ConstructData data;
     private readonly ConstructModuleBuilder moduleBuilder;
     private readonly ConstructVisualsController visuals;
     private readonly ConstructGenerator generator;
 
-    public ConstructLoadingService(
+    public ConstructLoadingController(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,

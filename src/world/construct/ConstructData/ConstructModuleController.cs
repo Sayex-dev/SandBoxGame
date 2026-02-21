@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Godot;
 
 public partial class ConstructModuleController
 {
+    public bool FullyLoaded { get; private set; }
     public int ModuleSize { get; private set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
@@ -66,6 +66,7 @@ public partial class ConstructModuleController
 
         ModuleGridPos inModule = conPos.ToModule(ModuleSize);
         module.SetBlock(inModule, blockId);
-        if (!module.HasBlocks) Modules.Remove(moduleLoc);
+        if (!module.HasBlocks)
+            Modules.Remove(moduleLoc);
     }
 }
