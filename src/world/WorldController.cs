@@ -12,7 +12,7 @@ public partial class WorldController : Node3D
     [Export] public int SimulationDistance { get; set; } = 5;
     [Export] public int RenderDistance { get; set; } = 10;
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
-    private BlockWorld blockWorld;
+    private ConstructWorld blockWorld;
     private MeshInstance3D worldMesh;
     private WorldClock worldClock;
 
@@ -33,7 +33,7 @@ public partial class WorldController : Node3D
 
         var abilityManager = new AbilityManager(worldClock);
 
-        blockWorld = new BlockWorld(Seed, ModuleSize, BlockStore, ModuleMat, abilityManager);
+        blockWorld = new ConstructWorld(Seed, ModuleSize, BlockStore, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
         await GatherConstuctChildren();

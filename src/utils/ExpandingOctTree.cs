@@ -3,14 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public interface IHaveBounds
+public interface IOctTreeObject
 {
     public Vector3I GetRootPos();
     public Vector3I GetMin();
     public Vector3I GetMax();
+
+    /// <summary>
+    /// Fired when the object's bounds have changed and it needs to be
+    /// repositioned within any spatial structure that contains it.
+    /// </summary>
+    event Action<IOctTreeObject> BoundsChanged;
 }
 
-public class ExpandingOctTree<T> where T : IHaveBounds
+public class ExpandingOctTree<T> where T : IOctTreeObject
 {
     private class Node
     {
@@ -33,7 +39,7 @@ public class ExpandingOctTree<T> where T : IHaveBounds
         {
             get
             {
-                return Children != null;
+                return Children != null && Children.Length > 0;
             }
         }
 
@@ -72,11 +78,13 @@ public class ExpandingOctTree<T> where T : IHaveBounds
     {
         EnsureContains(t);
         RecursiveInsert(root, rootOrigin, rootSize, t);
+        Subscribe(t);
     }
 
     public void InsertGlobal(T t)
     {
         globalObjects.Add(t);
+        Subscribe(t);
     }
 
     public List<T> QueryBox(Vector3I min, Vector3I max)
@@ -93,9 +101,36 @@ public class ExpandingOctTree<T> where T : IHaveBounds
 
     public void Remove(T t)
     {
+        Unsubscribe(t);
         if (globalObjects.Contains(t))
             globalObjects.Remove(t);
         RemoveInternal(root, rootOrigin, rootSize, t);
+    }
+
+    public void Update(T t)
+    {
+        if (globalObjects.Contains(t))
+            return;
+
+        Unsubscribe(t);
+        RemoveInternal(root, rootOrigin, rootSize, t);
+        Insert(t);
+    }
+
+    private void OnBoundsChanged(IOctTreeObject obj)
+    {
+        if (obj is T t)
+            Update(t);
+    }
+
+    private void Subscribe(T t)
+    {
+        t.BoundsChanged += OnBoundsChanged;
+    }
+
+    private void Unsubscribe(T t)
+    {
+        t.BoundsChanged -= OnBoundsChanged;
     }
 
     private void RemoveInternal(Node node, Vector3I origin, int size, T t)
@@ -106,7 +141,7 @@ public class ExpandingOctTree<T> where T : IHaveBounds
         if (node.BoundObjects.Contains(t))
         {
             node.BoundObjects.Remove(t);
-            TryCollapse(node);
+            node.Collapse();
             return;
         }
 
@@ -124,22 +159,6 @@ public class ExpandingOctTree<T> where T : IHaveBounds
                 }
             }
         }
-    }
-
-    private void TryCollapse(Node node)
-    {
-        if (node.HasChildren)
-            return;
-
-        foreach (Node child in node.Children)
-        {
-            if (!child.IsEmpty)
-            {
-                return;
-            }
-        }
-
-        node.Collapse();
     }
 
     private void QueryInternal(Node node, Vector3I origin, int size, Vector3I min, Vector3I max, List<T> outList)

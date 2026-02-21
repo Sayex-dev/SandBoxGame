@@ -1,9 +1,11 @@
 using Godot;
-using System.Threading.Tasks;
+using System;
 
 [GlobalClass]
-public partial class Construct : Node3D, IHaveBounds
+public partial class Construct : Node3D, IOctTreeObject
 {
+	public event Action<IOctTreeObject> BoundsChanged;
+
 	[Export] public bool IsGlobal { get; private set; }
 	[Export] public ConstructGeneratorSettings ConstructGeneratorSettings { get; private set; }
 	[Export] private SecondOrderDynamicsSettings rotSodSettings;
@@ -18,13 +20,16 @@ public partial class Construct : Node3D, IHaveBounds
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
 
-	public void Initialize(int moduleSize, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
+	public void Initialize(int moduleSize, BlockStore blockStore, Material moduleMaterial, IWorldQuery collisionQuery)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
 		var modules = new ConstructModules(moduleSize);
 		var bounds = new ConstructBounds();
 
 		Data = new ConstructData(transform, modules, bounds, blockStore, moduleMaterial);
+
+		Data.Transform.Changed += OnSpatialChanged;
+		Data.Bounds.Changed += OnSpatialChanged;
 
 		motionController = new ConstructMotionController(Data, collisionQuery);
 		physics = new ConstructPhysicsController(Data, motionController, Position, IsGlobal);
@@ -61,13 +66,16 @@ public partial class Construct : Node3D, IHaveBounds
 		physics.Update(delta);
 	}
 
-	// Block operations - thin delegation
 	public void SetBlock(WorldGridPos worldPos, int blockId) => Blocks.SetBlock(worldPos, blockId);
 	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds) => Blocks.SetBlocks(worldPositions, blockIds);
 	public bool TryGetBlock(WorldGridPos worldPos, out int blockId) => Blocks.TryGetBlock(worldPos, out blockId);
 
-	// IHaveBounds implementation
 	public Vector3I GetRootPos() => Data.Transform.WorldPos;
 	public Vector3I GetMin() => Data.Bounds.MinPos.ToWorld(Data.Transform);
 	public Vector3I GetMax() => Data.Bounds.MaxPos.ToWorld(Data.Transform);
+
+	private void OnSpatialChanged()
+	{
+		BoundsChanged?.Invoke(this);
+	}
 }

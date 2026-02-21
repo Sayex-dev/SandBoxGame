@@ -1,8 +1,23 @@
 using Godot;
+using System;
 
 public partial class ConstructTransform
 {
-    public WorldGridPos WorldPos;
+    public event Action Changed;
+
+    private WorldGridPos worldPos;
+    public WorldGridPos WorldPos
+    {
+        get => worldPos;
+        set
+        {
+            if (worldPos.Value != value.Value)
+            {
+                worldPos = value;
+                Changed?.Invoke();
+            }
+        }
+    }
     public float YRotation
     {
         get

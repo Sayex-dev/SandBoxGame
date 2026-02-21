@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
-public partial class BlockWorld : Node3D, IWorldCollisionQuery
+public partial class ConstructWorld : Node3D, IWorldQuery
 {
 	private int seed;
 	private int moduleSize;
@@ -15,7 +15,7 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 	// Streaming loaders for global constructs (keyed by construct)
 	private readonly Dictionary<Construct, ConstructStreamingLoader> streamingLoaders = new();
 
-	public BlockWorld(
+	public ConstructWorld(
 		int seed,
 		int moduleSize,
 		BlockStore blockStore,
@@ -30,25 +30,6 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 		this.abilityManager = abilityManager;
 
 		constructs = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
-	}
-
-	public void SetBlock(Construct construct, WorldGridPos worldPos, int blockId)
-	{
-		construct.SetBlock(worldPos, blockId);
-	}
-
-	public int GetBlock(WorldGridPos worldPos)
-	{
-		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
-		foreach (Construct construct in nearConstructs)
-		{
-			int blockId;
-			if (construct.TryGetBlock(worldPos, out blockId))
-			{
-				return blockId;
-			}
-		}
-		return -1;
 	}
 
 	public Construct HasBlock(WorldGridPos worldPos)
@@ -105,7 +86,6 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 
 	/// <summary>
 	/// Updates streaming loading for all global constructs in range.
-	/// Finite constructs are already fully loaded and are skipped.
 	/// </summary>
 	public async Task UpdateConstructLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
 	{

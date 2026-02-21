@@ -4,6 +4,8 @@ using Godot;
 
 public class ConstructBounds
 {
+    public event Action Changed;
+
     public ConstructGridPos MinPos { get; private set; }
     public ConstructGridPos MaxPos { get; private set; }
 
@@ -16,11 +18,15 @@ public class ConstructBounds
 
     public void AddPosition(ConstructGridPos pos)
     {
+        var oldMin = MinPos;
+        var oldMax = MaxPos;
+
         if (!HasAnyBlocks)
         {
             MinPos = pos;
             MaxPos = pos;
             HasAnyBlocks = true;
+            Changed?.Invoke();
             return;
         }
 
@@ -37,13 +43,18 @@ public class ConstructBounds
             Math.Max(MaxPos.Value.Y, v.Y),
             Math.Max(MaxPos.Value.Z, v.Z)
         ));
+
+        if (MinPos != oldMin || MaxPos != oldMax)
+            Changed?.Invoke();
     }
 
     public void RemovePosition(ConstructGridPos pos, Dictionary<ModuleLocation, Module> modules)
     {
-
         if (!IsOnBounds(pos))
             return;
+
+        var oldMin = MinPos;
+        var oldMax = MaxPos;
 
         // Rebuild bounds
         Clear();
@@ -54,6 +65,9 @@ public class ConstructBounds
 
             AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
         }
+
+        if (MinPos != oldMin || MaxPos != oldMax)
+            Changed?.Invoke();
     }
 
     public void CombineWith(ConstructBounds other)

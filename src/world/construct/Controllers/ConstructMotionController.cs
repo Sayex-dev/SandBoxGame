@@ -3,9 +3,9 @@ using Godot;
 public class ConstructMotionController
 {
     private readonly ConstructData data;
-    private readonly IWorldCollisionQuery collisionQuery;
+    private readonly IWorldQuery collisionQuery;
 
-    public ConstructMotionController(ConstructData data, IWorldCollisionQuery collisionQuery)
+    public ConstructMotionController(ConstructData data, IWorldQuery collisionQuery)
     {
         this.data = data;
         this.collisionQuery = collisionQuery;

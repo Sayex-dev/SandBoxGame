@@ -46,7 +46,7 @@ moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
 [node name="Thingy" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
+transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 150, -5.01)
 script = ExtResource("7_10v3s")
 ConstructGeneratorSettings = ExtResource("8_cptob")
 rotSodSettings = ExtResource("7_cptob")
@@ -86,7 +86,7 @@ moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 
 [node name="Thingy6" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 16, -5)
+transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 200, -5)
 script = ExtResource("7_10v3s")
 ConstructGeneratorSettings = ExtResource("8_cptob")
 rotSodSettings = ExtResource("7_cptob")

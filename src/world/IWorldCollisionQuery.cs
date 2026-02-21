@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public interface IWorldCollisionQuery
+public interface IWorldQuery
 {
     /// <summary>
     /// Returns true if any block exists at the given world position (from any construct).
