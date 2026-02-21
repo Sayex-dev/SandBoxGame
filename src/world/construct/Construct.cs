@@ -5,18 +5,18 @@ using System.Threading.Tasks;
 public partial class Construct : Node3D, IHaveBounds
 {
 	[Export] public bool IsGlobal { get; private set; }
-	[Export] private ConstructGeneratorSettings constructGeneratorSettings;
+	[Export] public ConstructGeneratorSettings ConstructGeneratorSettings { get; private set; }
 	[Export] private SecondOrderDynamicsSettings rotSodSettings;
 	[Export] private SecondOrderDynamicsSettings moveSodSettings;
 
 	public ConstructData Data { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
+	public ConstructVisualsController Visuals { get; private set; }
+	public ConstructModuleBuilder ModuleBuilder { get; private set; }
 
-	private ConstructLoadingController loading;
 	private ConstructPhysicsController physics;
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
-	private bool runPhysicsProcess = false;
 
 	public void Initialize(int moduleSize, int seed, BlockStore blockStore, Material moduleMaterial, IWorldCollisionQuery collisionQuery)
 	{
@@ -33,12 +33,10 @@ public partial class Construct : Node3D, IHaveBounds
 		SecondOrderDynamics<Vector3> moveSod = moveSodSettings.GetInstance(Position);
 		visualMotion = new ConstructVisualMotionController(Data, moveSod, rotSod);
 
-		var visuals = new ConstructVisualsController(moduleSize, this);
-		var moduleBuilder = new ConstructModuleBuilder();
-		var generator = constructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
+		Visuals = new ConstructVisualsController(moduleSize, this);
+		ModuleBuilder = new ConstructModuleBuilder();
 
-		Blocks = new ConstructBlockService(Data, moduleBuilder, visuals);
-		loading = new ConstructLoadingController(Data, moduleBuilder, visuals, generator);
+		Blocks = new ConstructBlockService(Data, ModuleBuilder, Visuals);
 
 		Position = transform.WorldPos.Value;
 		Rotation = visualMotion.Rotation;
@@ -67,10 +65,6 @@ public partial class Construct : Node3D, IHaveBounds
 	public void SetBlock(WorldGridPos worldPos, int blockId) => Blocks.SetBlock(worldPos, blockId);
 	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds) => Blocks.SetBlocks(worldPositions, blockIds);
 	public bool TryGetBlock(WorldGridPos worldPos, out int blockId) => Blocks.TryGetBlock(worldPos, out blockId);
-
-	// Loading operations - thin delegation
-	public Task UpdateLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
-		=> loading.UpdateLoading(worldPos, renderDistance, simulationDistance);
 
 	// IHaveBounds implementation
 	public Vector3I GetRootPos() => Data.Transform.WorldPos;

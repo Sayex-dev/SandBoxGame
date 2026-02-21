@@ -11,6 +11,10 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 	private Material moduleMaterial;
 	private AbilityManager abilityManager;
 	private ExpandingOctTree<Construct> constructs;
+
+	// Streaming loaders for global constructs (keyed by construct)
+	private readonly Dictionary<Construct, ConstructStreamingLoader> streamingLoaders = new();
+
 	public BlockWorld(
 		int seed,
 		int moduleSize,
@@ -60,43 +64,33 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 		return null;
 	}
 
-	//	public void SetBlockState(Construct construct, WorldGridPos worldPos, BlockState blockState)
-	//	{
-	//		construct.SetBlockState(worldPos, blockState);
-	//	}
-	//
-	//	public BlockState GetBlockState(WorldGridPos worldPos)
-	//	{
-	//		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
-	//		foreach (Construct construct in nearConstructs)
-	//		{
-	//			BlockState blockState = construct.GetBlockState(worldPos);
-	//			if (blockState != null) return blockState;
-	//		}
-	//		return null;
-	//	}
-	//
-	//	public Construct HasBlockState(WorldGridPos worldPos)
-	//	{
-	//		List<Construct> nearConstructs = constructs.QueryAt(worldPos);
-	//		foreach (Construct construct in nearConstructs)
-	//		{
-	//			BlockState blockState = construct.GetBlockState(worldPos);
-	//			if (blockState != null) return construct;
-	//		}
-	//		return null;
-	//	}
-
-	public void AddConstruct(Construct construct)
+	public async Task AddConstruct(Construct construct)
 	{
 		constructs.Insert(construct);
 		AddChild(construct);
+
+		// One-time load for finite constructs
+		var generator = construct.ConstructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
+		var worldPos = new WorldGridPos(construct.Data.Transform.WorldPos.Value);
+		int loadDistance = 1; // Enough to cover the construct's required modules
+		await ConstructOneTimeLoader.LoadAll(
+			construct.Data, construct.ModuleBuilder, construct.Visuals,
+			generator, worldPos, loadDistance);
 	}
 
+	/// <summary>
+	/// Adds a global construct and creates a streaming loader for it.
+	/// </summary>
 	public void AddGlobalConstruct(Construct construct)
 	{
 		constructs.InsertGlobal(construct);
 		AddChild(construct);
+
+		// Create a streaming loader for this global construct
+		var generator = construct.ConstructGeneratorSettings.CreateConstructGenerator(moduleSize, seed);
+		var loader = new ConstructStreamingLoader(
+			construct.Data, construct.ModuleBuilder, construct.Visuals, generator);
+		streamingLoaders[construct] = loader;
 	}
 
 	public bool HasBlockAt(WorldGridPos worldPos)
@@ -109,16 +103,15 @@ public partial class BlockWorld : Node3D, IWorldCollisionQuery
 		return constructs.QueryBox(min.Value, max.Value);
 	}
 
+	/// <summary>
+	/// Updates streaming loading for all global constructs in range.
+	/// Finite constructs are already fully loaded and are skipped.
+	/// </summary>
 	public async Task UpdateConstructLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
 	{
-		Vector3I renderDistVec = Vector3I.One * renderDistance;
-		Vector3I minPos = worldPos.Value - renderDistVec * moduleSize;
-		Vector3I maxPos = worldPos.Value + renderDistVec * moduleSize;
-
-		List<Construct> nearConstructs = constructs.QueryBox(minPos, maxPos);
-		foreach (Construct construct in nearConstructs)
+		foreach (var kvp in streamingLoaders)
 		{
-			await construct.UpdateLoading(worldPos, renderDistance, simulationDistance);
+			await kvp.Value.UpdateLoading(worldPos, renderDistance, simulationDistance);
 		}
 	}
 }

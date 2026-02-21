@@ -36,7 +36,7 @@ public partial class WorldController : Node3D
         blockWorld = new BlockWorld(Seed, ModuleSize, BlockStore, ModuleMat, abilityManager);
         AddChild(blockWorld);
 
-        GatherConstuctChildren();
+        await GatherConstuctChildren();
 
         await blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance, SimulationDistance);
         SetPhysicsProcess(true);
@@ -53,7 +53,7 @@ public partial class WorldController : Node3D
         }
     }
 
-    public void GatherConstuctChildren()
+    public async Task GatherConstuctChildren()
     {
         foreach (var construct in GetChildren().OfType<Construct>())
         {
@@ -68,7 +68,7 @@ public partial class WorldController : Node3D
             if (construct.IsGlobal)
                 blockWorld.AddGlobalConstruct(construct);
             else
-                blockWorld.AddConstruct(construct);
+                await blockWorld.AddConstruct(construct);
         }
     }
 }
