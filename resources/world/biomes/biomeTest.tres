@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="Biome" load_steps=8 format=3 uid="uid://vh6tbdwkh8p1"]
 
-[ext_resource type="Script" uid="uid://kc5w8be8jk8c" path="res://src/world/ConstructGenerator/StreamingConstructGenerator/BiomeWorldGenerator/Biomes/NoiseLayer.cs" id="1_4jvog"]
+[ext_resource type="Script" uid="uid://kc5w8be8jk8c" path="res://src/world/construct/ConstructGenerator/StreamingConstructGenerator/BiomeWorldGenerator/Biomes/NoiseLayer.cs" id="1_4jvog"]
 [ext_resource type="Resource" uid="uid://coihw0qwhor3q" path="res://resources/blocks/defaultBlock.tres" id="2_6uwss"]
-[ext_resource type="Script" uid="uid://vmadcifcrkj1" path="res://src/world/ConstructGenerator/StreamingConstructGenerator/BiomeWorldGenerator/Biomes/Biome.cs" id="2_7wqi5"]
+[ext_resource type="Script" uid="uid://vmadcifcrkj1" path="res://src/world/construct/ConstructGenerator/StreamingConstructGenerator/BiomeWorldGenerator/Biomes/Biome.cs" id="2_7wqi5"]
 
 [sub_resource type="Resource" id="Resource_6uwss"]
 script = ExtResource("1_4jvog")

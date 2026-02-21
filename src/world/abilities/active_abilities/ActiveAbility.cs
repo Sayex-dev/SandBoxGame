@@ -1,6 +1,6 @@
 using Godot;
 
-[GlobalClass]
+
 public partial class ActiveAbility : Resource
 {
 	public enum TriggerType

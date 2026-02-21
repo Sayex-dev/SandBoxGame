@@ -13,16 +13,16 @@ public class ModuleMeshGenerator
 		public Vector3I Normal;
 		public Vector2 SurfaceBlockSpan;
 		public Direction Dir;
-		public int BlockId;
+		public Block Block;
 
-		public Surface(List<Vector3I> vertices, List<int> indices, Vector3I normal, Vector2 surfaceBlockSpan, Direction dir, int blockId)
+		public Surface(List<Vector3I> vertices, List<int> indices, Vector3I normal, Vector2 surfaceBlockSpan, Direction dir, Block block)
 		{
 			Vertices = vertices;
 			Indices = indices;
 			Normal = normal;
 			SurfaceBlockSpan = surfaceBlockSpan;
 			Dir = dir;
-			BlockId = blockId;
+			Block = block;
 		}
 	}
 
@@ -88,7 +88,7 @@ public class ModuleMeshGenerator
 
 			int maxX = -1;
 			int maxY = -1;
-			int surfaceBlockId = -1;
+			Block surfaceBlock = default;
 
 			for (int y = 0; y <= moduleSize; y++)
 			{
@@ -96,12 +96,12 @@ public class ModuleMeshGenerator
 				for (int x = 0; x <= moduleSize; x++)
 				{
 					Vector3I np = minPos + locXMove * x + locYMove * y;
-					module.HasBlock(np, out int blockId);
-					if (surfaceBlockId == -1)
-						surfaceBlockId = blockId;
+					module.HasBlock(np, out Block block);
+					if (surfaceBlock.IsEmpty)
+						surfaceBlock = block;
 
 					bool hasSurface = remaining.Contains(np);
-					bool sameSurface = blockId == surfaceBlockId;
+					bool sameSurface = block == surfaceBlock;
 					bool firstRow = maxX == -1;
 					bool lastCol = x == maxX;
 
@@ -139,14 +139,14 @@ public class ModuleMeshGenerator
 					remaining.Remove(rp);
 				}
 			}
-			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceBlockId);
+			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceBlock);
 			surfaces.Add(surface);
 		}
 
 		return surfaces;
 	}
 
-	public static Surface CreateSurface(Vector3I normal, Direction dir, Vector3I minPos, Vector2I maxSurface, int surfaceBlockId)
+	public static Surface CreateSurface(Vector3I normal, Direction dir, Vector3I minPos, Vector2I maxSurface, Block surfaceBlock)
 	{
 		List<Vector3I> verts = new List<Vector3I>();
 		List<int> inds = new List<int>();
@@ -183,7 +183,7 @@ public class ModuleMeshGenerator
 			surfaceBlockSpan = new Vector2(maxSurface.Y + 1, maxSurface.X + 1);
 		}
 
-		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, surfaceBlockId);
+		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, surfaceBlock);
 	}
 
 	public static Vector3 Embed2DInPlane(Vector2 v, Vector3 n)
@@ -222,7 +222,7 @@ public class ModuleMeshGenerator
 		for (int i = 0; i < surfaces.Count; i++)
 		{
 			Surface s = surfaces[i];
-			BlockDefault blockDefault = context.BlockStore.blockDefaults[s.BlockId];
+			BlockDefault blockDefault = context.BlockStore.GetBlockDefault(s.Block);
 			Color surfaceColor;
 
 			switch (s.Dir)

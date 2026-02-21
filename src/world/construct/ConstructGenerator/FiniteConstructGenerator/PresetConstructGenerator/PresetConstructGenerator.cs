@@ -46,7 +46,7 @@ public class PresetConstructGenerator : ConstructGenerator
 
 			if (module.IsInModule(inConstructBlockPos, moduleLocation))
 			{
-				module.SetBlock(inModuleBlockPos, block.W);
+				module.SetBlock(inModuleBlockPos, new Block(block.W));
 			}
 		}
 

@@ -18,14 +18,14 @@ public partial class BlockDefault : Resource
 	[Export] public Vector2I TextureAtlasFaceForward { get; set; }
 	[Export] public Vector2I TextureAtlasFaceBackward { get; set; }
 
-	private int blockId = -1;
+	private int blockId = 0;
 
-	public int BlockId
+	public int Id
 	{
 		get { return blockId; }
 		set
 		{
-			if (blockId != -1)
+			if (blockId != 0)
 			{
 				throw new ArgumentException("Block id cannot be changed once set.");
 			}

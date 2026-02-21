@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 
@@ -9,6 +9,13 @@ public partial class Module
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
 	public ExposedModuleSurfaceCache SurfaceCache;
+	public Block[] BlocksArrayCopy
+	{
+		get
+		{
+			return blocks.ToArray();
+		}
+	}
 	public bool HasBlocks
 	{
 		get
@@ -16,7 +23,7 @@ public partial class Module
 			return BlockCount > 0;
 		}
 	}
-	private int[] blocks = [];
+	private Block[] blocks = [];
 	private Vector3IBounds bounds;
 
 	public Module(int moduleSize, ExposedModuleSurfaceCache surfaceCache = null)
@@ -27,57 +34,54 @@ public partial class Module
 		bounds = new Vector3IBounds(moduleSize);
 
 		int blockCount = (int)Mathf.Pow(moduleSize, 3);
-		blocks = new int[blockCount];
-		for (int i = 0; i < blockCount; i++)
-			blocks[i] = -1;
-
+		blocks = new Block[blockCount];
 		BlockCount = 0;
 	}
 
-	public int[] GetBlockArray()
+	public Block[] GetBlockArray()
 	{
 		return blocks;
 	}
 
-	public int GetBlock(ModuleGridPos modulePos)
+	public Block GetBlock(ModuleGridPos modulePos)
 	{
 		int index = InModuleToArrayPos(modulePos);
 		return blocks[index];
 	}
 
-	public bool HasBlock(ModuleGridPos modulePos, out int blockId)
+	public bool HasBlock(ModuleGridPos modulePos, out Block block)
 	{
 		int index = InModuleToArrayPos(modulePos);
-		blockId = -1;
+		block = default;
 		if (blocks.Length > index && index >= 0)
 		{
-			blockId = blocks[index];
-			return blockId != -1;
+			block = blocks[index];
+			return !block.IsEmpty;
 		}
 		return false;
 	}
 
 	public bool HasBlock(ModuleGridPos modulePos)
 	{
-		int _;
+		Block _;
 		return HasBlock(modulePos, out _);
 	}
 
-	public void SetBlock(ModuleGridPos modulePos, int blockId)
+	public void SetBlock(ModuleGridPos modulePos, Block block)
 	{
 		int index = InModuleToArrayPos(modulePos);
-		int prevBlockId = blocks[index];
+		Block prevBlock = blocks[index];
 
-		if (prevBlockId != blockId)
+		if (prevBlock != block)
 		{
-			if (prevBlockId == -1 && blockId != -1)
+			if (prevBlock.IsEmpty && !block.IsEmpty)
 			{
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
 				SurfaceCache.AddBlock(modulePos);
 			}
-			else if (prevBlockId != -1 && blockId == -1)
+			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
@@ -86,39 +90,39 @@ public partial class Module
 			}
 		}
 
-		blocks[index] = blockId;
+		blocks[index] = block;
 	}
 
-	public void SetAllBlocks(int[] blockArray)
+	public void SetAllBlocks(BlockChange[] blockActionArray)
 	{
 		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
 
 		// Apply all block changes
-		for (int i = 0; i < blockArray.Length; i++)
+		for (int i = 0; i < blockActionArray.Length; i++)
 		{
-			int newBlockId = blockArray[i];
-			int oldBlockId = blocks[i];
-
-			if (newBlockId == -2)
+			if (blockActionArray[i].Action == BlockChangeAction.KEEP_PREVIOUS)
 			{
 				continue;
 			}
 
+			Block newBlock = blockActionArray[i].Block;
+			Block oldBlock = blocks[i];
+
 			ModuleGridPos modPos = ArrayToInModulePos(i);
-			if (oldBlockId == -1 && newBlockId != -1)
+			if (oldBlock.IsEmpty && !newBlock.IsEmpty)
 			{
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modPos, BlockCount);
 			}
-			else if (oldBlockId != -1 && newBlockId == -1)
+			else if (!oldBlock.IsEmpty && newBlock.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
 				bounds.RemovePoint(modPos, BlockCount);
 			}
 
-			blocks[i] = blockArray[i];
+			blocks[i] = blockActionArray[i].Block;
 		}
 		TimeTracker.End("Module Block put");
 

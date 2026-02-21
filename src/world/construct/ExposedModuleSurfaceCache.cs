@@ -64,11 +64,11 @@ public class ExposedModuleSurfaceCache
         }
 
         // Default case
-        int[] blocks = module.GetBlockArray();
+        Block[] blocks = module.GetBlockArray();
         for (int i = 0; i < blocks.Length; i++)
         {
-            int blockId = blocks[i];
-            if (blockId == -1)
+            Block block = blocks[i];
+            if (block.IsEmpty)
                 continue;
             ModuleGridPos modulePos = module.ArrayToInModulePos(i);
             AddBlock(modulePos);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 
@@ -44,21 +45,16 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 	{
 		int maxMaxY = 0;
 
-		// Pre-calculate all module offsets once
 		int moduleOffsetX = moduleLocation.Value.X * moduleSize;
 		int moduleOffsetY = moduleLocation.Value.Y * moduleSize;
 		int moduleOffsetZ = moduleLocation.Value.Z * moduleSize;
 
-		// Pre-calculate array dimensions
 		int moduleSize2 = moduleSize * moduleSize;
 		int moduleSize3 = moduleSize2 * moduleSize;
-		int[] blockArray = new int[moduleSize3];
-		Array.Fill(blockArray, -2);
+		BlockChange[] blockArray = new BlockChange[moduleSize3];
 
-		// Cache biome reference
 		Biome biome = biomes[0];
 
-		// Pre-allocate reusable objects (avoid allocations in loops)
 		Vector2I inConstructLocation = new Vector2I();
 		Vector3I worldPosVector = new Vector3I();
 		ConstructGridPos worldPos = new ConstructGridPos(worldPosVector);
@@ -95,8 +91,8 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 					// Only update Y component (X and Z are constant for this column)
 					worldPosVector.Y = moduleOffsetY + y;
 
-					int blockId = biome.GetBlockId(worldPos, groundHeight, seed);
-					blockArray[columnBaseIndex + y * moduleSize] = blockId;
+					var block = biome.GetBlock(worldPos, groundHeight, seed);
+					blockArray[columnBaseIndex + y * moduleSize] = new BlockChange(BlockChangeAction.REPLACE, block);
 				}
 			}
 		}

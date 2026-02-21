@@ -66,9 +66,9 @@ public partial class Construct : Node3D, IOctTreeObject
 		physics.Update(delta);
 	}
 
-	public void SetBlock(WorldGridPos worldPos, int blockId) => Blocks.SetBlock(worldPos, blockId);
-	public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds) => Blocks.SetBlocks(worldPositions, blockIds);
-	public bool TryGetBlock(WorldGridPos worldPos, out int blockId) => Blocks.TryGetBlock(worldPos, out blockId);
+	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);
+	public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks) => Blocks.SetBlocks(worldPositions, blocks);
+	public bool TryGetBlock(WorldGridPos worldPos, out Block block) => Blocks.TryGetBlock(worldPos, out block);
 
 	public Vector3I GetRootPos() => Data.Transform.WorldPos;
 	public Vector3I GetMin() => Data.Bounds.MinPos.ToWorld(Data.Transform);

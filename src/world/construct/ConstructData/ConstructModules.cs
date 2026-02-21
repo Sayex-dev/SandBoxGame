@@ -35,26 +35,25 @@ public partial class ConstructModules
 
     public bool TryGetBlock(
         ConstructGridPos conPos,
-        out int blockId
+        out Block block
     )
     {
-        blockId = -1;
+        block = default;
 
         ModuleLocation moduleLoc = conPos.ToModuleLocation(ModuleSize);
         if (!Modules.TryGetValue(moduleLoc, out var module))
             return false;
 
         ModuleGridPos inModule = conPos.ToModule(ModuleSize);
-        if (!module.HasBlock(inModule))
+        if (!module.HasBlock(inModule, out block))
             return false;
 
-        blockId = module.GetBlock(inModule);
-        return blockId != -1;
+        return !block.IsEmpty;
     }
 
     public void SetBlock(
         ConstructGridPos conPos,
-        int blockId
+        Block block
     )
     {
         ModuleLocation moduleLoc = conPos.ToModuleLocation(ModuleSize);
@@ -65,7 +64,7 @@ public partial class ConstructModules
         }
 
         ModuleGridPos inModule = conPos.ToModule(ModuleSize);
-        module.SetBlock(inModule, blockId);
+        module.SetBlock(inModule, block);
         if (!module.HasBlocks)
             Modules.Remove(moduleLoc);
     }

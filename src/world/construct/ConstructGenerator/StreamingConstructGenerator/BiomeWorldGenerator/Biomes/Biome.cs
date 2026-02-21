@@ -7,9 +7,9 @@ public partial class Biome : Resource
     [Export] public BlockDefault block { get; set; }
     [Export] private FastNoiseLite noise = new FastNoiseLite();
 
-    public virtual int GetBlockId(ConstructGridPos constructPos, int groundHeight, int seed)
+    public virtual Block GetBlock(ConstructGridPos constructPos, int groundHeight, int seed)
     {
-        return block.BlockId;
+        return new Block(block.Id);
     }
 
     public virtual int GetGroundHeight(Vector2I inConstructPos, int seed)

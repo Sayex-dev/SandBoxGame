@@ -18,23 +18,22 @@ public class ConstructBlockService
         this.visuals = visuals;
     }
 
-    public void SetBlock(WorldGridPos worldPos, int blockId)
+    public void SetBlock(WorldGridPos worldPos, Block block)
     {
-        SetBlockInternal(worldPos, blockId);
+        SetBlockInternal(worldPos, block);
         ModuleLocation moduleLoc = worldPos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
         UpdateModuleMesh(moduleLoc).FireAndForget();
     }
 
-    public void SetBlocks(WorldGridPos[] worldPositions, int[] blockIds)
+    public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks)
     {
         HashSet<ModuleLocation> moduleLocations = [];
         for (int i = 0; i < worldPositions.Length; i++)
         {
             WorldGridPos worldPos = worldPositions[i];
-            int blockId = blockIds[i];
             ModuleLocation moduleLoc = worldPos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
             moduleLocations.Add(moduleLoc);
-            SetBlockInternal(worldPos, blockId);
+            SetBlockInternal(worldPos, blocks[i]);
         }
 
         foreach (var moduleLoc in moduleLocations)
@@ -43,19 +42,19 @@ public class ConstructBlockService
         }
     }
 
-    public bool TryGetBlock(WorldGridPos worldPos, out int blockId)
+    public bool TryGetBlock(WorldGridPos worldPos, out Block block)
     {
         ConstructGridPos conPos = worldPos.ToConstruct(data.Transform);
-        return data.Modules.TryGetBlock(conPos, out blockId);
+        return data.Modules.TryGetBlock(conPos, out block);
     }
 
-    private void SetBlockInternal(WorldGridPos worldPos, int blockId)
+    private void SetBlockInternal(WorldGridPos worldPos, Block block)
     {
         ConstructGridPos conPos = worldPos.ToConstruct(data.Transform);
 
-        data.Modules.SetBlock(conPos, blockId);
+        data.Modules.SetBlock(conPos, block);
 
-        if (blockId == -1)
+        if (block.IsEmpty)
         {
             data.Bounds.RemovePosition(conPos, data.Modules.Modules);
         }
