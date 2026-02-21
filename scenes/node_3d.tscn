@@ -40,7 +40,7 @@ DebugDraw = 0
 transform = Transform3D(0.99999976, -5.960464e-08, 2.980232e-08, 0, 1.0000002, 2.9802322e-08, -5.960464e-08, 2.980232e-08, 0.9999998, -9.5367426e-07, -9.536743e-07, -1.9073485e-06)
 script = ExtResource("7_10v3s")
 IsGlobal = true
-constructGeneratorSettings = ExtResource("6_10v3s")
+ConstructGeneratorSettings = ExtResource("6_10v3s")
 rotSodSettings = ExtResource("7_cptob")
 moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
@@ -48,47 +48,7 @@ metadata/_custom_type_script = "uid://bwg8mi3d737gv"
 [node name="Thingy" type="Node3D" parent="WorldController"]
 transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 6.0944185, -4.999999)
 script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="Thingy2" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999993, 0, 0, 0, 1, 0, 0, 0, 0.9999993, -12.613386, 12.188837, -9.999995)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="Thingy3" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999989, 0, 0, 0, 1, 0, 0, 0, 0.9999989, 40.751617, 18.283257, -14.9999895)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="Thingy4" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999985, 0, 0, 0, 1, 0, 0, 0, 0.9999985, 25.427164, 31.97118, -19.999979)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="Thingy5" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999982, 0, 0, 0, 1, 0, 0, 0, 0.9999982, 9.929833, 30.472092, -14.240215)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
-[node name="Thingy6" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.9999963, 0, 0, 0, 1, 0, 0, 0, 0.9999963, 47.84874, 60.944183, 25.986956)
-script = ExtResource("7_10v3s")
-constructGeneratorSettings = ExtResource("8_cptob")
+ConstructGeneratorSettings = ExtResource("8_cptob")
 rotSodSettings = ExtResource("7_cptob")
 moveSodSettings = ExtResource("7_cptob")
 metadata/_custom_type_script = "uid://bwg8mi3d737gv"
