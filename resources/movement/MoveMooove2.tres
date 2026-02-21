@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="SecondOrderDynamicsSettings" load_steps=2 format=3 uid="uid://chr05xyomumc2"]
+
+[ext_resource type="Script" uid="uid://cpy1y7gj2bsb3" path="res://src/utils/SecondOrderDynamics/SecondOrderDynamicsSettings.cs" id="1_d7gcd"]
+
+[resource]
+script = ExtResource("1_d7gcd")
+f = 1.2
+z = 0.8

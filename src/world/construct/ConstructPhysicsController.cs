@@ -30,11 +30,11 @@ public class ConstructPhysicsController
 
         // Apply
         physicsPosition += velocity;
-        Vector3 div = physicsPosition - (Vector3I)data.Transform.WorldPos;
+        Vector3 div = physicsPosition - data.Transform.WorldPos.Value;
         Vector3 absDiv = div.Abs();
         bool couldMove = true;
         if (absDiv.X > 1 || absDiv.Y > 1 || absDiv.Z > 1)
-            couldMove = motionController.TryTakeStep(DirectionTools.GetClosestDirection(absDiv));
+            couldMove = motionController.TryTakeStep(DirectionTools.GetClosestDirection(div));
 
         if (!couldMove)
         {
