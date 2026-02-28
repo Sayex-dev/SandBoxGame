@@ -4,11 +4,12 @@ using Godot;
 [GlobalClass]
 public partial class PresetConstructGeneratorSettings : ConstructGeneratorSettings
 {
-    [Export] public Godot.Collections.Array<Vector4I> Blocks { get; set; }
-    [Export] public Vector3I Offset { get; set; }
+    [Export] public Godot.Collections.Dictionary<Vector3I, GodotBlock> Blocks;
+    [Export] public Vector3I Offset;
 
     public override PresetConstructGenerator CreateConstructGenerator(int moduleSize, int seed)
     {
-        return new(moduleSize, seed, Blocks.ToList(), Offset);
+        var blockDict = Blocks.ToDictionary(kvp => kvp.Key, kvp => new Block(kvp.Value.BlockId, kvp.Value.FaceDir));
+        return new(moduleSize, seed, blockDict, Offset);
     }
 }

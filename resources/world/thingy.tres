@@ -1,8 +1,32 @@
-[gd_resource type="Resource" script_class="PresetConstructGeneratorSettings" load_steps=2 format=3 uid="uid://de6fnfogow3ri"]
+[gd_resource type="Resource" script_class="PresetConstructGeneratorSettings" load_steps=7 format=3 uid="uid://de6fnfogow3ri"]
 
 [ext_resource type="Script" uid="uid://dkh3p467qt600" path="res://src/world/construct/ConstructGenerator/FiniteConstructGenerator/PresetConstructGenerator/PresetConstructGeneratorSettings.cs" id="1_k32tq"]
+[ext_resource type="Script" uid="uid://bubb5jj376h8g" path="res://src/world/construct/ConstructGenerator/FiniteConstructGenerator/PresetConstructGenerator/GodotBlock.cs" id="1_y3oxv"]
+
+[sub_resource type="Resource" id="Resource_csmvq"]
+script = ExtResource("1_y3oxv")
+metadata/_custom_type_script = "uid://bubb5jj376h8g"
+
+[sub_resource type="Resource" id="Resource_y3oxv"]
+script = ExtResource("1_y3oxv")
+BlockId = 2
+FaceDir = 0
+metadata/_custom_type_script = "uid://bubb5jj376h8g"
+
+[sub_resource type="Resource" id="Resource_4u1wq"]
+script = ExtResource("1_y3oxv")
+metadata/_custom_type_script = "uid://bubb5jj376h8g"
+
+[sub_resource type="Resource" id="Resource_gk7ju"]
+script = ExtResource("1_y3oxv")
+metadata/_custom_type_script = "uid://bubb5jj376h8g"
 
 [resource]
 script = ExtResource("1_k32tq")
-Blocks = Array[Vector4i]([Vector4i(0, 0, 0, 1), Vector4i(0, 0, 1, 1), Vector4i(1, 0, 1, 1), Vector4i(-1, 0, 1, 1)])
+Blocks = Dictionary[Vector3i, Object]({
+Vector3i(-1, 0, 1): SubResource("Resource_csmvq"),
+Vector3i(0, 0, 0): SubResource("Resource_y3oxv"),
+Vector3i(0, 0, 1): SubResource("Resource_4u1wq"),
+Vector3i(1, 0, 1): SubResource("Resource_gk7ju")
+})
 metadata/_custom_type_script = "uid://dkh3p467qt600"
