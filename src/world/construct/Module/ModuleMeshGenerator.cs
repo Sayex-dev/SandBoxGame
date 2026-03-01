@@ -86,7 +86,6 @@ public class ModuleMeshGenerator
 			var enumerator = remaining.GetEnumerator();
 			enumerator.MoveNext();
 			ModuleGridPos minPos = enumerator.Current.Key;
-			Block block = enumerator.Current.Value;
 			enumerator.Dispose();
 
 			bool moveX = true;
