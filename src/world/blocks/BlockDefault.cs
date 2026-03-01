@@ -11,7 +11,7 @@ public partial class BlockDefault : Resource
 	[Export] public Godot.Collections.Array<PassiveAbility> PassiveAbilities;
 	[Export] public Godot.Collections.Array<ActiveAbility> ActiveAbilities;
 
-	[Export] public BlockFace DefaultFace;
+	[Export] public BlockFace DefaultFace = new BlockFace();
 	[Export] public Godot.Collections.Dictionary<Direction, BlockFace> Faces = new Godot.Collections.Dictionary<Direction, BlockFace>();
 
 	private int blockId = 0;

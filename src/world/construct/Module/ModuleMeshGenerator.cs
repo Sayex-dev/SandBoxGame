@@ -266,15 +266,7 @@ public class ModuleMeshGenerator
 
 		inds.AddRange([0, 1, 2, 2, 3, 0]);
 
-		Vector2 surfaceBlockSpan;
-		if (dir == Direction.LEFT || dir == Direction.RIGHT)
-		{
-			surfaceBlockSpan = new Vector2(maxSurface.X + 1, maxSurface.Y + 1);
-		}
-		else
-		{
-			surfaceBlockSpan = new Vector2(maxSurface.Y + 1, maxSurface.X + 1);
-		}
+		Vector2 surfaceBlockSpan = new Vector2(maxSurface.Y + 1, maxSurface.X + 1);
 
 		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, blockFace);
 	}
