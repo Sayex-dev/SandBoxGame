@@ -36,15 +36,6 @@ BlockStore = ExtResource("6_a6664")
 RenderDistance = 20
 DebugDraw = 0
 
-[node name="World" type="Node3D" parent="WorldController"]
-transform = Transform3D(0.99999976, -5.960464e-08, 2.980232e-08, 0, 1.0000002, 2.9802322e-08, -5.960464e-08, 2.980232e-08, 0.9999998, -9.5367426e-07, -9.536743e-07, -1.9073485e-06)
-script = ExtResource("7_10v3s")
-IsGlobal = true
-ConstructGeneratorSettings = ExtResource("6_10v3s")
-rotSodSettings = ExtResource("7_cptob")
-moveSodSettings = ExtResource("7_cptob")
-metadata/_custom_type_script = "uid://bwg8mi3d737gv"
-
 [node name="Thingy" type="Node3D" parent="WorldController"]
 transform = Transform3D(0.9999997, 0, 0, 0, 1, 0, 0, 0, 0.9999997, 0, 150, -5.01)
 script = ExtResource("7_10v3s")
@@ -99,3 +90,12 @@ light_color = Color(1, 1, 0.894118, 1)
 light_energy = 0.238
 shadow_enabled = true
 shadow_opacity = 0.5
+
+[node name="World" type="Node3D" parent="DirectionalLight3D"]
+transform = Transform3D(0.5208561, 0.33840314, -0.78370404, -0.5448149, 0.83855647, -3.6377477e-07, 0.65717965, 0.42697415, 0.6211342, 0.36821195, 1.4487195, -15.080351)
+script = ExtResource("7_10v3s")
+IsGlobal = true
+ConstructGeneratorSettings = ExtResource("6_10v3s")
+rotSodSettings = ExtResource("7_cptob")
+moveSodSettings = ExtResource("7_cptob")
+metadata/_custom_type_script = "uid://bwg8mi3d737gv"

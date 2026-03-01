@@ -77,7 +77,7 @@ public class ModuleMeshGenerator
 		Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
 		Vector3I locYMove = (Vector3I)Embed2DInPlane(new Vector2(0, 1), normal);
 
-		Dictionary<(int blockId, int direction), BlockFace> blockFaceCache = new Dictionary<(int, int), BlockFace>();
+		Dictionary<(int, Direction, Orientation), BlockFace> blockFaceCache = new Dictionary<(int, Direction, Orientation), BlockFace>();
 
 		int moduleSizeSquared = moduleSize * moduleSize;
 
@@ -153,7 +153,9 @@ public class ModuleMeshGenerator
 					}
 
 					bool sameSurface;
-					bool sameBlock = surfaceBlock.Id == currentBlock.Id && surfaceBlock.Direction == currentBlock.Direction;
+					bool sameBlock = surfaceBlock.Id == currentBlock.Id &&
+									 surfaceBlock.Direction == currentBlock.Direction &&
+									 surfaceBlock.Orientation == currentBlock.Orientation;
 
 					if (sameBlock)
 					{
@@ -213,9 +215,9 @@ public class ModuleMeshGenerator
 		Direction dir,
 		Block block,
 		BlockStore store,
-		Dictionary<(int, int), BlockFace> cache)
+		Dictionary<(int, Direction, Orientation), BlockFace> cache)
 	{
-		var key = (block.Id, (int)block.Direction);
+		var key = (block.Id, block.Direction, block.Orientation);
 		if (!cache.TryGetValue(key, out BlockFace face))
 		{
 			face = GetBlockFace(dir, block, store);
@@ -228,9 +230,123 @@ public class ModuleMeshGenerator
 	{
 		BlockFace face;
 		BlockDefault blockDefault = store.GetBlockDefault(block);
-		if (!blockDefault.Faces.TryGetValue(dir, out face))
+
+		(Direction transformedDir, Orientation transformedOri) = TransformDirectionByBlockRotation(dir, block.Direction, block.Orientation);
+
+		if (!blockDefault.Faces.TryGetValue(transformedDir, out face))
 			face = blockDefault.DefaultFace;
+
+		face.FaceOrientation = (Orientation)(((int)face.FaceOrientation + (int)transformedOri) % 4);
 		return face;
+	}
+
+	private static (Direction, Orientation) TransformDirectionByBlockRotation(Direction lookDir, Direction blockDir, Orientation blockOrientation)
+	{
+		Vector3 lookDirVec = DirectionTools.GetWorldDirVec(lookDir);
+		Basis rotation = GetBlockRotationBasis(blockDir, blockOrientation);
+		Vector3 transformedVec = rotation * lookDirVec;
+		Direction transformedDir = VectorToDirection(transformedVec);
+		Vector3 upVec = GetUpVectorForDirection(lookDir, blockOrientation);
+		Vector3 transformedUpVec = rotation * upVec;
+		Orientation transformedOrientation = CalculateOrientation(transformedDir, transformedUpVec);
+		return (transformedDir, transformedOrientation);
+	}
+
+	private static Basis GetBlockRotationBasis(Direction blockDir, Orientation blockOrientation)
+	{
+		Vector3 blockDirVec = DirectionTools.GetWorldDirVec(blockDir);
+		Basis rotation = new Basis();
+
+		// First, rotate to align with the block direction
+		if (blockDir == Direction.UP)
+		{
+			rotation = new Basis(Vector3.Right, Mathf.Pi / 2);
+		}
+		else if (blockDir == Direction.DOWN)
+		{
+			rotation = new Basis(Vector3.Right, -Mathf.Pi / 2);
+		}
+		else if (blockDir == Direction.LEFT)
+		{
+			rotation = new Basis(Vector3.Up, Mathf.Pi / 2);
+		}
+		else if (blockDir == Direction.RIGHT)
+		{
+			rotation = new Basis(Vector3.Up, -Mathf.Pi / 2);
+		}
+		else if (blockDir == Direction.BACKWARD)
+		{
+			rotation = new Basis(Vector3.Up, Mathf.Pi);
+		}
+		// FORWARD is default (no rotation needed)
+
+		// Then apply the orientation rotation around the block's direction
+		float orientationAngle = (int)blockOrientation * Mathf.Pi / 2; // 0, 90, 180, 270 degrees
+		rotation *= new Basis(blockDirVec, orientationAngle);
+
+		return rotation;
+	}
+
+	private static Direction VectorToDirection(Vector3 vec)
+	{
+		vec = vec.Normalized();
+
+		// Find the axis with the largest absolute value
+		float absX = Mathf.Abs(vec.X);
+		float absY = Mathf.Abs(vec.Y);
+		float absZ = Mathf.Abs(vec.Z);
+
+		if (absX > absY && absX > absZ)
+			return vec.X > 0 ? Direction.RIGHT : Direction.LEFT;
+		else if (absY > absZ)
+			return vec.Y > 0 ? Direction.UP : Direction.DOWN;
+		else
+			return vec.Z > 0 ? Direction.BACKWARD : Direction.FORWARD;
+	}
+
+	private static Vector3 GetUpVectorForDirection(Direction dir, Orientation orientation)
+	{
+		// Get the default "up" vector for each direction
+		Vector3 baseUp = dir switch
+		{
+			Direction.UP => Vector3.Forward,
+			Direction.DOWN => Vector3.Forward,
+			Direction.FORWARD => Vector3.Up,
+			Direction.BACKWARD => Vector3.Up,
+			Direction.LEFT => Vector3.Up,
+			Direction.RIGHT => Vector3.Up,
+			_ => Vector3.Up
+		};
+
+		// Rotate based on orientation
+		Vector3 dirVec = DirectionTools.GetWorldDirVec(dir);
+		float angle = (int)orientation * Mathf.Pi / 2;
+		Basis orientationRotation = new Basis(dirVec, angle);
+
+		return orientationRotation * baseUp;
+	}
+
+	private static Orientation CalculateOrientation(Direction dir, Vector3 upVec)
+	{
+		Vector3 dirVec = DirectionTools.GetWorldDirVec(dir);
+		Vector3 baseUp = dir switch
+		{
+			Direction.UP => Vector3.Forward,
+			Direction.DOWN => Vector3.Forward,
+			_ => Vector3.Up
+		};
+
+		// Calculate angle between base up and transformed up
+		Vector3 right = dirVec.Cross(baseUp).Normalized();
+		Vector3 projectedUp = upVec - dirVec * upVec.Dot(dirVec);
+		projectedUp = projectedUp.Normalized();
+
+		float angle = Mathf.Atan2(projectedUp.Dot(right), projectedUp.Dot(baseUp));
+		if (angle < 0)
+			angle += 2 * Mathf.Pi;
+
+		int orientationIndex = Mathf.RoundToInt(angle / (Mathf.Pi / 2)) % 4;
+		return (Orientation)orientationIndex;
 	}
 
 	public static Surface CreateSurface(

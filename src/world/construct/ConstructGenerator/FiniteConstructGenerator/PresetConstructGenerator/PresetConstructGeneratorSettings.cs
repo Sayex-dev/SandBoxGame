@@ -9,7 +9,7 @@ public partial class PresetConstructGeneratorSettings : ConstructGeneratorSettin
 
     public override PresetConstructGenerator CreateConstructGenerator(int moduleSize, int seed)
     {
-        var blockDict = Blocks.ToDictionary(kvp => kvp.Key, kvp => new Block(kvp.Value.BlockId, kvp.Value.FaceDir));
+        var blockDict = Blocks.ToDictionary(kvp => kvp.Key, kvp => new Block(kvp.Value.BlockId, kvp.Value.FaceDir, kvp.Value.Orientation));
         return new(moduleSize, seed, blockDict, Offset);
     }
 }

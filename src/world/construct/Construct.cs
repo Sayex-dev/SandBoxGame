@@ -63,7 +63,7 @@ public partial class Construct : Node3D, IOctTreeObject
 			Rotation = visualMotion.Rotation;
 		}
 
-		physics.Update(delta);
+		//physics.Update(delta);
 	}
 
 	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);
