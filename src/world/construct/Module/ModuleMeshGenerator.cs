@@ -57,7 +57,6 @@ public class ModuleMeshGenerator
 
 		return surfaces;
 	}
-
 	private static List<Surface> FindDirSurfaces(
 		int moduleSize,
 		Direction dir,
@@ -66,26 +65,39 @@ public class ModuleMeshGenerator
 		BlockStore store
 	)
 	{
-		List<Surface> surfaces = [];
-		HashSet<ModuleGridPos> remaining = surfacePositions.ToHashSet();
+		List<Surface> surfaces = new List<Surface>(surfacePositions.Count / 4); // Estimate capacity
+
+		Dictionary<ModuleGridPos, Block> remaining = new Dictionary<ModuleGridPos, Block>(surfacePositions.Count);
+		foreach (var pos in surfacePositions)
+		{
+			remaining[pos] = module.GetBlock(pos);
+		}
 
 		Vector3I normal = (Vector3I)DirectionTools.GetWorldDirVec(dir);
 		Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
 		Vector3I locYMove = (Vector3I)Embed2DInPlane(new Vector2(0, 1), normal);
 
+		Dictionary<(int blockId, int direction), BlockFace> blockFaceCache = new Dictionary<(int, int), BlockFace>();
+
+		int moduleSizeSquared = moduleSize * moduleSize;
+
 		while (remaining.Count > 0)
 		{
-			ModuleGridPos minPos = remaining.First();
+			var enumerator = remaining.GetEnumerator();
+			enumerator.MoveNext();
+			ModuleGridPos minPos = enumerator.Current.Key;
+			Block block = enumerator.Current.Value;
+			enumerator.Dispose();
 
 			bool moveX = true;
 			bool failedLast = false;
 
-			for (int i = 0; i < moduleSize * moduleSize; i++)
+			// Find minimum position
+			for (int i = 0; i < moduleSizeSquared; i++)
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
-				bool hasSurface = remaining.Contains(newPos);
 
-				if (hasSurface)
+				if (remaining.ContainsKey(newPos))
 				{
 					minPos = newPos;
 					failedLast = false;
@@ -99,84 +111,82 @@ public class ModuleMeshGenerator
 					break;
 			}
 
+			// Find rectangular surface
 			int maxX = -1;
 			int maxY = -1;
 			BlockFace surfaceFace = null;
 			Block surfaceBlock = default;
 			bool hasSurfaceFace = false;
-			Vector3I np;
 
 			for (int y = 0; y <= moduleSize; y++)
 			{
 				bool fullRow = false;
-				for (int x = 0; x <= moduleSize; x++)
+				int xLimit = (maxX == -1) ? moduleSize : maxX;
+
+				for (int x = 0; x <= xLimit; x++)
 				{
-					np = minPos + locXMove * x + locYMove * y;
+					Vector3I np = minPos + locXMove * x + locYMove * y;
 					bool firstRow = maxX == -1;
-					if (!remaining.Contains(np))
+
+					if (!remaining.TryGetValue(np, out Block currentBlock))
 					{
-						// Terminate first row
 						if (firstRow)
 						{
 							maxX = x - 1;
 							fullRow = true;
-							break;
 						}
-
-						// Terminate other row
-						fullRow = false;
+						else
+						{
+							fullRow = false;
+						}
 						break;
 					}
 
-					module.HasBlock(np, out Block block);
-					if (block.IsEmpty)
+					if (currentBlock.IsEmpty)
 						throw new Exception("Block contained in surfaces even though it is empty!");
-
 
 					if (!hasSurfaceFace)
 					{
-						surfaceFace = GetBlockFace(dir, block, store);
-						surfaceBlock = block;
+						surfaceFace = GetBlockFaceCached(dir, currentBlock, store, blockFaceCache);
+						surfaceBlock = currentBlock;
 						hasSurfaceFace = true;
 						continue;
 					}
 
 					bool sameSurface;
-					bool sameBlock = surfaceBlock.Id == block.Id && surfaceBlock.Direction == block.Direction;
+					bool sameBlock = surfaceBlock.Id == currentBlock.Id && surfaceBlock.Direction == currentBlock.Direction;
+
 					if (sameBlock)
 					{
 						sameSurface = true;
 					}
 					else
 					{
-						sameSurface = surfaceFace == GetBlockFace(dir, block, store);
+						sameSurface = surfaceFace == GetBlockFaceCached(dir, currentBlock, store, blockFaceCache);
 					}
 
 					bool lastCol = x == maxX;
 
-					// Continue expansion of surface
 					if (!lastCol && sameSurface)
 						continue;
-					// Terminate expansion of surface on first row
 					else if (!sameSurface && firstRow)
 					{
 						maxX = x - 1;
 						fullRow = true;
 						break;
 					}
-					// Terminate expansion of surface because is x max is reached
 					else if (lastCol && sameSurface)
 					{
 						fullRow = true;
 						break;
 					}
-					// Terminate unfinished row
 					else
 					{
 						fullRow = false;
 						break;
 					}
 				}
+
 				if (!fullRow)
 				{
 					maxY = y - 1;
@@ -184,19 +194,35 @@ public class ModuleMeshGenerator
 				}
 			}
 
-			for (int x = 0; x <= maxX; x++)
+			for (int y = 0; y <= maxY; y++)
 			{
-				for (int y = 0; y <= maxY; y++)
+				for (int x = 0; x <= maxX; x++)
 				{
 					Vector3I rp = minPos + locXMove * x + locYMove * y;
 					remaining.Remove(rp);
 				}
 			}
+
 			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceFace);
 			surfaces.Add(surface);
 		}
 
 		return surfaces;
+	}
+
+	private static BlockFace GetBlockFaceCached(
+		Direction dir,
+		Block block,
+		BlockStore store,
+		Dictionary<(int, int), BlockFace> cache)
+	{
+		var key = (block.Id, (int)block.Direction);
+		if (!cache.TryGetValue(key, out BlockFace face))
+		{
+			face = GetBlockFace(dir, block, store);
+			cache[key] = face;
+		}
+		return face;
 	}
 
 	public static BlockFace GetBlockFace(Direction dir, Block block, BlockStore store)
