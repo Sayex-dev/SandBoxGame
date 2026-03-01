@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,16 +14,23 @@ public class ModuleMeshGenerator
 		public Vector3I Normal;
 		public Vector2 SurfaceBlockSpan;
 		public Direction Dir;
-		public Block Block;
+		public BlockFace BlockFace;
 
-		public Surface(List<Vector3I> vertices, List<int> indices, Vector3I normal, Vector2 surfaceBlockSpan, Direction dir, Block block)
+		public Surface(
+			List<Vector3I> vertices,
+			List<int> indices,
+			Vector3I normal,
+			Vector2 surfaceBlockSpan,
+			Direction dir,
+			BlockFace blockFace
+		)
 		{
 			Vertices = vertices;
 			Indices = indices;
 			Normal = normal;
 			SurfaceBlockSpan = surfaceBlockSpan;
 			Dir = dir;
-			Block = block;
+			BlockFace = blockFace;
 		}
 	}
 
@@ -34,7 +42,7 @@ public class ModuleMeshGenerator
 		new Vector2(0, 1)
 	};
 
-	public static List<Surface> GetSurfaceVectors(Module module, ExposedModuleSurfaceCache cache)
+	public static List<Surface> GetSurfaceVectors(Module module, ExposedModuleSurfaceCache cache, BlockStore store)
 	{
 		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
@@ -43,14 +51,20 @@ public class ModuleMeshGenerator
 		{
 			Direction dir = kvp.Key;
 			ICollection<ModuleGridPos> surfacePositions = kvp.Value.ToHashSet();
-			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, module, surfacePositions);
+			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, module, surfacePositions, store);
 			surfaces.AddRange(newSurfaces);
 		}
 
 		return surfaces;
 	}
 
-	private static List<Surface> FindDirSurfaces(int moduleSize, Direction dir, Module module, ICollection<ModuleGridPos> surfacePositions)
+	private static List<Surface> FindDirSurfaces(
+		int moduleSize,
+		Direction dir,
+		Module module,
+		ICollection<ModuleGridPos> surfacePositions,
+		BlockStore store
+	)
 	{
 		List<Surface> surfaces = [];
 		HashSet<ModuleGridPos> remaining = surfacePositions.ToHashSet();
@@ -85,39 +99,78 @@ public class ModuleMeshGenerator
 					break;
 			}
 
-
 			int maxX = -1;
 			int maxY = -1;
+			BlockFace surfaceFace = null;
 			Block surfaceBlock = default;
+			bool hasSurfaceFace = false;
+			Vector3I np;
 
 			for (int y = 0; y <= moduleSize; y++)
 			{
 				bool fullRow = false;
 				for (int x = 0; x <= moduleSize; x++)
 				{
-					Vector3I np = minPos + locXMove * x + locYMove * y;
-					module.HasBlock(np, out Block block);
-					if (surfaceBlock.IsEmpty)
-						surfaceBlock = block;
-
-					bool hasSurface = remaining.Contains(np);
-					bool sameSurface = block == surfaceBlock;
+					np = minPos + locXMove * x + locYMove * y;
 					bool firstRow = maxX == -1;
+					if (!remaining.Contains(np))
+					{
+						// Terminate first row
+						if (firstRow)
+						{
+							maxX = x - 1;
+							fullRow = true;
+							break;
+						}
+
+						// Terminate other row
+						fullRow = false;
+						break;
+					}
+
+					module.HasBlock(np, out Block block);
+					if (block.IsEmpty)
+						throw new Exception("Block contained in surfaces even though it is empty!");
+
+
+					if (!hasSurfaceFace)
+					{
+						surfaceFace = GetBlockFace(dir, block, store);
+						surfaceBlock = block;
+						hasSurfaceFace = true;
+						continue;
+					}
+
+					bool sameSurface;
+					bool sameBlock = surfaceBlock.Id == block.Id && surfaceBlock.Direction == block.Direction;
+					if (sameBlock)
+					{
+						sameSurface = true;
+					}
+					else
+					{
+						sameSurface = surfaceFace == GetBlockFace(dir, block, store);
+					}
+
 					bool lastCol = x == maxX;
 
-					if (hasSurface && !lastCol && sameSurface)
+					// Continue expansion of surface
+					if (!lastCol && sameSurface)
 						continue;
-					else if ((!hasSurface || !sameSurface) && firstRow)
+					// Terminate expansion of surface on first row
+					else if (!sameSurface && firstRow)
 					{
 						maxX = x - 1;
 						fullRow = true;
 						break;
 					}
-					else if (hasSurface && lastCol && sameSurface)
+					// Terminate expansion of surface because is x max is reached
+					else if (lastCol && sameSurface)
 					{
 						fullRow = true;
 						break;
 					}
+					// Terminate unfinished row
 					else
 					{
 						fullRow = false;
@@ -139,14 +192,29 @@ public class ModuleMeshGenerator
 					remaining.Remove(rp);
 				}
 			}
-			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceBlock);
+			Surface surface = CreateSurface(normal, dir, minPos, new Vector2I(maxX, maxY), surfaceFace);
 			surfaces.Add(surface);
 		}
 
 		return surfaces;
 	}
 
-	public static Surface CreateSurface(Vector3I normal, Direction dir, Vector3I minPos, Vector2I maxSurface, Block surfaceBlock)
+	public static BlockFace GetBlockFace(Direction dir, Block block, BlockStore store)
+	{
+		BlockFace face;
+		BlockDefault blockDefault = store.GetBlockDefault(block);
+		if (!blockDefault.Faces.TryGetValue(dir, out face))
+			face = blockDefault.DefaultFace;
+		return face;
+	}
+
+	public static Surface CreateSurface(
+		Vector3I normal,
+		Direction dir,
+		Vector3I minPos,
+		Vector2I maxSurface,
+		BlockFace blockFace
+	)
 	{
 		List<Vector3I> verts = new List<Vector3I>();
 		List<int> inds = new List<int>();
@@ -183,7 +251,7 @@ public class ModuleMeshGenerator
 			surfaceBlockSpan = new Vector2(maxSurface.Y + 1, maxSurface.X + 1);
 		}
 
-		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, surfaceBlock);
+		return new Surface(verts, inds, normal, surfaceBlockSpan, dir, blockFace);
 	}
 
 	public static Vector3 Embed2DInPlane(Vector2 v, Vector3 n)
@@ -200,9 +268,9 @@ public class ModuleMeshGenerator
 		return v.X * t1 + v.Y * t2;
 	}
 
-	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context)
+	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context, BlockStore store)
 	{
-		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache);
+		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache, store);
 
 		if (surfaces.Count == 0)
 			return null;
@@ -217,46 +285,13 @@ public class ModuleMeshGenerator
 		var colors = new Color[vertexCount];
 		var indices = new int[indexCount];
 
-		int rotOffset = 0;
-
 		for (int i = 0; i < surfaces.Count; i++)
 		{
 			Surface s = surfaces[i];
-			BlockDefault blockDefault = context.BlockStore.GetBlockDefault(s.Block);
-			Color surfaceColor;
 
-			switch (s.Dir)
-			{
-				case Direction.UP:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceUp.X, (byte)blockDefault.TextureAtlasFaceUp.Y, 0, 0);
-					rotOffset = 0;
-					break;
-				case Direction.DOWN:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceDown.X, (byte)blockDefault.TextureAtlasFaceDown.Y, 0, 0);
-					rotOffset = 0;
-					break;
-				case Direction.LEFT:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceLeft.X, (byte)blockDefault.TextureAtlasFaceLeft.Y, 0, 0);
-					rotOffset = 3;
-					break;
-				case Direction.RIGHT:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceRight.X, (byte)blockDefault.TextureAtlasFaceRight.Y, 0, 0);
-					rotOffset = 1;
-					break;
-				case Direction.FORWARD:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceForward.X, (byte)blockDefault.TextureAtlasFaceForward.Y, 0, 0);
-					rotOffset = 2;
-					break;
-				case Direction.BACKWARD:
-					surfaceColor = Color.Color8((byte)blockDefault.TextureAtlasFaceBackward.X, (byte)blockDefault.TextureAtlasFaceBackward.Y, 0, 0);
-					rotOffset = 2;
-					break;
-				default:
-					surfaceColor = Color.Color8(0, 0, 0, 0);
-					rotOffset = 0;
-					break;
-			}
-
+			BlockFace blockFace = s.BlockFace;
+			Color surfaceColor = Color.Color8((byte)blockFace.TextureAtlasPos.X, (byte)blockFace.TextureAtlasPos.Y, 0, 0);
+			int rotOffset = Mathf.PosMod(-(int)blockFace.FaceOrientation, 4);
 			int vBase = i * 4;
 			Vector3 normal = s.Normal;
 

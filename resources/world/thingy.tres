@@ -5,6 +5,7 @@
 
 [sub_resource type="Resource" id="Resource_csmvq"]
 script = ExtResource("1_y3oxv")
+FaceDir = 1
 metadata/_custom_type_script = "uid://bubb5jj376h8g"
 
 [sub_resource type="Resource" id="Resource_y3oxv"]

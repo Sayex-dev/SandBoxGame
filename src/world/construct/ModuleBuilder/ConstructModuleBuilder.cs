@@ -36,7 +36,7 @@ public class GenerateModulesResponse
 
 public class ConstructModuleBuilder : IDisposable
 {
-    private const int MaxConcurrentModuleLoads = 7;
+    private const int MaxConcurrentModuleLoads = 1;
     private readonly HashSet<ModuleLocation> _queued = new();
     SemaphoreSlim loadSemaphore = new SemaphoreSlim(MaxConcurrentModuleLoads);
 
@@ -86,7 +86,7 @@ public class ConstructModuleBuilder : IDisposable
         await loadSemaphore.WaitAsync();
         try
         {
-            return await GenerateModuleMeshThreaded(context);
+            return await GenerateModuleMeshThreaded(context, context.BlockStore);
         }
         finally
         {
@@ -115,11 +115,11 @@ public class ConstructModuleBuilder : IDisposable
         return tasks;
     }
 
-    private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context)
+    private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context, BlockStore store)
     {
         return Task.Run(() =>
             {
-                return ModuleMeshGenerator.BuildModuleMesh(context);
+                return ModuleMeshGenerator.BuildModuleMesh(context, store);
             });
     }
 
@@ -151,7 +151,7 @@ public class ConstructModuleBuilder : IDisposable
                     context.ModuleMaterial
                 );
                 TimeTracker.Start("Build Module Mesh", TimeTracker.TrackingType.Average);
-                var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);
+                var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext, context.BlockStore);
                 TimeTracker.End("Build Module Mesh");
 
                 response.Meshes[moduleLoc] = moduleMesh;

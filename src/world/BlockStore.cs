@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Dynamic;
+using System.Runtime.InteropServices;
 using Godot;
 
 [GlobalClass]
