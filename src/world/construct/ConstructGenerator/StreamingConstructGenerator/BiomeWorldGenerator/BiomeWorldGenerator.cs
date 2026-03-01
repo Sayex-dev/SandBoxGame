@@ -1,15 +1,20 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
-
 
 public partial class BiomeWorldGenerator : ConstructGenerator
 {
+	private int MAX_CACHE_SIZE = 100000;
+
 	private List<Biome> biomes;
 	private FastNoiseLite noise = new();
 
-	private Dictionary<Vector2I, int> cachedMaxModuleY = [];
+	private ConcurrentDictionary<Vector2I, int> cachedMaxModuleY = new ConcurrentDictionary<Vector2I, int>();
+
+	private ConcurrentDictionary<Vector2I, int> groundHeightCache = new ConcurrentDictionary<Vector2I, int>();
+	private ConcurrentQueue<Vector2I> groundHeightCacheQueue = new ConcurrentQueue<Vector2I>();
+	private readonly object cacheLock = new object();
 
 	public BiomeWorldGenerator(
 		int moduleSize,
@@ -67,11 +72,11 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 			{
 				int worldZ = moduleOffsetZ + z;
 
-				// Reuse vector instead of allocating
 				inConstructLocation.X = worldX;
 				inConstructLocation.Y = worldZ;
 
-				int groundHeight = biome.GetGroundHeight(inConstructLocation, seed);
+				int groundHeight = GetOrAddGroundHeight(inConstructLocation, biome);
+
 				int maxY = Math.Min(groundHeight - moduleOffsetY, moduleSize);
 
 				if (maxY <= 0)
@@ -79,16 +84,13 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				if (maxY > maxMaxY)
 					maxMaxY = maxY;
 
-				// Pre-calculate base array index for this XZ column
 				int columnBaseIndex = x + z * moduleSize2;
 
-				// Critical optimization: Calculate world position directly
 				worldPosVector.X = worldX;
 				worldPosVector.Z = worldZ;
 
 				for (int y = 0; y < maxY; y++)
 				{
-					// Only update Y component (X and Z are constant for this column)
 					worldPosVector.Y = moduleOffsetY + y;
 
 					var block = biome.GetBlock(worldPos, groundHeight, seed);
@@ -97,12 +99,43 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 			}
 		}
 
-		// Apply all blocks at once
 		module.SetAllBlocks(blockArray);
 
 		if (maxMaxY > 0 && maxMaxY < moduleSize * 0.75f)
 		{
 			cachedMaxModuleY[new Vector2I(moduleLocation.Value.X, moduleLocation.Value.Z)] = moduleLocation.Value.Y;
+		}
+	}
+
+	private int GetOrAddGroundHeight(Vector2I location, Biome biome)
+	{
+		if (groundHeightCache.TryGetValue(location, out int groundHeight))
+		{
+			return groundHeight;
+		}
+
+		lock (cacheLock)
+		{
+			if (groundHeightCache.TryGetValue(location, out groundHeight))
+			{
+				return groundHeight;
+			}
+
+			groundHeight = biome.GetGroundHeight(location, seed);
+
+			Vector2I cacheKey = new Vector2I(location.X, location.Y);
+			groundHeightCache[cacheKey] = groundHeight;
+			groundHeightCacheQueue.Enqueue(cacheKey);
+
+			while (groundHeightCacheQueue.Count > MAX_CACHE_SIZE)
+			{
+				if (groundHeightCacheQueue.TryDequeue(out Vector2I oldKey))
+				{
+					groundHeightCache.TryRemove(oldKey, out _);
+				}
+			}
+
+			return groundHeight;
 		}
 	}
 

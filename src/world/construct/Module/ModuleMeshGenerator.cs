@@ -309,6 +309,7 @@ public class ModuleMeshGenerator
 			BlockFace blockFace = s.BlockFace;
 			Color surfaceColor = Color.Color8((byte)blockFace.TextureAtlasPos.X, (byte)blockFace.TextureAtlasPos.Y, 0, 0);
 			int rotOffset = Mathf.PosMod(-(int)blockFace.FaceOrientation, 4);
+
 			int vBase = i * 4;
 			Vector3 normal = s.Normal;
 
