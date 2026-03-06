@@ -258,27 +258,26 @@ public class ModuleMeshGenerator
 		Basis rotation = new Basis();
 
 		// First, rotate to align with the block direction
-		if (blockDir == Direction.UP)
+		switch (blockDir)
 		{
-			rotation = new Basis(Vector3.Right, Mathf.Pi / 2);
+			case Direction.UP:
+				rotation = new Basis(Vector3.Right, Mathf.Pi / 2);
+				break;
+			case Direction.DOWN:
+				rotation = new Basis(Vector3.Right, -Mathf.Pi / 2);
+				break;
+			case Direction.LEFT:
+				rotation = new Basis(Vector3.Up, Mathf.Pi / 2);
+				break;
+			case Direction.RIGHT:
+				rotation = new Basis(Vector3.Up, -Mathf.Pi / 2);
+				break;
+			case Direction.BACKWARD:
+				rotation = new Basis(Vector3.Up, Mathf.Pi);
+				break;
+			default:
+				break;
 		}
-		else if (blockDir == Direction.DOWN)
-		{
-			rotation = new Basis(Vector3.Right, -Mathf.Pi / 2);
-		}
-		else if (blockDir == Direction.LEFT)
-		{
-			rotation = new Basis(Vector3.Up, Mathf.Pi / 2);
-		}
-		else if (blockDir == Direction.RIGHT)
-		{
-			rotation = new Basis(Vector3.Up, -Mathf.Pi / 2);
-		}
-		else if (blockDir == Direction.BACKWARD)
-		{
-			rotation = new Basis(Vector3.Up, Mathf.Pi);
-		}
-		// FORWARD is default (no rotation needed)
 
 		// Then apply the orientation rotation around the block's direction
 		float orientationAngle = (int)blockOrientation * Mathf.Pi / 2; // 0, 90, 180, 270 degrees
@@ -309,8 +308,8 @@ public class ModuleMeshGenerator
 		// Get the default "up" vector for each direction
 		Vector3 baseUp = dir switch
 		{
-			Direction.UP => Vector3.Forward,
-			Direction.DOWN => Vector3.Forward,
+			Direction.UP => Vector3.Right,
+			Direction.DOWN => Vector3.Right,
 			Direction.FORWARD => Vector3.Up,
 			Direction.BACKWARD => Vector3.Up,
 			Direction.LEFT => Vector3.Up,
