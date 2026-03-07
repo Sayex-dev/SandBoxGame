@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="BlockDefault" load_steps=4 format=3 uid="uid://coihw0qwhor3q"]
 
 [ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="1_4ksjy"]
-[ext_resource type="Script" uid="uid://x755gcsx3ofx" path="res://src/world/blocks/BlockFace.cs" id="1_y8b2w"]
+[ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_y8b2w"]
 
-[sub_resource type="Resource" id="Resource_y8b2w"]
+[sub_resource type="Resource" id="Resource_b6blo"]
 script = ExtResource("1_y8b2w")
-metadata/_custom_type_script = "uid://x755gcsx3ofx"
+metadata/_custom_type_script = "uid://bhkxb3jyj7ql"
 
 [resource]
 script = ExtResource("1_4ksjy")
 Name = "DefaultBlock"
 PassiveAbilities = null
 ActiveAbilities = null
-DefaultFace = SubResource("Resource_y8b2w")
+DefaultFace = SubResource("Resource_b6blo")
 metadata/_custom_type_script = "uid://ouggd867q2q1"

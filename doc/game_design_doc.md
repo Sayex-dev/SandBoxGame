@@ -28,11 +28,11 @@
 - Select construct to operate.
 - Question: AI via roles or self built via Drag and drop?
   - AI:
-    - Pros -> simplicity in usage. Less game Complexity for the player.
-    - Cons -> Hard to implement correctly.
+	- Pros -> simplicity in usage. Less game Complexity for the player.
+	- Cons -> Hard to implement correctly.
   - User build Logic
-    - Pros -> Allows for more taylored behavior
-    - Cons -> Hard to implement. Hard to use for user.
+	- Pros -> Allows for more taylored behavior
+	- Cons -> Hard to implement. Hard to use for user.
 
 ## World
 
