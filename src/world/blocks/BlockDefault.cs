@@ -1,7 +1,6 @@
 using Godot;
 using System;
 
-[GlobalClass]
 public partial class BlockDefault : Resource
 {
 	[Export] public string Name;
@@ -10,9 +9,6 @@ public partial class BlockDefault : Resource
 
 	[Export] public Godot.Collections.Array<PassiveAbility> PassiveAbilities;
 	[Export] public Godot.Collections.Array<ActiveAbility> ActiveAbilities;
-
-	[Export] public BlockFaceResource DefaultFace = new BlockFaceResource();
-	[Export] public Godot.Collections.Dictionary<Direction, BlockFaceResource> Faces = new Godot.Collections.Dictionary<Direction, BlockFaceResource>();
 
 	private int blockId = 0;
 
