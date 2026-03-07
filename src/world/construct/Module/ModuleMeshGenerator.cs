@@ -259,12 +259,19 @@ public class ModuleMeshGenerator
 	{
 		Vector3 lookDirVec = DirectionTools.GetWorldDirVec(lookAtDir);
 		Basis blockRotation = GetBlockRotationBasis(blockDir, blockOri);
+
+		// Transform look direction to block's local space
 		Vector3 transLookVec = blockRotation.Inverse() * lookDirVec;
 		Direction transLookDir = VectorToDirection(transLookVec);
 
-		Vector3 upVec = GetDefaultFaceNorthVector(transLookDir);
-		Vector3 transformedUpVec = blockRotation * upVec;
-		Orientation transFaceOri = GetOrientationFromVector(transLookDir, transformedUpVec);
+		// Get the default up vector for the WORLD face direction
+		Vector3 worldUpVec = GetDefaultFaceNorthVector(lookAtDir);
+
+		// Transform this world up vector to the block's local space
+		Vector3 localUpVec = blockRotation.Inverse() * worldUpVec;
+
+		// Calculate orientation based on how the world up appears in local space
+		Orientation transFaceOri = GetOrientationFromVector(transLookDir, localUpVec);
 		return (transLookDir, transFaceOri);
 	}
 
@@ -324,7 +331,7 @@ public class ModuleMeshGenerator
 		return dir switch
 		{
 			Direction.UP => Vector3.Forward,
-			Direction.DOWN => Vector3.Forward,
+			Direction.DOWN => Vector3.Back,
 			_ => Vector3.Up
 		};
 	}

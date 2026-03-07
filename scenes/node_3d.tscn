@@ -29,7 +29,7 @@ volumetric_fog_length = 0.01
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9848078, 0.1736482, 0, -0.1736482, 0.9848078, 0, 6.995, 0)
+transform = Transform3D(1, 0, 0, 0, 0.93969256, 0.3420201, 0, -0.3420201, 0.93969256, 0, 6.995, 0)
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 sprintSpeed = 100.0
