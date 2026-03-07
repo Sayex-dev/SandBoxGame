@@ -82,10 +82,22 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	}
 
 	/// <summary>
-	/// Updates streaming loading for all global constructs in range.
+	/// Updates streaming loading for all global constructs.
 	/// </summary>
-	public async Task UpdateConstructLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
+	public async Task UpdateConstructModuleLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
 	{
+		foreach (var kvp in streamingLoaders)
+		{
+			await kvp.Value.UpdateLoading(worldPos, renderDistance, simulationDistance);
+		}
+	}
+
+	/// <summary>
+	/// Updates loading for finite constructs in range.
+	/// </summary>
+	public async Task UpdateFiniteConstructLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
+	{
+		// TODO: NEXT DO THE LOADING.
 		foreach (var kvp in streamingLoaders)
 		{
 			await kvp.Value.UpdateLoading(worldPos, renderDistance, simulationDistance);

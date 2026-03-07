@@ -32,7 +32,7 @@ public partial class WorldController : Node3D
 
         await GatherConstuctChildren();
 
-        await blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance, SimulationDistance);
+        await blockWorld.UpdateConstructModuleLoading(new((Vector3I)FocusPosition.Position), RenderDistance, SimulationDistance);
         SetPhysicsProcess(true);
     }
 
@@ -43,7 +43,7 @@ public partial class WorldController : Node3D
         if (cameraModulePos != prevCameraModulePos)
         {
             prevCameraModulePos = cameraModulePos;
-            await blockWorld.UpdateConstructLoading(new((Vector3I)FocusPosition.Position), RenderDistance, SimulationDistance);
+            await blockWorld.UpdateConstructModuleLoading(new((Vector3I)FocusPosition.Position), RenderDistance, SimulationDistance);
         }
     }
 
