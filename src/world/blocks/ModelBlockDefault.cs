@@ -1,9 +1,9 @@
 using Godot;
 
 [GlobalClass]
-public partial class VoxelBlockDefault : BlockDefault
+public partial class ModelBlockDefault : BlockDefault
 {
     [Export] public BlockFaceResource DefaultFace = new BlockFaceResource();
     [Export] public Godot.Collections.Dictionary<Direction, BlockFaceResource> Faces = new Godot.Collections.Dictionary<Direction, BlockFaceResource>();
-    private new BlockRenderType RenderType = BlockRenderType.Voxel;
+    private new BlockRenderType RenderType = BlockRenderType.Model;
 }

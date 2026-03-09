@@ -1,6 +1,12 @@
 using Godot;
 using System;
 
+public enum BlockRenderType
+{
+    Voxel,
+	Model
+}
+
 public partial class BlockDefault : Resource
 {
 	[Export] public string Name;
@@ -11,6 +17,7 @@ public partial class BlockDefault : Resource
 	[Export] public Godot.Collections.Array<ActiveAbility> ActiveAbilities;
 
 	private int blockId = 0;
+	public BlockRenderType RenderType {get; private set;}
 
 	public int Id
 	{

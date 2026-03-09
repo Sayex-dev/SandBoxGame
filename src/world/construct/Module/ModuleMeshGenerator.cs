@@ -61,7 +61,7 @@ public class ModuleMeshGenerator
 		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
 
-		foreach (var kvp in cache.ExposedSurfaces)
+		foreach (var kvp in cache.GetVoxelSurfaces())
 		{
 			Direction dir = kvp.Key;
 			ICollection<ModuleGridPos> surfacePositions = kvp.Value.ToHashSet();
@@ -75,8 +75,7 @@ public class ModuleMeshGenerator
 		int moduleSize,
 		Direction dir,
 		Module module,
-		ICollection<ModuleGridPos> surfacePositions,
-		BlockStore store
+		ICollection<ModuleGridPos> surfacePositions
 	)
 	{
 		List<Surface> surfaces = new List<Surface>(surfacePositions.Count / 4); // Estimate capacity
@@ -160,7 +159,7 @@ public class ModuleMeshGenerator
 
 					if (!hasSurfaceFace)
 					{
-						surfaceFace = GetBlockFaceCached(dir, currentBlock, store, blockFaceCache);
+						surfaceFace = GetBlockFaceCached(dir, currentBlock, blockDefault, blockFaceCache);
 						surfaceBlock = currentBlock;
 						hasSurfaceFace = true;
 						continue;
@@ -177,7 +176,7 @@ public class ModuleMeshGenerator
 					}
 					else
 					{
-						sameSurface = surfaceFace == GetBlockFaceCached(dir, currentBlock, store, blockFaceCache);
+						sameSurface = surfaceFace == GetBlockFaceCached(dir, currentBlock, blockDefault, blockFaceCache);
 					}
 
 					bool lastCol = x == maxX;
@@ -228,22 +227,21 @@ public class ModuleMeshGenerator
 	private static BlockFace GetBlockFaceCached(
 		Direction dir,
 		Block block,
-		BlockStore store,
+		VoxelBlockDefault blockDefault,
 		Dictionary<(int, Direction, Orientation), BlockFace> cache)
 	{
 		var key = (block.Id, block.Direction, block.Orientation);
 		if (!cache.TryGetValue(key, out BlockFace face))
 		{
-			face = GetBlockFace(dir, block, store);
+			face = GetBlockFace(dir, block, blockDefault);
 			cache[key] = face;
 		}
 		return face;
 	}
 
-	public static BlockFace GetBlockFace(Direction dir, Block block, BlockStore store)
+	public static BlockFace GetBlockFace(Direction dir, Block block, VoxelBlockDefault blockDefault)
 	{
 		BlockFaceResource faceResource;
-		BlockDefault blockDefault = store.GetBlockDefault(block);
 
 		(Direction transformedDir, Orientation transformedOri) = TransformDirectionByBlockRotation(dir, block.Direction, block.Orientation);
 
