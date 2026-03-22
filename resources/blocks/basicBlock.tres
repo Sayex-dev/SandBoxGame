@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_igwb5"]
 [ext_resource type="Script" uid="uid://ba6xbkm2p7ilq" path="res://src/world/blocks/VoxelBlockDefault.cs" id="2_47500"]
 
-[sub_resource type="Resource" id="Resource_iuvlb"]
+[sub_resource type="Resource" id="Resource_igwb5"]
 script = ExtResource("1_igwb5")
 
 [resource]

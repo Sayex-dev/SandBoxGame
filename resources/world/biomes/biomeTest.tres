@@ -17,7 +17,7 @@ NoiseScale = 20.0
 NoiseHeight = 2.0
 metadata/_custom_type_script = "uid://kc5w8be8jk8c"
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_vqhjk"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_7wqi5"]
 
 [resource]
 script = ExtResource("2_7wqi5")

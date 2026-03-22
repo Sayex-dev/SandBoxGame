@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Godot;
 
-public class ConstructLoadingController
+public class ModuleLoadingController
 {
     public bool isFullyLoaded = false;
     private readonly ConstructData data;
@@ -9,7 +9,7 @@ public class ConstructLoadingController
     private readonly ConstructVisualsController visuals;
     private readonly ConstructGenerator generator;
 
-    public ConstructLoadingController(
+    public ModuleLoadingController(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,

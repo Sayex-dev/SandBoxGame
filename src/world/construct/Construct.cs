@@ -11,6 +11,7 @@ public partial class Construct : Node3D, IOctTreeObject
 	[Export] private SecondOrderDynamicsSettings rotSodSettings;
 	[Export] private SecondOrderDynamicsSettings moveSodSettings;
 
+	public ConstructSimulationState SimulationState = ConstructSimulationState.LOADING;
 	public ConstructData Data { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
 	public ConstructVisualsController Visuals { get; private set; }
@@ -20,7 +21,7 @@ public partial class Construct : Node3D, IOctTreeObject
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
 
-	public void Initialize(int moduleSize, Material moduleMaterial, IWorldQuery collisionQuery)
+	public void Initialize(int moduleSize, Material moduleMaterial, IWorldQuery collisionQuery, ConstructSimulationState simulationState)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
 		var modules = new ConstructModules(moduleSize);
@@ -46,24 +47,21 @@ public partial class Construct : Node3D, IOctTreeObject
 		Position = transform.WorldPos.Value;
 		Rotation = visualMotion.Rotation;
 
-		SetPhysicsProcess(true);
-	}
-
-	public override void _Ready()
-	{
-		SetPhysicsProcess(false);
+		SimulationState = simulationState;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (visualMotion != null)
+		if (SimulationState == ConstructSimulationState.ACTIVE)
 		{
-			visualMotion.Update(delta);
-			Position = visualMotion.Position;
-			Rotation = visualMotion.Rotation;
+			if (visualMotion != null)
+			{
+				visualMotion.Update(delta);
+				Position = visualMotion.Position;
+				Rotation = visualMotion.Rotation;
+			}
+			physics.Update(delta);
 		}
-
-		physics.Update(delta);
 	}
 
 	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://u3l3grnkbtg6"]
+[gd_scene load_steps=9 format=3 uid="uid://2g61uvgp3p65"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://c4h07ujcqneso" path="res://src/world/WorldController.cs" id="2_ns6u7"]
@@ -31,7 +31,6 @@ volumetric_fog_length = 0.01
 transform = Transform3D(1, 0, 0, 0, 0.93969256, 0.3420201, 0, -0.3420201, 0.93969256, 0, 6.995, 0)
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
-sprintSpeed = 100.0
 
 [node name="WorldController" type="Node3D" parent="." node_paths=PackedStringArray("FocusPosition")]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
