@@ -6,4 +6,3 @@
 [resource]
 script = ExtResource("1_sbq5p")
 Biomes = Array[Object]([ExtResource("1_cxrt3")])
-metadata/_custom_type_script = "uid://cds3rc6tv6xsc"

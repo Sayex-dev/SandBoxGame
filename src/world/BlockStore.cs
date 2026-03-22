@@ -1,12 +1,17 @@
-using System.Diagnostics;
-using System.Dynamic;
-using System.Runtime.InteropServices;
 using Godot;
 
 [GlobalClass]
-public partial class BlockStore : Resource
+public partial class BlockStore : Node
 {
+	public static BlockStore Instance { get; private set; }
+
 	[Export] private Godot.Collections.Array<BlockDefault> blockDefaults = [];
+
+	public override void _Ready()
+	{
+		Instance = Instance == null ? this : Instance;
+		SetBlockIds();
+	}
 
 	public void SetBlockIds()
 	{

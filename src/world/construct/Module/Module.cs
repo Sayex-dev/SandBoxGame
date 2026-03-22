@@ -8,7 +8,7 @@ public partial class Module
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
-	public ExposedModuleSurfaceCache SurfaceCache;
+	public SurfaceCacheController SurfaceCache;
 	public Block[] BlocksArrayCopy
 	{
 		get
@@ -26,7 +26,7 @@ public partial class Module
 	private Block[] blocks = [];
 	private Vector3IBounds bounds;
 
-	public Module(int moduleSize, ExposedModuleSurfaceCache surfaceCache = null)
+	public Module(int moduleSize, SurfaceCacheController surfaceCache = null)
 	{
 		ModuleSize = moduleSize;
 		SurfaceCache = surfaceCache != null ? surfaceCache : new();
@@ -79,14 +79,14 @@ public partial class Module
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
-				SurfaceCache.AddBlock(modulePos);
+				SurfaceCache.AddBlock(this, modulePos, block);
 			}
 			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
 				bounds.RemovePoint(modulePos.Value, BlockCount);
-				SurfaceCache.RemoveBlock(modulePos);
+				SurfaceCache.RemoveBlock(this, modulePos);
 			}
 		}
 

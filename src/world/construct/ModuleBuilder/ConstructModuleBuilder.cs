@@ -14,7 +14,6 @@ public class LoadAroundResponse
 public class GenerationReference
 {
     public int ModuleSize;
-    public BlockStore BlockStore;
     public Material ModuleMaterial;
     public ConstructGenerator Generator;
     public Dictionary<ModuleLocation, Module> LoadedModules;
@@ -24,7 +23,7 @@ public class GenerateModulesResponse
 {
     public bool GeneratedAllModules = false;
     public Dictionary<ModuleLocation, Module> GeneratedModules = [];
-    public ExposedModuleSurfaceCache Cache;
+    public SurfaceCacheController Cache;
     public Dictionary<ModuleLocation, Mesh> Meshes = new();
 
     public void AddBlockResponse(ModuleBlockGenerationResponse blockGenResponse)
@@ -86,7 +85,7 @@ public class ConstructModuleBuilder : IDisposable
         await loadSemaphore.WaitAsync();
         try
         {
-            return await GenerateModuleMeshThreaded(context, context.BlockStore);
+            return await GenerateModuleMeshThreaded(context);
         }
         finally
         {
@@ -115,11 +114,11 @@ public class ConstructModuleBuilder : IDisposable
         return tasks;
     }
 
-    private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context, BlockStore store)
+    private Task<Mesh> GenerateModuleMeshThreaded(ModuleMeshGenerateContext context)
     {
         return Task.Run(() =>
             {
-                return ModuleMeshGenerator.BuildModuleMesh(context, store);
+                return ModuleMeshGenerator.BuildModuleMesh(context);
             });
     }
 
@@ -147,11 +146,10 @@ public class ConstructModuleBuilder : IDisposable
                 var meshContext = new ModuleMeshGenerateContext(
                     module,
                     moduleLoc,
-                    context.BlockStore,
                     context.ModuleMaterial
                 );
                 TimeTracker.Start("Build Module Mesh", TimeTracker.TrackingType.Average);
-                var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext, context.BlockStore);
+                var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);
                 TimeTracker.End("Build Module Mesh");
 
                 response.Meshes[moduleLoc] = moduleMesh;

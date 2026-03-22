@@ -7,7 +7,6 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 {
 	private int seed;
 	private int moduleSize;
-	private BlockStore blockStore;
 	private Material moduleMaterial;
 	private ExpandingOctTree<Construct> constructs;
 
@@ -17,13 +16,11 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	public ConstructWorld(
 		int seed,
 		int moduleSize,
-		BlockStore blockStore,
 		Material moduleMaterial
 	)
 	{
 		this.seed = seed;
 		this.moduleSize = moduleSize;
-		this.blockStore = blockStore;
 		this.moduleMaterial = moduleMaterial;
 
 		constructs = new ExpandingOctTree<Construct>(32, Vector3I.Zero);

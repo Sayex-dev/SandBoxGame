@@ -73,7 +73,6 @@ public class ConstructBlockService
         var context = new ModuleMeshGenerateContext(
             module,
             moduleLoc,
-            data.BlockStore,
             data.ModuleMaterial
         );
         var mesh = await moduleBuilder.GenerateModuleMesh(context);

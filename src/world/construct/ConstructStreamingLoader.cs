@@ -32,7 +32,6 @@ public class ConstructStreamingLoader
     {
         var context = new ModuleLoadContext(
             data.Modules.ModuleSize,
-            data.BlockStore,
             data.ModuleMaterial,
             generator
         );

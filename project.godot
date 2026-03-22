@@ -11,13 +11,14 @@ config_version=5
 [application]
 
 config/name="SandBoxGame"
-run/main_scene="res://scenes/node_3d.tscn"
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 TimeTracker="*res://src/utils/TimeTracking/TimeTracker.cs"
+WorldBlockStore="*res://scenes/autoloads/block_store.tscn"
 
 [dotnet]
 

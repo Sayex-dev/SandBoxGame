@@ -7,7 +7,6 @@ public partial class WorldController : Node3D
     [Export] public int Seed { get; set; } = 0;
     [Export] public Node3D FocusPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
-    [Export] public BlockStore BlockStore { get; set; }
     [Export] public int ModuleSize { get; set; } = 32;
     [Export] public int SimulationDistance { get; set; } = 5;
     [Export] public int RenderDistance { get; set; } = 10;
@@ -22,12 +21,10 @@ public partial class WorldController : Node3D
         SetPhysicsProcess(false);
         RenderingServer.SetDebugGenerateWireframes(true);
 
-        BlockStore.SetBlockIds();
-
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
 
-        blockWorld = new ConstructWorld(Seed, ModuleSize, BlockStore, ModuleMat);
+        blockWorld = new ConstructWorld(Seed, ModuleSize, ModuleMat);
         AddChild(blockWorld);
 
         await GatherConstuctChildren();
@@ -54,7 +51,6 @@ public partial class WorldController : Node3D
             RemoveChild(construct);
             construct.Initialize(
                     ModuleSize,
-                    BlockStore,
                     ModuleMat,
                     blockWorld
                 );

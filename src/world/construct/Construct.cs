@@ -20,13 +20,13 @@ public partial class Construct : Node3D, IOctTreeObject
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
 
-	public void Initialize(int moduleSize, BlockStore blockStore, Material moduleMaterial, IWorldQuery collisionQuery)
+	public void Initialize(int moduleSize, Material moduleMaterial, IWorldQuery collisionQuery)
 	{
 		var transform = new ConstructTransform((Vector3I)Position);
 		var modules = new ConstructModules(moduleSize);
 		var bounds = new ConstructBounds();
 
-		Data = new ConstructData(transform, modules, bounds, blockStore, moduleMaterial);
+		Data = new ConstructData(transform, modules, bounds, moduleMaterial);
 
 		Data.Transform.Changed += OnSpatialChanged;
 		Data.Bounds.Changed += OnSpatialChanged;

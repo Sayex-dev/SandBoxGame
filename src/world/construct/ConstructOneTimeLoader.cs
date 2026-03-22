@@ -19,7 +19,6 @@ public static class ConstructOneTimeLoader
     {
         var context = new ModuleLoadContext(
             data.Modules.ModuleSize,
-            data.BlockStore,
             data.ModuleMaterial,
             generator
         );

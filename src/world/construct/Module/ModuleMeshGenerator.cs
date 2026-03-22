@@ -56,16 +56,16 @@ public class ModuleMeshGenerator
 		new Vector2(0, 1)
 	};
 
-	public static List<Surface> GetSurfaceVectors(Module module, ExposedModuleSurfaceCache cache, BlockStore store)
+	public static List<Surface> GetSurfaceVectors(Module module)
 	{
 		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
 
-		foreach (var kvp in cache.GetVoxelSurfaces())
+		foreach (var kvp in module.SurfaceCache.RenderCache.GetAllExposedSurfacesWithInfo())
 		{
 			Direction dir = kvp.Key;
-			ICollection<ModuleGridPos> surfacePositions = kvp.Value.ToHashSet();
-			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, module, surfacePositions, store);
+			Dictionary<ModuleGridPos, SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo> surfaceInfo = kvp.Value.ToDictionary();
+			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, surfaceInfo);
 			surfaces.AddRange(newSurfaces);
 		}
 
@@ -74,17 +74,10 @@ public class ModuleMeshGenerator
 	private static List<Surface> FindDirSurfaces(
 		int moduleSize,
 		Direction dir,
-		Module module,
-		ICollection<ModuleGridPos> surfacePositions
+		Dictionary<ModuleGridPos, SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo> surfaceInfo
 	)
 	{
-		List<Surface> surfaces = new List<Surface>(surfacePositions.Count / 4); // Estimate capacity
-
-		Dictionary<ModuleGridPos, Block> remaining = new Dictionary<ModuleGridPos, Block>(surfacePositions.Count);
-		foreach (var pos in surfacePositions)
-		{
-			remaining[pos] = module.GetBlock(pos);
-		}
+		List<Surface> surfaces = new List<Surface>(surfaceInfo.Count / 4); // Estimate capacity
 
 		Vector3I normal = (Vector3I)DirectionTools.GetWorldDirVec(dir);
 		Vector3I locXMove = (Vector3I)Embed2DInPlane(new Vector2(1, 0), normal);
@@ -94,9 +87,9 @@ public class ModuleMeshGenerator
 
 		int moduleSizeSquared = moduleSize * moduleSize;
 
-		while (remaining.Count > 0)
+		while (surfaceInfo.Count > 0)
 		{
-			var enumerator = remaining.GetEnumerator();
+			var enumerator = surfaceInfo.GetEnumerator();
 			enumerator.MoveNext();
 			ModuleGridPos minPos = enumerator.Current.Key;
 			enumerator.Dispose();
@@ -109,7 +102,7 @@ public class ModuleMeshGenerator
 			{
 				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
 
-				if (remaining.ContainsKey(newPos))
+				if (surfaceInfo.ContainsKey(newPos))
 				{
 					minPos = newPos;
 					failedLast = false;
@@ -140,7 +133,7 @@ public class ModuleMeshGenerator
 					Vector3I np = minPos + locXMove * x + locYMove * y;
 					bool firstRow = maxX == -1;
 
-					if (!remaining.TryGetValue(np, out Block currentBlock))
+					if (!surfaceInfo.TryGetValue(np, out SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo blockFaceInfo))
 					{
 						if (firstRow)
 						{
@@ -154,21 +147,16 @@ public class ModuleMeshGenerator
 						break;
 					}
 
-					if (currentBlock.IsEmpty)
-						throw new Exception("Block contained in surfaces even though it is empty!");
-
 					if (!hasSurfaceFace)
 					{
-						surfaceFace = GetBlockFaceCached(dir, currentBlock, blockDefault, blockFaceCache);
-						surfaceBlock = currentBlock;
+						surfaceFace = GetBlockFaceCached(dir, blockFaceInfo, blockFaceCache);
+						surfaceBlock = blockFaceInfo.Block;
 						hasSurfaceFace = true;
 						continue;
 					}
-
+					
 					bool sameSurface;
-					bool sameBlock = surfaceBlock.Id == currentBlock.Id &&
-									 surfaceBlock.Direction == currentBlock.Direction &&
-									 surfaceBlock.Orientation == currentBlock.Orientation;
+					bool sameBlock = surfaceBlock == blockFaceInfo.Block;
 
 					if (sameBlock)
 					{
@@ -176,7 +164,7 @@ public class ModuleMeshGenerator
 					}
 					else
 					{
-						sameSurface = surfaceFace == GetBlockFaceCached(dir, currentBlock, blockDefault, blockFaceCache);
+						sameSurface = surfaceFace == GetBlockFaceCached(dir, blockFaceInfo, blockFaceCache);
 					}
 
 					bool lastCol = x == maxX;
@@ -213,7 +201,7 @@ public class ModuleMeshGenerator
 				for (int x = 0; x <= maxX; x++)
 				{
 					Vector3I rp = minPos + locXMove * x + locYMove * y;
-					remaining.Remove(rp);
+					surfaceInfo.Remove(rp);
 				}
 			}
 
@@ -226,14 +214,13 @@ public class ModuleMeshGenerator
 
 	private static BlockFace GetBlockFaceCached(
 		Direction dir,
-		Block block,
-		VoxelBlockDefault blockDefault,
+		SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo surfaceInfo,
 		Dictionary<(int, Direction, Orientation), BlockFace> cache)
 	{
-		var key = (block.Id, block.Direction, block.Orientation);
+		var key = (surfaceInfo.Block.Id, surfaceInfo.Block.Direction, surfaceInfo.Block.Orientation);
 		if (!cache.TryGetValue(key, out BlockFace face))
 		{
-			face = GetBlockFace(dir, block, blockDefault);
+			face = GetBlockFace(dir, surfaceInfo.Block, surfaceInfo.BlockDefault);
 			cache[key] = face;
 		}
 		return face;
@@ -404,9 +391,9 @@ public class ModuleMeshGenerator
 		return v.X * t1 + v.Y * t2;
 	}
 
-	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context, BlockStore store)
+	public static Mesh BuildModuleMesh(ModuleMeshGenerateContext context)
 	{
-		var surfaces = GetSurfaceVectors(context.Module, context.Module.SurfaceCache, store);
+		var surfaces = GetSurfaceVectors(context.Module);
 
 		if (surfaces.Count == 0)
 			return null;

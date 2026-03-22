@@ -1,0 +1,10 @@
+[gd_scene load_steps=5 format=3 uid="uid://bumgjcocpr2il"]
+
+[ext_resource type="Script" uid="uid://dq1te4cqvte7w" path="res://src/world/BlockStore.cs" id="1_tyb0k"]
+[ext_resource type="Script" uid="uid://ouggd867q2q1" path="res://src/world/blocks/BlockDefault.cs" id="2_cyq85"]
+[ext_resource type="Resource" uid="uid://b06p6boqm5dbs" path="res://resources/blocks/basicBlock.tres" id="3_tyb0k"]
+[ext_resource type="Resource" uid="uid://xbxmy3gvyyoa" path="res://resources/blocks/arrow.tres" id="4_cyq85"]
+
+[node name="BlockStore" type="Node3D"]
+script = ExtResource("1_tyb0k")
+blockDefaults = Array[ExtResource("2_cyq85")]([ExtResource("3_tyb0k"), ExtResource("4_cyq85")])
