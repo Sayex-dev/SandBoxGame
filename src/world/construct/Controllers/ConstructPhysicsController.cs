@@ -4,7 +4,6 @@ using Godot;
 public class ConstructPhysicsController
 {
     public float Gravity = 0.1f;
-    public float BlockMass { get; private set; } = 0;
 
     private readonly ConstructData data;
     private readonly ConstructMotionController motionController;
@@ -50,7 +49,7 @@ public class ConstructPhysicsController
 
     public void ApplyForce(Vector3 direction, float force)
     {
-        velocity += direction * (force / BlockMass);
+        velocity += direction * (force / data.PhysicsData.BlockMass);
     }
 
     public void CancleVelocity()
@@ -60,7 +59,19 @@ public class ConstructPhysicsController
 
     public void ChangeWeightBy(float weight)
     {
-        BlockMass += weight;
-        BlockMass = Math.Max(BlockMass, 0);
+        data.PhysicsData.BlockMass += weight;
+        data.PhysicsData.BlockMass = Math.Max(data.PhysicsData.BlockMass, 0);
+    }
+
+    public void AddBlock(Block block)
+    {
+        BlockDefault blockDefault = BlockStore.Instance.GetBlockDefault(block);
+        ChangeWeightBy(blockDefault.Weight);
+    }
+
+    public void RemoveBlock(Block block)
+    {
+        BlockDefault blockDefault = BlockStore.Instance.GetBlockDefault(block);
+        ChangeWeightBy(-blockDefault.Weight);
     }
 }

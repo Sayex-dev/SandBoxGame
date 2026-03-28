@@ -53,7 +53,7 @@ public partial class WorldController : Node3D
                     ModuleSize,
                     ModuleMat,
                     blockWorld,
-                    ConstructSimulationState.ACTIVE
+                    SimulationState.ACTIVE
                 );
             if (construct.IsGlobal)
                 blockWorld.AddGlobalConstruct(construct);
