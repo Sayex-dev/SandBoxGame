@@ -11,7 +11,7 @@ public partial class Construct : Node3D, IOctTreeObject
 	[Export] private SecondOrderDynamicsSettings rotSodSettings;
 	[Export] private SecondOrderDynamicsSettings moveSodSettings;
 
-	public SimulationState SimulationState { get; private set; }= global::SimulationState.LOADING;
+	public SimulationState SimulationState { get; private set; } = global::SimulationState.LOADING;
 	public ConstructData Data { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
 	public ConstructVisualsController Visuals { get; private set; }
@@ -54,13 +54,7 @@ public partial class Construct : Node3D, IOctTreeObject
 	{
 		if (SimulationState == SimulationState.ACTIVE)
 		{
-			if (visualMotion != null)
-			{
-				visualMotion.Update(delta);
-				Position = visualMotion.Position;
-				Rotation = visualMotion.Rotation;
-			}
-			physics.Update(delta);
+
 		}
 	}
 
