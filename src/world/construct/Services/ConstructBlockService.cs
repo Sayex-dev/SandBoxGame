@@ -1,44 +1,47 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Godot;
 
 public class ConstructBlockService
 {
     private readonly ConstructData data;
-    private readonly ConstructModuleBuilder moduleBuilder;
-    private readonly ConstructVisualsController visuals;
 
     public ConstructBlockService(
-        ConstructData data,
-        ConstructModuleBuilder moduleBuilder,
-        ConstructVisualsController visuals)
+        ConstructData data)
     {
         this.data = data;
-        this.moduleBuilder = moduleBuilder;
-        this.visuals = visuals;
     }
 
-    public void SetBlock(WorldGridPos worldPos, Block block)
+    public void SetBlock(WorldGridPos pos, Block block)
     {
-        SetBlockInternal(worldPos, block);
-        ModuleLocation moduleLoc = worldPos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
-        UpdateModuleMesh(moduleLoc).FireAndForget();
+        ConstructGridPos conPos = pos.ToConstruct(data.Transform);
+        SetBlock(conPos, block);
     }
 
-    public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks)
+    public void SetBlock(ConstructGridPos pos, Block block)
+    {
+        SetBlockInternal(pos, block);
+    }
+
+    public void SetBlocks(ConstructGridPos[] positions, Block[] blocks)
     {
         HashSet<ModuleLocation> moduleLocations = [];
-        for (int i = 0; i < worldPositions.Length; i++)
+        for (int i = 0; i < positions.Length; i++)
         {
-            WorldGridPos worldPos = worldPositions[i];
-            ModuleLocation moduleLoc = worldPos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
+            ConstructGridPos pos = positions[i];
+            ModuleLocation moduleLoc = pos.ToModuleLocation(data.Modules.ModuleSize);
             moduleLocations.Add(moduleLoc);
-            SetBlockInternal(worldPos, blocks[i]);
+            SetBlockInternal(pos, blocks[i]);
         }
+    }
 
-        foreach (var moduleLoc in moduleLocations)
+    public void SetBlocks(WorldGridPos[] positions, Block[] blocks)
+    {
+        HashSet<ModuleLocation> moduleLocations = [];
+        for (int i = 0; i < positions.Length; i++)
         {
-            UpdateModuleMesh(moduleLoc).FireAndForget();
+            WorldGridPos pos = positions[i];
+            ModuleLocation moduleLoc = pos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
+            moduleLocations.Add(moduleLoc);
+            SetBlock(pos, blocks[i]);
         }
     }
 
@@ -48,35 +51,17 @@ public class ConstructBlockService
         return data.Modules.TryGetBlock(conPos, out block);
     }
 
-    private void SetBlockInternal(WorldGridPos worldPos, Block block)
+    private void SetBlockInternal(ConstructGridPos pos, Block block)
     {
-        ConstructGridPos conPos = worldPos.ToConstruct(data.Transform);
-
-        data.Modules.SetBlock(conPos, block);
+        data.Modules.SetBlock(pos, block);
 
         if (block.IsEmpty)
         {
-            data.Bounds.RemovePosition(conPos, data.Modules.Modules);
+            data.Bounds.RemovePosition(pos, data.Modules.Modules);
         }
         else
         {
-            data.Bounds.AddPosition(conPos);
+            data.Bounds.AddPosition(pos);
         }
-    }
-
-    private async Task UpdateModuleMesh(ModuleLocation moduleLoc)
-    {
-        Module module;
-        if (!data.Modules.TryGet(moduleLoc, out module))
-            return;
-
-        var context = new ModuleMeshGenerateContext(
-            module,
-            moduleLoc,
-            data.ModuleMaterial
-        );
-        var mesh = await moduleBuilder.GenerateModuleMesh(context);
-        visuals.RemoveModule(moduleLoc);
-        visuals.AddModule(moduleLoc, mesh);
     }
 }

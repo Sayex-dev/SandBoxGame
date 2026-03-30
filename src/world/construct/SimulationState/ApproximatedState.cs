@@ -1,4 +1,4 @@
-public class ApproximatedState : ISimulationState
+public class ApproximatedState : SimulationState
 {
 	public void OnAddBlock()
 	{

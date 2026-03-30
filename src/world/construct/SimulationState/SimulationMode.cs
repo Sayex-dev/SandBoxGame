@@ -1,4 +1,4 @@
-public enum SimulationState
+public enum SimulationMode
 {
     ACTIVE,
     APPROXIMATED,

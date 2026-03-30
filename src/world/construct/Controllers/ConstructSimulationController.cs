@@ -9,7 +9,7 @@ public class ConstructSimulationController
 
     public void Update(double delta)
     {
-        if (SimulationState == SimulationState.ACTIVE)
+        if (SimulationMode == SimulationMode.ACTIVE)
 		{
 			if (visualMotion != null)
 			{

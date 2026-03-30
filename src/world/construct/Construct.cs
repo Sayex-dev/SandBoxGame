@@ -1,17 +1,10 @@
 using Godot;
 using System;
 
-[GlobalClass]
-public partial class Construct : Node3D, IOctTreeObject
+public partial class Construct : IOctTreeObject
 {
 	public event Action<IOctTreeObject> BoundsChanged;
 
-	[Export] public bool IsGlobal { get; private set; }
-	[Export] public ConstructGeneratorSettings ConstructGeneratorSettings { get; private set; }
-	[Export] private SecondOrderDynamicsSettings rotSodSettings;
-	[Export] private SecondOrderDynamicsSettings moveSodSettings;
-
-	public SimulationState SimulationState { get; private set; } = global::SimulationState.LOADING;
 	public ConstructData Data { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
 	public ConstructVisualsController Visuals { get; private set; }
@@ -21,41 +14,47 @@ public partial class Construct : Node3D, IOctTreeObject
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
 
-	public void Initialize(int moduleSize, Material moduleMaterial, IWorldQuery collisionQuery, SimulationState simulationState)
+	public void Initialize(
+		CosntructCreationSettings settings,
+		int moduleSize, 
+		Material moduleMaterial, 
+		IWorldQuery collisionQuery, 
+		Vector3I initialPosition = default,
+		SimulationMode initialSimulationMode = SimulationMode.FROZEN
+	)
 	{
-		var transform = new ConstructTransform((Vector3I)Position);
+		var transform = new ConstructTransform(initialPosition);
 		var modules = new ConstructModules(moduleSize);
 		var bounds = new ConstructBounds();
 
-		Data = new ConstructData(transform, modules, bounds, moduleMaterial);
+		var physicsData = new ConstructPhysicsData();
+		Data = new ConstructData(physicsData, transform, modules, bounds, moduleMaterial);
 
 		Data.Transform.Changed += OnSpatialChanged;
 		Data.Bounds.Changed += OnSpatialChanged;
 
 		motionController = new ConstructMotionController(Data, collisionQuery);
-		physics = new ConstructPhysicsController(Data, motionController, Position, IsGlobal);
+		physics = new ConstructPhysicsController(Data, motionController);
 
-		SecondOrderDynamics<float> rotSod = rotSodSettings.GetInstance(0);
+		SecondOrderDynamics<float> rotSod = settings..GetInstance(0);
 		SecondOrderDynamics<Vector3> moveSod = moveSodSettings.GetInstance(Position);
 		visualMotion = new ConstructVisualMotionController(Data, moveSod, rotSod);
 
-		Visuals = new ConstructVisualsController(moduleSize, this);
+		Visuals = new ConstructVisualsController(moduleSize);
 		ModuleBuilder = new ConstructModuleBuilder();
 
-		Blocks = new ConstructBlockService(Data, ModuleBuilder, Visuals);
+		Blocks = new ConstructBlockService(Data);
 
 		Position = transform.WorldPos.Value;
 		Rotation = visualMotion.Rotation;
 
-		SimulationState = simulationState;
+		simulationMode = initialSimulationMode;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (SimulationState == SimulationState.ACTIVE)
-		{
-
-		}
+		Position = visualMotion.Position;
+		Rotation = new Vector3(0, Data.Transform.YRotation, 0);
 	}
 
 	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);

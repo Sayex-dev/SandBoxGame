@@ -1,6 +1,11 @@
-public class FrozenState : ISimulationState
+public class FrozenState : SimulationState
 {
 	public void OnAddBlock()
+	{
+		throw new System.NotImplementedException();
+	}
+
+	public void OnAddBlock(Block blockDefault, ConstructGridPos pos)
 	{
 		throw new System.NotImplementedException();
 	}

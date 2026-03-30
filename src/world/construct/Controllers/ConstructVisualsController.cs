@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class ConstructVisualsController
+public partial class ConstructVisualsController: Node3D
 {
-    private Node parent;
     private float moduleSize;
     private Dictionary<ModuleLocation, MeshInstance3D> activeModules = new();
     private LinkedList<MeshInstance3D> modulePool = new();
 
-    public ConstructVisualsController(float moduleSize, Node parent, int initialPoolSize = 0)
+    public ConstructVisualsController(float moduleSize, int initialPoolSize = 0)
     {
-        this.parent = parent;
         this.moduleSize = moduleSize;
         for (int i = 0; i < initialPoolSize; i++)
         {
@@ -54,6 +52,6 @@ public partial class ConstructVisualsController
     {
         MeshInstance3D newModule = new MeshInstance3D();
         modulePool.AddFirst(newModule);
-        parent.AddChild(newModule);
+        AddChild(newModule);
     }
 }

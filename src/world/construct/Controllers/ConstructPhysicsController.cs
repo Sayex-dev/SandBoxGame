@@ -7,29 +7,24 @@ public class ConstructPhysicsController
 
     private readonly ConstructData data;
     private readonly ConstructMotionController motionController;
-    private Vector3 velocity = Vector3.Zero;
-    private Vector3 physicsPosition = Vector3.Zero;
-    private bool isStatic;
 
-    public ConstructPhysicsController(ConstructData data, ConstructMotionController motionController, Vector3 initPos, bool isStatic)
+    public ConstructPhysicsController(ConstructData data, ConstructMotionController motionController)
     {
         this.data = data;
         this.motionController = motionController;
-        physicsPosition = initPos;
-        this.isStatic = isStatic;
     }
 
     public void Update(double deltaTime)
     {
-        if (isStatic)
+        if (data.PhysicsData.isStatic)
             return;
 
         // Gravity
-        velocity += Vector3.Down * (Gravity * (float)deltaTime);
+        data.PhysicsData.velocity += Vector3.Down * (Gravity * (float)deltaTime);
 
         // Apply
-        physicsPosition += velocity;
-        Vector3 div = physicsPosition - data.Transform.WorldPos.Value;
+        data.PhysicsData.physicsPosition += data.PhysicsData.velocity;
+        Vector3 div = data.PhysicsData.physicsPosition - data.Transform.WorldPos.Value;
         Vector3 absDiv = div.Abs();
         bool couldMove = true;
         if (absDiv.X > 1 || absDiv.Y > 1 || absDiv.Z > 1)
@@ -37,24 +32,24 @@ public class ConstructPhysicsController
 
         if (!couldMove)
         {
-            velocity = Vector3.Zero;
-            physicsPosition = data.Transform.WorldPos.Value;
+            data.PhysicsData.velocity = Vector3.Zero;
+            data.PhysicsData.physicsPosition = data.Transform.WorldPos.Value;
         }
     }
 
     public void SetPosition(WorldGridPos pos)
     {
-        physicsPosition = (Vector3I)pos;
+        data.PhysicsData.physicsPosition = (Vector3I)pos;
     }
 
     public void ApplyForce(Vector3 direction, float force)
     {
-        velocity += direction * (force / data.PhysicsData.BlockMass);
+        data.PhysicsData.velocity += direction * (force / data.PhysicsData.BlockMass);
     }
 
     public void CancleVelocity()
     {
-        velocity = Vector3.Zero;
+        data.PhysicsData.velocity = Vector3.Zero;
     }
 
     public void ChangeWeightBy(float weight)
