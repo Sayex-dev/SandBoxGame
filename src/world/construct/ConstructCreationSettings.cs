@@ -1,11 +1,11 @@
 using Godot;
 
-public partial class CosntructCreationSettings : Resource
+[GlobalClass]
+public partial class ConstructCreationSettings : Resource
 {
-    [Export] public ConstructGeneratorSettings constructGeneratorSettings { get; private set; }
-    [Export] public SecondOrderDynamicsSettings sodSettings { get; private set; }
-    [Export] public SecondOrderDynamicsSettings rotSodSettings { get; private set; }
+    [Export] public ConstructGeneratorSettings ConstructGeneratorSettings { get; private set; }
+    [Export] public SecondOrderDynamicsSettings MoveSodSettings { get; private set; }
+    [Export] public SecondOrderDynamicsSettings RotSodSettings { get; private set; }
 
-    [Export] public int seed { get; private set; }
     [Export] public bool IsGlobal { get; private set; } = false;
 }

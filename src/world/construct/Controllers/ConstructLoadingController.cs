@@ -42,7 +42,7 @@ public class ModuleLoadingController
             generator
         );
         var generationResponse = moduleBuilder.GenerateModulesAround(
-            worldPos, loadDistance, data.Transform, data.Modules, context);
+            worldPos, loadDistance, data.GridTransform, data.Modules, context);
 
         // Load new modules
         foreach (Task<GenerateModulesResponse> task in generationResponse.GenerationTaskHandles)

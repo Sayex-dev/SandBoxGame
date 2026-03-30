@@ -12,7 +12,7 @@ public class ConstructBlockService
 
     public void SetBlock(WorldGridPos pos, Block block)
     {
-        ConstructGridPos conPos = pos.ToConstruct(data.Transform);
+        ConstructGridPos conPos = pos.ToConstruct(data.GridTransform);
         SetBlock(conPos, block);
     }
 
@@ -39,7 +39,7 @@ public class ConstructBlockService
         for (int i = 0; i < positions.Length; i++)
         {
             WorldGridPos pos = positions[i];
-            ModuleLocation moduleLoc = pos.ToModuleLocation(data.Transform, data.Modules.ModuleSize);
+            ModuleLocation moduleLoc = pos.ToModuleLocation(data.GridTransform, data.Modules.ModuleSize);
             moduleLocations.Add(moduleLoc);
             SetBlock(pos, blocks[i]);
         }
@@ -47,7 +47,7 @@ public class ConstructBlockService
 
     public bool TryGetBlock(WorldGridPos worldPos, out Block block)
     {
-        ConstructGridPos conPos = worldPos.ToConstruct(data.Transform);
+        ConstructGridPos conPos = worldPos.ToConstruct(data.GridTransform);
         return data.Modules.TryGetBlock(conPos, out block);
     }
 

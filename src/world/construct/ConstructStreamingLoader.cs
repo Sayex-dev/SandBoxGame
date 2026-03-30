@@ -36,7 +36,7 @@ public class ConstructStreamingLoader
             generator
         );
         var generationResponse = moduleBuilder.GenerateModulesAround(
-            worldPos, loadDistance, data.Transform, data.Modules, context);
+            worldPos, loadDistance, data.GridTransform, data.Modules, context);
 
         // Load new modules
         await ModuleIntegrationHelper.IntegrateGeneratedModules(

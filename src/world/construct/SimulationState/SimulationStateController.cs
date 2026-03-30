@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using Godot;
 
 public class SimulationStateController
@@ -37,12 +36,11 @@ public class SimulationStateController
 
         currentState?.Exit();
 
-        // Create appropriate state
         currentState = newMode switch
         {
             SimulationMode.ACTIVE => new ActiveState(core, collisionQuery,
                 rotSodSettings, moveSodSettings, moduleSize),
-            SimulationMode.DORMANT => new DormantState(core),
+            SimulationMode.APPROXIMATED => new ApproximatedState(core),
             SimulationMode.FROZEN => new FrozenState(core),
             _ => throw new ArgumentException($"Unknown mode: {newMode}")
         };

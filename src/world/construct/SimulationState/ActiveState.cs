@@ -32,10 +32,10 @@ public class ActiveState : SimulationState
         physics = new ConstructPhysicsController(core.Data, motionController);
 
         var rotSod = rotSodSettings.GetInstance(0);
-        var moveSod = moveSodSettings.GetInstance(core.SceneNode.Position);
+        var moveSod = moveSodSettings.GetInstance(core.Data.PhysicsData.PhysicsPosition);
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
-        visuals = new ConstructVisualsController(moduleSize, core.SceneNode);
+        visuals = new ConstructVisualsController(moduleSize);
         moduleBuilder = new ConstructModuleBuilder();
 
         RebuildAllModules();
@@ -43,7 +43,6 @@ public class ActiveState : SimulationState
 
     public override void Exit()
     {
-        // Cleanup state-specific resources
         visuals?.Dispose();
         visuals = null;
         physics = null;
@@ -54,7 +53,7 @@ public class ActiveState : SimulationState
 
     public override void Update(double delta)
     {
-        physics.Update(delta);
+        physics?.Update(delta);
         visualMotion?.Update(delta);
     }
 
@@ -67,22 +66,27 @@ public class ActiveState : SimulationState
         UpdateModuleMesh(pos.ToModuleLocation(moduleSize)).FireAndForget();
     }
 
-    private async Task UpdateModuleMesh(ModuleLocation moduleLoc)
+    private async Task UpdateModuleMesh(ModuleLocation moduleLoc, Module module)
     {
-        if (!core.Data.Modules.TryGet(moduleLoc, out Module module))
-            return;
-
         var context = new ModuleMeshGenerateContext(module, moduleLoc, core.Data.ModuleMaterial);
         var mesh = await moduleBuilder.GenerateModuleMesh(context);
         visuals.RemoveModule(moduleLoc);
         visuals.AddModule(moduleLoc, mesh);
     }
 
+    private async Task UpdateModuleMesh(ModuleLocation moduleLoc)
+    {
+        if (!core.Data.Modules.TryGet(moduleLoc, out Module module))
+            return;
+
+        await UpdateModuleMesh(moduleLoc, module);
+    }
+
     private void RebuildAllModules()
     {
-        foreach (var module in core.Data.Modules.GetAll())
+        foreach (var kvp in core.Data.Modules.All)
         {
-            UpdateModuleMesh(module.Location).FireAndForget();
+            UpdateModuleMesh(kvp.Key, kvp.Value).FireAndForget();
         }
     }
 }

@@ -16,15 +16,15 @@ public class ConstructPhysicsController
 
     public void Update(double deltaTime)
     {
-        if (data.PhysicsData.isStatic)
+        if (data.PhysicsData.IsStatic)
             return;
 
         // Gravity
-        data.PhysicsData.velocity += Vector3.Down * (Gravity * (float)deltaTime);
+        data.PhysicsData.Velocity += Vector3.Down * (Gravity * (float)deltaTime);
 
         // Apply
-        data.PhysicsData.physicsPosition += data.PhysicsData.velocity;
-        Vector3 div = data.PhysicsData.physicsPosition - data.Transform.WorldPos.Value;
+        data.PhysicsData.PhysicsPosition += data.PhysicsData.Velocity;
+        Vector3 div = data.PhysicsData.PhysicsPosition - data.GridTransform.WorldPos.Value;
         Vector3 absDiv = div.Abs();
         bool couldMove = true;
         if (absDiv.X > 1 || absDiv.Y > 1 || absDiv.Z > 1)
@@ -32,24 +32,24 @@ public class ConstructPhysicsController
 
         if (!couldMove)
         {
-            data.PhysicsData.velocity = Vector3.Zero;
-            data.PhysicsData.physicsPosition = data.Transform.WorldPos.Value;
+            data.PhysicsData.Velocity = Vector3.Zero;
+            data.PhysicsData.PhysicsPosition = data.GridTransform.WorldPos.Value;
         }
     }
 
     public void SetPosition(WorldGridPos pos)
     {
-        data.PhysicsData.physicsPosition = (Vector3I)pos;
+        data.PhysicsData.PhysicsPosition = (Vector3I)pos;
     }
 
     public void ApplyForce(Vector3 direction, float force)
     {
-        data.PhysicsData.velocity += direction * (force / data.PhysicsData.BlockMass);
+        data.PhysicsData.Velocity += direction * (force / data.PhysicsData.BlockMass);
     }
 
     public void CancleVelocity()
     {
-        data.PhysicsData.velocity = Vector3.Zero;
+        data.PhysicsData.Velocity = Vector3.Zero;
     }
 
     public void ChangeWeightBy(float weight)

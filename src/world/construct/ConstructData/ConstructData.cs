@@ -2,21 +2,21 @@ using Godot;
 
 public class ConstructData
 {
-    public ConstructPhysicsData PhysicsData {get;}
-    public ConstructTransform Transform { get; }
+    public ConstructPhysicsData PhysicsData { get; }
+    public ConstructGridTransform GridTransform { get; }
     public ConstructModules Modules { get; }
     public ConstructBounds Bounds { get; }
     public Material ModuleMaterial { get; }
 
     public ConstructData(
         ConstructPhysicsData physicsData,
-        ConstructTransform transform,
+        ConstructGridTransform transform,
         ConstructModules modules,
         ConstructBounds bounds,
         Material moduleMaterial)
     {
         PhysicsData = physicsData;
-        Transform = transform;
+        GridTransform = transform;
         Modules = modules;
         Bounds = bounds;
         ModuleMaterial = moduleMaterial;

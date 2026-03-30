@@ -17,8 +17,8 @@ public partial class ConstructVisualMotionController
     )
     {
         this.data = data;
-        Position = (Vector3I)data.Transform.WorldPos;
-        Rotation = YRotToVec(data.Transform.YRotation);
+        Position = (Vector3I)data.GridTransform.WorldPos;
+        Rotation = YRotToVec(data.GridTransform.YRotation);
 
         moveSecondOrderDynamics = moveSod;
         rotationSecondOrderDynamics = rotSod;
@@ -27,8 +27,8 @@ public partial class ConstructVisualMotionController
     public void Update(double delta)
     {
         float currentRot = Mathf.RadToDeg(Rotation.Y);
-        float degTargetYRotation = data.Transform.YRotation;
-        WorldGridPos targetWorldPos = data.Transform.WorldPos;
+        float degTargetYRotation = data.GridTransform.YRotation;
+        WorldGridPos targetWorldPos = data.GridTransform.WorldPos;
 
         if (Position != targetWorldPos.Value)
             Position = moveSecondOrderDynamics.Update((float)delta, targetWorldPos.Value);

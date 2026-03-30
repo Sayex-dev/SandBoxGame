@@ -42,7 +42,7 @@ public class ConstructModuleBuilder : IDisposable
     public LoadAroundResponse GenerateModulesAround(
         WorldGridPos worldPos,
         int loadDistance,
-        ConstructTransform transform,
+        ConstructGridTransform transform,
         ConstructModules modules,
         ModuleLoadContext context)
     {

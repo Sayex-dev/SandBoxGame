@@ -1,32 +1,16 @@
+using Godot;
+
 public class FrozenState : SimulationState
 {
-	public void OnAddBlock()
+	public FrozenState(ConstructCore core) : base(core) { }
+
+	public override Vector3 GetPosition()
 	{
 		throw new System.NotImplementedException();
 	}
 
-	public void OnAddBlock(Block blockDefault, ConstructGridPos pos)
+	public override Vector3 GetRotation()
 	{
-		throw new System.NotImplementedException();
-	}
-
-	public void OnEnter(Construct construct)
-	{
-		throw new System.NotImplementedException();
-	}
-
-	public void OnExit()
-	{
-		throw new System.NotImplementedException();
-	}
-
-	public void OnPositionChanged()
-	{
-		throw new System.NotImplementedException();
-	}
-
-	public void Update(double delta)
-	{
-		throw new System.NotImplementedException();
+		return Vector3.Zero;
 	}
 }
