@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -10,6 +9,7 @@ public partial class GameSettings : Node
 
     // Generation Settings
     [Export] public int Seed { get; set; } = 0;
+    [Export] public Material ModuleMat { get; set; }
 
     // Construct Settings
     [Export] public int ModuleSize { get; private set; } = 32;

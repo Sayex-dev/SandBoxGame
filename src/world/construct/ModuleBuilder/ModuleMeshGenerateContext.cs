@@ -4,15 +4,12 @@ public readonly struct ModuleMeshGenerateContext
 {
     public Module Module { get; }
     public ModuleLocation ModuleLocation { get; }
-    public Material ModuleMaterial { get; }
 
     public ModuleMeshGenerateContext(
         Module module,
-        ModuleLocation moduleLocation,
-        Material moduleMaterial)
+        ModuleLocation moduleLocation)
     {
         Module = module;
         ModuleLocation = moduleLocation;
-        ModuleMaterial = moduleMaterial;
     }
 }

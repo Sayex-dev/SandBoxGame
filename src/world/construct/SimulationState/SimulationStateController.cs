@@ -32,8 +32,6 @@ public class SimulationStateController : IStateController
         this.parent = parent;
 
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
-
-        UpdateLoading(loadPos);
     }
 
     public void UpdateLoading(WorldGridPos loadPos)
@@ -74,7 +72,7 @@ public class SimulationStateController : IStateController
         foreach ((var mode, var maxDist) in simulationModeDistances)
         {
             if (dist < maxDist)
-                return resultMode;
+                return mode;
             else
                 resultMode = mode;
         }

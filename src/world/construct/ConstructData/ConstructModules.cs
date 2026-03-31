@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public partial class ConstructModules
 {
-    public bool FullyLoaded { get; private set; }
+    public bool FullyLoaded { get; set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 

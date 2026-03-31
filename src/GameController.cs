@@ -6,7 +6,6 @@ using System.Diagnostics;
 public partial class GameController : Node3D
 {
     [Export] public Node3D CameraPosition { get; set; } = new Node3D();
-    [Export] public Material ModuleMat { get; set; }
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
 
     [Export] private ConstructWorld blockWorld;
@@ -26,8 +25,6 @@ public partial class GameController : Node3D
             blockWorld = this.FindChildOfType<ConstructWorld>();
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
-
-        blockWorld.Initialize(ModuleMat);
 
         CreateConstructsFromNode();
 
@@ -50,7 +47,7 @@ public partial class GameController : Node3D
         foreach (var constructNode in GetChildren().OfType<ConstructNode>())
         {
             RemoveChild(constructNode);
-            Construct construct = constructNode.CreateConstruct(blockWorld, ModuleMat, blockWorld, (Vector3I)CameraPosition.Position);
+            Construct construct = constructNode.CreateConstruct(blockWorld, blockWorld, (Vector3I)CameraPosition.Position);
             blockWorld.AddConstruct(construct);
         }
     }

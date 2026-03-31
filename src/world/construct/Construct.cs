@@ -17,7 +17,6 @@ public partial class Construct : Node3D, IOctTreeObject
 
 	public Construct(
 		ConstructCreationSettings settings,
-		Material moduleMaterial,
 		IWorldQuery collisionQuery,
 		Node3D parent,
 		WorldGridPos loadPos,
@@ -34,7 +33,7 @@ public partial class Construct : Node3D, IOctTreeObject
 			PhysicsPosition = initialPosition,
 			IsStatic = settings.IsGlobal
 		};
-		var data = new ConstructData(physicsData, transform, modules, bounds, moduleMaterial);
+		var data = new ConstructData(physicsData, transform, modules, bounds);
 
 		data.GridTransform.Changed += OnSpatialChanged;
 		data.Bounds.Changed += OnSpatialChanged;

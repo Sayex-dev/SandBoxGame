@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://2g61uvgp3p65"]
+[gd_scene load_steps=8 format=3 uid="uid://2g61uvgp3p65"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://cwl7nkfesyskm" path="res://src/GameController.cs" id="2_sugp2"]
-[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
 [ext_resource type="Script" uid="uid://b16exedawhjdq" path="res://src/world/ConstructWorld.cs" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://btb6ximycijlb" path="res://src/world/construct/ConstructNode.cs" id="5_tbgi4"]
 [ext_resource type="Resource" uid="uid://d86g62yg3ami" path="res://resources/world/Constructs/world/world_settings.tres" id="6_o6xl0"]
@@ -10,14 +9,13 @@
 
 [sub_resource type="Environment" id="Environment_np7kj"]
 background_mode = 1
-background_color = Color(0.103743516, 0.10374353, 0.103743516, 1)
+background_color = Color(0.04755766, 0.047557645, 0.047557645, 1)
 ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.12
 tonemap_mode = 2
 glow_enabled = true
 glow_bloom = 0.12
-fog_enabled = true
 fog_mode = 1
 fog_light_color = Color(0.48666847, 0.59338796, 0.33708662, 1)
 fog_light_energy = 0.16
@@ -36,7 +34,6 @@ script = ExtResource("1_10v3s")
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
 script = ExtResource("2_sugp2")
 CameraPosition = NodePath("../Camera3D")
-ModuleMat = ExtResource("3_5t4e2")
 
 [node name="ConstructWorld" type="Node3D" parent="GameController"]
 script = ExtResource("4_jyhfs")

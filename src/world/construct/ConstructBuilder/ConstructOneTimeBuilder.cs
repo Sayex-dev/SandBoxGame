@@ -17,14 +17,10 @@ public static class ConstructOneTimeBuilder
         ConstructVisualsController visuals,
         ConstructGenerator generator)
     {
-        var context = new ModuleBuildContext(
-            data.ModuleMaterial,
-            generator
-        );
-
-        var generationTasks = moduleBuilder.GenerateAllModules(context);
+        var generationTasks = moduleBuilder.GenerateAllModules(generator);
 
         await ModuleIntegrationHelper.IntegrateGeneratedModules(
             generationTasks, data, visuals);
+        data.Modules.FullyLoaded = true;
     }
 }

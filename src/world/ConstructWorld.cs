@@ -6,25 +6,16 @@ using System.Collections.Generic;
 public partial class ConstructWorld : Node3D, IWorldQuery
 {
 	private int seed;
-	private Material moduleMaterial;
-	private List<Tuple<SimulationMode, float>> simulationModeDistances;
-
 	private ExpandingOctTree<Construct> constructTree;
 	private HashSet<Construct> constructs = [];
 	private Vector3 lastCameraPos = Vector3I.Zero;
-
-	public void Initialize(
-		Material moduleMaterial
-	)
-	{
-		this.moduleMaterial = moduleMaterial;
-	}
 
 	public override void _Ready()
 	{
 		constructTree = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
 		GatherChildConstructs();
 	}
+
 
 	public Construct HasBlock(WorldGridPos worldPos)
 	{
@@ -75,7 +66,7 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		List<ConstructNode> childNodes = this.FindChildrenOfType<ConstructNode>();
 		foreach (var childNode in childNodes)
 		{
-			AddConstruct(childNode.CreateConstruct(this, moduleMaterial, this, (Vector3I)lastCameraPos));
+			AddConstruct(childNode.CreateConstruct(this, this, (Vector3I)lastCameraPos));
 		}
 	}
 }

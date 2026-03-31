@@ -36,12 +36,9 @@ public class ConstructLoadingController
 
     public async Task LoadAround(WorldGridPos worldPos, int loadDistance)
     {
-        var context = new ModuleBuildContext(
-            data.ModuleMaterial,
-            generator
-        );
+
         var generationResponse = moduleBuilder.GenerateModulesAround(
-            worldPos, loadDistance, data.GridTransform, data.Modules, context);
+            worldPos, loadDistance, data.GridTransform, data.Modules, generator);
 
         // Load new modules
         foreach (Task<GenerateModulesResponse> task in generationResponse.GenerationTaskHandles)

@@ -44,12 +44,12 @@ public class ConstructModuleBuilder : IDisposable
         int loadDistance,
         ConstructGridTransform transform,
         ConstructModules modules,
-        ModuleBuildContext context)
+        ConstructGenerator generator)
     {
         var center = worldPos.ToModuleLocation(transform);
-        var diff = CalculateLoadSet(center, loadDistance, modules.Modules, context.Generator);
+        var diff = CalculateLoadSet(center, loadDistance, modules.Modules, generator);
 
-        var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, context);
+        var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, generator);
         return new LoadAroundResponse()
         {
             GenerationTaskHandles = genTaskHandles,
@@ -64,9 +64,9 @@ public class ConstructModuleBuilder : IDisposable
     /// Used for finite constructs that need to be fully loaded once.
     /// </summary>
     public IEnumerable<Task<GenerateModulesResponse>> GenerateAllModules(
-        ModuleBuildContext context)
+        ConstructGenerator generator)
     {
-        var allNeeded = context.Generator.GetAllRequiredModules();
+        var allNeeded = generator.GetAllRequiredModules();
         var toLoad = new List<ModuleLocation>();
 
         foreach (var pos in allNeeded)
@@ -75,7 +75,7 @@ public class ConstructModuleBuilder : IDisposable
                 toLoad.Add(pos);
         }
 
-        return GenerateModuleGenerationTasks(toLoad, context);
+        return GenerateModuleGenerationTasks(toLoad, generator);
     }
 
     public async Task<Mesh> GenerateModuleMesh(
@@ -95,7 +95,7 @@ public class ConstructModuleBuilder : IDisposable
 
     private IEnumerable<Task<GenerateModulesResponse>> GenerateModuleGenerationTasks(
         List<ModuleLocation> positions,
-        ModuleBuildContext context
+        ConstructGenerator generator
     )
     {
         var tasks = positions.Select(async pos =>
@@ -103,7 +103,7 @@ public class ConstructModuleBuilder : IDisposable
             await loadSemaphore.WaitAsync();
             try
             {
-                return await StartModuleGenerationThread(pos, context);
+                return await StartModuleGenerationThread(pos, generator);
             }
             finally
             {
@@ -124,13 +124,13 @@ public class ConstructModuleBuilder : IDisposable
 
     private Task<GenerateModulesResponse> StartModuleGenerationThread(
     ModuleLocation location,
-    ModuleBuildContext context)
+    ConstructGenerator generator)
     {
         return Task.Run(() =>
         {
             var response = new GenerateModulesResponse();
             TimeTracker.Start("Module Generation", TimeTracker.TrackingType.Average);
-            var blockGenResponse = context.Generator.GenerateModules(location);
+            var blockGenResponse = generator.GenerateModules(location);
             TimeTracker.End("Module Generation");
             response.GeneratedAllModules = blockGenResponse.GeneratedAllModules;
 
@@ -145,8 +145,7 @@ public class ConstructModuleBuilder : IDisposable
                 response.GeneratedModules[moduleLoc] = module;
                 var meshContext = new ModuleMeshGenerateContext(
                     module,
-                    moduleLoc,
-                    context.ModuleMaterial
+                    moduleLoc
                 );
                 TimeTracker.Start("Build Module Mesh", TimeTracker.TrackingType.Average);
                 var moduleMesh = ModuleMeshGenerator.BuildModuleMesh(meshContext);

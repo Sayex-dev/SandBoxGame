@@ -7,11 +7,10 @@ public partial class ConstructNode : Node3D
 
     public Construct CreateConstruct(
         Node3D parent,
-        Material material,
         IWorldQuery collisionQuery,
         WorldGridPos loadPos
     )
     {
-        return new Construct(settings, material, collisionQuery, parent, (Vector3I)Position, loadPos);
+        return new Construct(settings, collisionQuery, parent, (Vector3I)Position, loadPos);
     }
 }

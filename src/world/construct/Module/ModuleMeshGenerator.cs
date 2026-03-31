@@ -459,7 +459,9 @@ public class ModuleMeshGenerator
 
 		var arrayMesh = new ArrayMesh();
 		arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-		arrayMesh.SurfaceSetMaterial(0, context.ModuleMaterial);
+
+		var moduleMaterial = GameSettings.Instance.ModuleMat;
+		arrayMesh.SurfaceSetMaterial(0, moduleMaterial);
 
 		return arrayMesh;
 	}

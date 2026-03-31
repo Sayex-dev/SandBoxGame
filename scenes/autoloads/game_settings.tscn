@@ -1,11 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://q17ynxi7h2cn"]
+[gd_scene load_steps=3 format=3 uid="uid://q17ynxi7h2cn"]
 
 [ext_resource type="Script" uid="uid://1elxunjc4mgm" path="res://src/GameSettings.cs" id="1_b688h"]
+[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="2_bey1w"]
 
 [node name="GameSettings" type="Node3D"]
 script = ExtResource("1_b688h")
+ModuleMat = ExtResource("2_bey1w")
 simulationModeDistances = Dictionary[int, float]({
-0: 160.0,
-1: 320.0,
-2: 3200.0
+0: 5.0,
+1: 100.0,
+2: 1000.0
 })

@@ -1,4 +1,5 @@
 using Godot;
+using System.Diagnostics;
 using System.Threading.Tasks;
 public class ActiveState : SimulationState
 {
@@ -46,17 +47,26 @@ public class ActiveState : SimulationState
         parent.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();
 
-        ConstructOneTimeBuilder.BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
+        if (core.Data.Modules.FullyLoaded)
+        {
+            RebuildAllModules();
+        }
+        else
+        {
+            ConstructOneTimeBuilder.BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
+        }
     }
 
     public override void Exit()
     {
+        parent.RemoveChild(visuals);
         visuals?.Dispose();
         visuals = null;
         physics = null;
         visualMotion = null;
         moduleBuilder = null;
         motionController = null;
+        Debug.WriteLine("Exited Active State");
     }
 
     public override void Update(double delta)
@@ -76,7 +86,8 @@ public class ActiveState : SimulationState
 
     private async Task UpdateModuleMesh(ModuleLocation moduleLoc, Module module)
     {
-        var context = new ModuleMeshGenerateContext(module, moduleLoc, core.Data.ModuleMaterial);
+
+        var context = new ModuleMeshGenerateContext(module, moduleLoc);
         var mesh = await moduleBuilder.GenerateModuleMesh(context);
         visuals.RemoveModule(moduleLoc);
         visuals.AddModule(moduleLoc, mesh);
