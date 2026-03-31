@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 /// Used for preset/bounded constructs that have a known, fixed set of modules.
 /// After loading completes, this loader is no longer needed.
 /// </summary>
-public static class ConstructOneTimeLoader
+public static class ConstructOneTimeBuilder
 {
     /// <summary>
     /// Loads all modules for the construct by querying the generator for its required modules.
@@ -17,7 +17,7 @@ public static class ConstructOneTimeLoader
         ConstructVisualsController visuals,
         ConstructGenerator generator)
     {
-        var context = new ModuleLoadContext(
+        var context = new ModuleBuildContext(
             data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator

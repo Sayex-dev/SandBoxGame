@@ -44,7 +44,7 @@ public class ConstructModuleBuilder : IDisposable
         int loadDistance,
         ConstructGridTransform transform,
         ConstructModules modules,
-        ModuleLoadContext context)
+        ModuleBuildContext context)
     {
         var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);
         var diff = CalculateLoadSet(center, loadDistance, modules.Modules, context.Generator);
@@ -64,7 +64,7 @@ public class ConstructModuleBuilder : IDisposable
     /// Used for finite constructs that need to be fully loaded once.
     /// </summary>
     public IEnumerable<Task<GenerateModulesResponse>> GenerateAllModules(
-        ModuleLoadContext context)
+        ModuleBuildContext context)
     {
         var allNeeded = context.Generator.GetAllRequiredModules();
         var toLoad = new List<ModuleLocation>();
@@ -95,7 +95,7 @@ public class ConstructModuleBuilder : IDisposable
 
     private IEnumerable<Task<GenerateModulesResponse>> GenerateModuleGenerationTasks(
         List<ModuleLocation> positions,
-        ModuleLoadContext context
+        ModuleBuildContext context
     )
     {
         var tasks = positions.Select(async pos =>
@@ -124,7 +124,7 @@ public class ConstructModuleBuilder : IDisposable
 
     private Task<GenerateModulesResponse> StartModuleGenerationThread(
     ModuleLocation location,
-    ModuleLoadContext context)
+    ModuleBuildContext context)
     {
         return Task.Run(() =>
         {
@@ -159,7 +159,7 @@ public class ConstructModuleBuilder : IDisposable
         });
     }
 
-    private ModuleLoadSet CalculateLoadSet(
+    private ModuleBuildSet CalculateLoadSet(
         ModuleLocation center,
         int renderDistance,
         Dictionary<ModuleLocation, Module> loaded,
@@ -167,7 +167,7 @@ public class ConstructModuleBuilder : IDisposable
     )
     {
         var sphereArea = (int)Math.Ceiling(4.0 / 3.0 * Math.PI * Math.Pow(renderDistance, 3));
-        var result = new ModuleLoadSet();
+        var result = new ModuleBuildSet();
         (ModuleLocation, float)[] desired = new (ModuleLocation, float)[sphereArea];
         HashSet<ModuleLocation> desiredLookup = new();
 

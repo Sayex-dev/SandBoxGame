@@ -36,7 +36,7 @@ public class ModuleLoadingController
 
     public async Task LoadAround(WorldGridPos worldPos, int loadDistance)
     {
-        var context = new ModuleLoadContext(
+        var context = new ModuleBuildContext(
             data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator

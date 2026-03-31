@@ -1,6 +1,10 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://b06p6boqm5dbs"]
+[gd_resource type="Resource" script_class="VoxelBlockDefault" load_steps=4 format=3 uid="uid://b06p6boqm5dbs"]
 
-[ext_resource type="Script" path="res://src/world/blocks/VoxelBlockDefault.cs" id="2_47500"]
+[ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_igwb5"]
+[ext_resource type="Script" uid="uid://ba6xbkm2p7ilq" path="res://src/world/blocks/VoxelBlockDefault.cs" id="2_47500"]
+
+[sub_resource type="Resource" id="Resource_igwb5"]
+script = ExtResource("1_igwb5")
 
 [resource]
 script = ExtResource("2_47500")

@@ -1,12 +1,12 @@
 using Godot;
 
-public readonly struct ModuleLoadContext
+public readonly struct ModuleBuildContext
 {
     public int ModuleSize { get; }
     public Material ModuleMaterial { get; }
     public ConstructGenerator Generator { get; }
 
-    public ModuleLoadContext(
+    public ModuleBuildContext(
         int moduleSize,
         Material moduleMaterial,
         ConstructGenerator generator)

@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 /// Continuously loads and unloads modules around a moving position.
 /// Used for the global world construct that streams terrain as the player moves.
 /// </summary>
-public class ConstructStreamingLoader
+public class ConstructStreamingBuilder
 {
     private readonly ConstructData data;
     private readonly ConstructModuleBuilder moduleBuilder;
     private readonly ConstructVisualsController visuals;
     private readonly ConstructGenerator generator;
 
-    public ConstructStreamingLoader(
+    public ConstructStreamingBuilder(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,
@@ -25,12 +25,12 @@ public class ConstructStreamingLoader
 
     public async Task UpdateLoading(WorldGridPos worldPos, int renderDistance, int simulationDistance)
     {
-        await LoadAround(worldPos, simulationDistance);
+        await BuildAround(worldPos, simulationDistance);
     }
 
-    private async Task LoadAround(WorldGridPos worldPos, int loadDistance)
+    private async Task BuildAround(WorldGridPos worldPos, int loadDistance)
     {
-        var context = new ModuleLoadContext(
+        var context = new ModuleBuildContext(
             data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator
