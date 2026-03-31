@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://2g61uvgp3p65"]
+[gd_scene load_steps=9 format=3 uid="uid://2g61uvgp3p65"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://cwl7nkfesyskm" path="res://src/GameController.cs" id="2_sugp2"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="3_5t4e2"]
 [ext_resource type="Script" uid="uid://b16exedawhjdq" path="res://src/world/ConstructWorld.cs" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://btb6ximycijlb" path="res://src/world/construct/ConstructNode.cs" id="5_tbgi4"]
+[ext_resource type="Resource" uid="uid://d86g62yg3ami" path="res://resources/world/Constructs/world/world_settings.tres" id="6_o6xl0"]
 [ext_resource type="Resource" uid="uid://dlay6g2by27mj" path="res://resources/world/Constructs/thingy/thingy_settings.tres" id="6_tefeu"]
 
 [sub_resource type="Environment" id="Environment_np7kj"]
@@ -45,6 +46,12 @@ simulationModeDistances = Dictionary[int, float]({
 [node name="ConstructWorld" type="Node3D" parent="GameController"]
 script = ExtResource("4_jyhfs")
 metadata/_custom_type_script = "uid://b16exedawhjdq"
+
+[node name="World" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
+script = ExtResource("5_tbgi4")
+settings = ExtResource("6_o6xl0")
+metadata/_custom_type_script = "uid://btb6ximycijlb"
 
 [node name="Thingy" type="Node3D" parent="GameController/ConstructWorld"]
 script = ExtResource("5_tbgi4")
