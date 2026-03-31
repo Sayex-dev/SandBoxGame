@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Godot;
 
-public class ModuleLoadingController
+public class ConstructLoadingController
 {
     public bool isFullyLoaded = false;
     private readonly ConstructData data;
@@ -9,7 +9,7 @@ public class ModuleLoadingController
     private readonly ConstructVisualsController visuals;
     private readonly ConstructGenerator generator;
 
-    public ModuleLoadingController(
+    public ConstructLoadingController(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,
@@ -37,7 +37,6 @@ public class ModuleLoadingController
     public async Task LoadAround(WorldGridPos worldPos, int loadDistance)
     {
         var context = new ModuleBuildContext(
-            data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator
         );
@@ -55,8 +54,8 @@ public class ModuleLoadingController
                 Mesh mesh = response.Meshes[moduleLocation];
 
                 // Update bounds
-                data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
-                data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize));
+                data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation));
+                data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation));
 
                 // Update modules
                 data.Modules.Add(moduleLocation, module);
@@ -76,8 +75,8 @@ public class ModuleLoadingController
                 // Update bounds if necessary
                 if (module.HasBlocks)
                 {
-                    ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation, module.ModuleSize);
-                    ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize);
+                    ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation);
+                    ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation);
 
                     if (data.Bounds.IsOnBounds(minPos) || data.Bounds.IsOnBounds(maxPos))
                     {
@@ -100,8 +99,8 @@ public class ModuleLoadingController
                 var remainingLocation = kvp.Key;
                 if (remainingModule.HasBlocks)
                 {
-                    data.Bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
-                    data.Bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+                    data.Bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation));
+                    data.Bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation));
                 }
             }
         }

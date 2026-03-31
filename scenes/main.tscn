@@ -28,7 +28,7 @@ volumetric_fog_length = 0.01
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.93969256, 0.3420201, 0, -0.3420201, 0.93969256, 0, 6.995, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9529053, 0.30326816, 0, -0.30326816, 0.9529053, 0, 0.44963455, 2.642216)
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 
@@ -37,11 +37,6 @@ transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
 script = ExtResource("2_sugp2")
 CameraPosition = NodePath("../Camera3D")
 ModuleMat = ExtResource("3_5t4e2")
-simulationModeDistances = Dictionary[int, float]({
-0: 160.0,
-1: 360.0,
-2: 1000.0
-})
 
 [node name="ConstructWorld" type="Node3D" parent="GameController"]
 script = ExtResource("4_jyhfs")

@@ -6,8 +6,8 @@ public partial class BiomeWorldGeneratorSettings : ConstructGeneratorSettings
 {
     [Export] public Godot.Collections.Array<Biome> Biomes { get; set; }
 
-    public override ConstructGenerator CreateConstructGenerator(int moduleSize, int seed)
+    public override ConstructGenerator CreateConstructGenerator(int seed)
     {
-        return new BiomeWorldGenerator(moduleSize, seed, Biomes.ToList());
+        return new BiomeWorldGenerator(seed, Biomes.ToList());
     }
 }

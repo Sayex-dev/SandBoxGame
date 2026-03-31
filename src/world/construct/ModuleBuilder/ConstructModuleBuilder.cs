@@ -46,7 +46,7 @@ public class ConstructModuleBuilder : IDisposable
         ConstructModules modules,
         ModuleBuildContext context)
     {
-        var center = worldPos.ToModuleLocation(transform, modules.ModuleSize);
+        var center = worldPos.ToModuleLocation(transform);
         var diff = CalculateLoadSet(center, loadDistance, modules.Modules, context.Generator);
 
         var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, context);

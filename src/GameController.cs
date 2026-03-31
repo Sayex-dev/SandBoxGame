@@ -1,38 +1,33 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using System.Diagnostics;
+
 
 public partial class GameController : Node3D
 {
-    [Export] public int Seed { get; set; } = 0;
     [Export] public Node3D CameraPosition { get; set; } = new Node3D();
     [Export] public Material ModuleMat { get; set; }
-    [Export] public int ModuleSize { get; set; } = 32;
-    [Export] public int SimulationDistance { get; set; } = 5;
-    [Export] public int RenderDistance { get; set; } = 10;
     [Export] public Viewport.DebugDrawEnum DebugDraw { get; set; } = Viewport.DebugDrawEnum.ClusterDecals;
-    [Export] private Godot.Collections.Dictionary<SimulationMode, float> simulationModeDistances = new Godot.Collections.Dictionary<SimulationMode, float>();
-    private MeshInstance3D worldMesh;
+
     [Export] private ConstructWorld blockWorld;
 
+    private MeshInstance3D worldMesh;
     private Vector3I prevCameraModulePos = Vector3I.MaxValue;
+    private int moduleSize;
 
     public override async void _Ready()
     {
+        moduleSize = GameSettings.Instance.ModuleSize;
+
         SetPhysicsProcess(false);
         RenderingServer.SetDebugGenerateWireframes(true);
 
         if (blockWorld == null)
-            blockWorld = this.FindChildOfType<ConstructWorld>(1);
+            blockWorld = this.FindChildOfType<ConstructWorld>();
         var vp = GetViewport();
         vp.DebugDraw = DebugDraw;
 
-        List<Tuple<SimulationMode, float>> modes = simulationModeDistances
-            .OrderBy(kvp => kvp.Value)
-            .Select(kvp => new Tuple<SimulationMode, float>(kvp.Key, kvp.Value))
-            .ToList();
-        blockWorld.Initialize(Seed, ModuleSize, ModuleMat, modes);
+        blockWorld.Initialize(ModuleMat);
 
         CreateConstructsFromNode();
 
@@ -41,7 +36,7 @@ public partial class GameController : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        Vector3I cameraModulePos = (Vector3I)CameraPosition.Position / ModuleSize;
+        Vector3I cameraModulePos = (Vector3I)CameraPosition.Position / moduleSize;
 
         if (cameraModulePos != prevCameraModulePos)
         {
@@ -55,7 +50,7 @@ public partial class GameController : Node3D
         foreach (var constructNode in GetChildren().OfType<ConstructNode>())
         {
             RemoveChild(constructNode);
-            Construct construct = constructNode.CreateConstruct(blockWorld, ModuleMat, ModuleSize, blockWorld);
+            Construct construct = constructNode.CreateConstruct(blockWorld, ModuleMat, blockWorld, (Vector3I)CameraPosition.Position);
             blockWorld.AddConstruct(construct);
         }
     }

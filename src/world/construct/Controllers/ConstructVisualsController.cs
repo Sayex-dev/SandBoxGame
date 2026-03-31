@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class ConstructVisualsController: Node3D
+public partial class ConstructVisualsController : Node3D
 {
     private float moduleSize;
     private Dictionary<ModuleLocation, MeshInstance3D> activeModules = new();
     private LinkedList<MeshInstance3D> modulePool = new();
 
-    public ConstructVisualsController(float moduleSize, int initialPoolSize = 0)
+    public ConstructVisualsController(int initialPoolSize = 0)
     {
-        this.moduleSize = moduleSize;
+        moduleSize = GameSettings.Instance.ModuleSize;
         for (int i = 0; i < initialPoolSize; i++)
         {
             ExtendModulePool();
@@ -19,7 +19,8 @@ public partial class ConstructVisualsController: Node3D
     public void AddModule(ModuleLocation loc, Mesh moduleMesh)
     {
         RemoveModule(loc);
-        if (modulePool.First == null) ExtendModulePool();
+        if (modulePool.First == null)
+            ExtendModulePool();
         var module = modulePool.First.Value;
         modulePool.RemoveFirst();
         module.Mesh = moduleMesh;
@@ -30,7 +31,8 @@ public partial class ConstructVisualsController: Node3D
     public void RemoveModule(ModuleLocation loc)
     {
         activeModules.Remove(loc, out MeshInstance3D module);
-        if (module == null) return;
+        if (module == null)
+            return;
         module.Mesh = null;
         modulePool.AddFirst(module);
     }

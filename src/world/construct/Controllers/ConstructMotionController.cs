@@ -79,7 +79,7 @@ public class ConstructMotionController
             {
                 foreach (var facePos in module.SurfaceCache.CollisionCache.GetAllExposedSurfaces()[dir])
                 {
-                    var faceWorldPos = facePos.ToWorld(moduleLocation, data.GridTransform, data.Modules.ModuleSize);
+                    var faceWorldPos = facePos.ToWorld(moduleLocation, data.GridTransform);
                     if (other.TryGetBlock(faceWorldPos + step, out _))
                     {
                         return false;

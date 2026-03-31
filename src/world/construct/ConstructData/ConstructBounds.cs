@@ -63,7 +63,7 @@ public class ConstructBounds
             var moduleLocation = kvp.Key;
             var module = kvp.Value;
 
-            AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
+            AddPosition(module.MinPos.ToConstruct(moduleLocation));
         }
 
         if (MinPos != oldMin || MaxPos != oldMax)

@@ -3,14 +3,9 @@ using System.Collections.Generic;
 public partial class ConstructModules
 {
     public bool FullyLoaded { get; private set; }
-    public int ModuleSize { get; private set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 
-    public ConstructModules(int moduleSize)
-    {
-        ModuleSize = moduleSize;
-    }
 
     public void Add(ModuleLocation location, Module module)
     {
@@ -34,17 +29,17 @@ public partial class ConstructModules
     public IReadOnlyDictionary<ModuleLocation, Module> All => Modules;
 
     public bool TryGetBlock(
-        ConstructGridPos conPos,
+        ConstructGridPos pos,
         out Block block
     )
     {
         block = default;
 
-        ModuleLocation moduleLoc = conPos.ToModuleLocation(ModuleSize);
+        ModuleLocation moduleLoc = pos.ToModuleLocation();
         if (!Modules.TryGetValue(moduleLoc, out var module))
             return false;
 
-        ModuleGridPos inModule = conPos.ToModule(ModuleSize);
+        ModuleGridPos inModule = pos.ToModule();
         if (!module.HasBlock(inModule, out block))
             return false;
 
@@ -52,18 +47,18 @@ public partial class ConstructModules
     }
 
     public void SetBlock(
-        ConstructGridPos conPos,
+        ConstructGridPos pos,
         Block block
     )
     {
-        ModuleLocation moduleLoc = conPos.ToModuleLocation(ModuleSize);
+        ModuleLocation moduleLoc = pos.ToModuleLocation();
         if (!Modules.TryGetValue(moduleLoc, out var module))
         {
-            module = new Module(ModuleSize);
+            module = new Module();
             Add(moduleLoc, module);
         }
 
-        ModuleGridPos inModule = conPos.ToModule(ModuleSize);
+        ModuleGridPos inModule = pos.ToModule();
         module.SetBlock(inModule, block);
         if (!module.HasBlocks)
             Modules.Remove(moduleLoc);

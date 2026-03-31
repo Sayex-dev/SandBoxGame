@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+GameSettings="*res://scenes/autoloads/game_settings.tscn"
 TimeTracker="*res://src/utils/TimeTracking/TimeTracker.cs"
 WorldBlockStore="*res://scenes/autoloads/block_store.tscn"
 

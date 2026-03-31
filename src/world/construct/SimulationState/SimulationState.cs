@@ -12,9 +12,11 @@ public abstract class SimulationState
     public virtual void Enter() { }
     public virtual void Exit() { }
     public virtual void Update(double delta) { }
-    public virtual void AddBlock(Block block, ConstructGridPos pos)
+    public virtual void SetBlock(Block block, ConstructGridPos pos) => core.Blocks.SetBlock(pos, block);
+    public virtual void RemoveBlock(ConstructGridPos pos) => core.Blocks.SetBlock(pos, new Block());
+    public virtual bool TryGetBlock(ConstructGridPos pos, out Block block)
     {
-        core.Blocks.SetBlock(pos, block);
+        return core.Blocks.TryGetBlock(pos, out block);
     }
 
     public abstract Vector3 GetPosition();

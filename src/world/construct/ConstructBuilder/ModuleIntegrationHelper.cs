@@ -26,8 +26,8 @@ public static class ModuleIntegrationHelper
                 Mesh mesh = response.Meshes[moduleLocation];
 
                 // Update bounds
-                data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation, module.ModuleSize));
-                data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize));
+                data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation));
+                data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation));
 
                 // Update modules
                 data.Modules.Add(moduleLocation, module);
@@ -55,8 +55,8 @@ public static class ModuleIntegrationHelper
                 // Update bounds if necessary
                 if (module.HasBlocks)
                 {
-                    ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation, module.ModuleSize);
-                    ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation, module.ModuleSize);
+                    ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation);
+                    ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation);
 
                     if (data.Bounds.IsOnBounds(minPos) || data.Bounds.IsOnBounds(maxPos))
                     {
@@ -87,8 +87,8 @@ public static class ModuleIntegrationHelper
             var remainingLocation = kvp.Key;
             if (remainingModule.HasBlocks)
             {
-                data.Bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
-                data.Bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation, remainingModule.ModuleSize));
+                data.Bounds.AddPosition(remainingModule.MinPos.ToConstruct(remainingLocation));
+                data.Bounds.AddPosition(remainingModule.MaxPos.ToConstruct(remainingLocation));
             }
         }
     }

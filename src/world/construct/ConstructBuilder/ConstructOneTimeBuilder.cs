@@ -11,21 +11,19 @@ public static class ConstructOneTimeBuilder
     /// Loads all modules for the construct by querying the generator for its required modules.
     /// Returns once all modules have been generated and integrated.
     /// </summary>
-    public static async Task LoadAll(
+    public static async Task BuildAll(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,
         ConstructGenerator generator)
     {
         var context = new ModuleBuildContext(
-            data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator
         );
 
         var generationTasks = moduleBuilder.GenerateAllModules(context);
 
-        // Load all modules
         await ModuleIntegrationHelper.IntegrateGeneratedModules(
             generationTasks, data, visuals);
     }

@@ -6,13 +6,12 @@ public partial class ConstructNode : Node3D
     [Export] private ConstructCreationSettings settings;
 
     public Construct CreateConstruct(
-        Node parent,
+        Node3D parent,
         Material material,
-        int moduleSize,
         IWorldQuery collisionQuery,
-        SimulationMode initialMode = SimulationMode.FROZEN
+        WorldGridPos loadPos
     )
     {
-        return new Construct(settings, moduleSize, material, collisionQuery, parent, (Vector3I)Position, initialMode);
+        return new Construct(settings, material, collisionQuery, parent, (Vector3I)Position, loadPos);
     }
 }

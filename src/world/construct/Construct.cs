@@ -13,20 +13,20 @@ public partial class Construct : Node3D, IOctTreeObject
 	private ConstructPhysicsController physics;
 	private ConstructVisualMotionController visualMotion;
 	private ConstructMotionController motionController;
-	private SimulationStateController sim;
+	private IStateController sim;
 
 	public Construct(
 		ConstructCreationSettings settings,
-		int moduleSize,
 		Material moduleMaterial,
 		IWorldQuery collisionQuery,
-		Node parent,
-		Vector3I initialPosition = default,
-		SimulationMode initialSimulationMode = SimulationMode.FROZEN
+		Node3D parent,
+		WorldGridPos loadPos,
+		Vector3I initialPosition = default
 	)
 	{
+		int seed = GameSettings.Instance.Seed;
 		var transform = new ConstructGridTransform(initialPosition);
-		var modules = new ConstructModules(moduleSize);
+		var modules = new ConstructModules();
 		var bounds = new ConstructBounds();
 
 		var physicsData = new ConstructPhysicsData()
@@ -46,13 +46,14 @@ public partial class Construct : Node3D, IOctTreeObject
 		SecondOrderDynamics<Vector3> moveSod = settings.MoveSodSettings.GetInstance(initialPosition);
 		visualMotion = new ConstructVisualMotionController(data, moveSod, rotSod);
 
-		Visuals = new ConstructVisualsController(moduleSize);
+		Visuals = new ConstructVisualsController();
 		ModuleBuilder = new ConstructModuleBuilder();
 
 		Blocks = new ConstructBlockService(data);
 
 		Core = new ConstructCore(data, Blocks, this);
-		sim = new SimulationStateController(Core, collisionQuery, settings.RotSodSettings, settings.MoveSodSettings, moduleSize, initialSimulationMode);
+		ConstructGenerator generator = settings.ConstructGeneratorSettings.CreateConstructGenerator(seed);
+		sim = new SimulationStateController(Core, collisionQuery, settings.RotSodSettings, settings.MoveSodSettings, generator, parent, loadPos);
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -60,7 +61,7 @@ public partial class Construct : Node3D, IOctTreeObject
 		sim.Update(delta);
 	}
 
-	public void ChangeSimulationState(SimulationMode mode) => sim.ChangeMode(mode);
+	public void UpdateLoading(WorldGridPos loadPos) => sim.UpdateLoading(loadPos);
 
 	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);
 	public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks) => Blocks.SetBlocks(worldPositions, blocks);

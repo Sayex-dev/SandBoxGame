@@ -5,7 +5,7 @@ public static class TaskExtensions
 {
     public static void FireAndForget(
         this Task task,
-        Action<Exception>? onException = null)
+        Action<Exception> onException = null)
     {
         task.ContinueWith(t =>
         {

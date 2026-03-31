@@ -5,10 +5,10 @@ public abstract partial class ConstructGenerator
 	protected int seed;
 	protected int moduleSize;
 
-	public ConstructGenerator(int moduleSize, int seed)
+	public ConstructGenerator(int seed)
 	{
 		this.seed = seed;
-		this.moduleSize = moduleSize;
+		moduleSize = GameSettings.Instance.ModuleSize;
 	}
 
 	public abstract ModuleBlockGenerationResponse GenerateModules(

@@ -8,14 +8,14 @@ public readonly record struct WorldGridPos(Vector3I Value)
         return new((Vector3I)((Vector3)(Value - transform.WorldPos.Value)).Rotated(Vector3.Up, -radRot));
     }
 
-    public ModuleGridPos ToModule(ConstructGridTransform transform, int moduleSize)
+    public ModuleGridPos ToModule(ConstructGridTransform transform)
     {
-        return ToConstruct(transform).ToModule(moduleSize);
+        return ToConstruct(transform).ToModule();
     }
 
-    public ModuleLocation ToModuleLocation(ConstructGridTransform transform, int moduleSize)
+    public ModuleLocation ToModuleLocation(ConstructGridTransform transform)
     {
-        return ToConstruct(transform).ToModuleLocation(moduleSize);
+        return ToConstruct(transform).ToModuleLocation();
     }
 
     public static implicit operator WorldGridPos(Vector3I value)
@@ -38,8 +38,10 @@ public readonly record struct ConstructGridPos(Vector3I Value)
         return new(transform.WorldPos.Value + rotated);
     }
 
-    public ModuleGridPos ToModule(int moduleSize)
+    public ModuleGridPos ToModule()
     {
+        int moduleSize = GameSettings.Instance.ModuleSize;
+
         Vector3I modulePos = new Vector3I(
             Mathf.PosMod(Value.X, moduleSize),
             Mathf.PosMod(Value.Y, moduleSize),
@@ -48,8 +50,10 @@ public readonly record struct ConstructGridPos(Vector3I Value)
         return new(modulePos);
     }
 
-    public ModuleLocation ToModuleLocation(int moduleSize)
+    public ModuleLocation ToModuleLocation()
     {
+        int moduleSize = GameSettings.Instance.ModuleSize;
+
         Vector3I moduleLocation = new Vector3I(
             Mathf.FloorToInt((float)Value.X / moduleSize),
             Mathf.FloorToInt((float)Value.Y / moduleSize),
@@ -95,13 +99,14 @@ public readonly record struct ModuleLocation(Vector3I Value)
 
 public readonly record struct ModuleGridPos(Vector3I Value)
 {
-    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransform transform, int moduleSize)
+    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransform transform)
     {
-        return ToConstruct(moduleLocation, moduleSize).ToWorld(transform);
+        return ToConstruct(moduleLocation).ToWorld(transform);
     }
 
-    public ConstructGridPos ToConstruct(ModuleLocation moduleLocation, int moduleSize)
+    public ConstructGridPos ToConstruct(ModuleLocation moduleLocation)
     {
+        int moduleSize = GameSettings.Instance.ModuleSize;
         return new(moduleLocation.Value * moduleSize + Value);
     }
 

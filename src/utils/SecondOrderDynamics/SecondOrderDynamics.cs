@@ -48,7 +48,7 @@ public class SecondOrderDynamics<T>
         y = prev;
     }
 
-    public T Update(float T, T x, T? xd = default)
+    public T Update(float T, T x, T xd = default)
     {
         if (xd == null)
         {

@@ -17,10 +17,9 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 	private readonly object cacheLock = new object();
 
 	public BiomeWorldGenerator(
-		int moduleSize,
 		int seed,
 		List<Biome> biomes
-	) : base(moduleSize, seed)
+	) : base(seed)
 	{
 		this.biomes = biomes;
 
@@ -33,8 +32,8 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 		HashSet<ModuleLocation> prevLoaded
 	)
 	{
-		Module module = new Module(moduleSize);
-		PopulateModule(module, moduleLocation, moduleSize);
+		Module module = new Module();
+		PopulateModule(module, moduleLocation);
 
 		return new ModuleBlockGenerationResponse
 		{
@@ -46,7 +45,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 		};
 	}
 
-	private void PopulateModule(Module module, ModuleLocation moduleLocation, int moduleSize)
+	private void PopulateModule(Module module, ModuleLocation moduleLocation)
 	{
 		int maxMaxY = 0;
 

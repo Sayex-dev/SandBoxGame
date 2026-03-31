@@ -58,25 +58,24 @@ public class ModuleMeshGenerator
 
 	public static List<Surface> GetSurfaceVectors(Module module)
 	{
-		int moduleSize = module.ModuleSize;
 		var surfaces = new List<Surface>();
 
 		foreach (var kvp in module.SurfaceCache.RenderCache.GetAllExposedSurfacesWithInfo())
 		{
 			Direction dir = kvp.Key;
 			Dictionary<ModuleGridPos, SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo> surfaceInfo = kvp.Value.ToDictionary();
-			List<Surface> newSurfaces = FindDirSurfaces(moduleSize, dir, surfaceInfo);
+			List<Surface> newSurfaces = FindDirSurfaces(dir, surfaceInfo);
 			surfaces.AddRange(newSurfaces);
 		}
 
 		return surfaces;
 	}
 	private static List<Surface> FindDirSurfaces(
-		int moduleSize,
 		Direction dir,
 		Dictionary<ModuleGridPos, SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo> surfaceInfo
 	)
 	{
+		int moduleSize = GameSettings.Instance.ModuleSize;
 		List<Surface> surfaces = new List<Surface>(surfaceInfo.Count / 4); // Estimate capacity
 
 		Vector3I normal = (Vector3I)DirectionTools.GetWorldDirVec(dir);
@@ -154,7 +153,7 @@ public class ModuleMeshGenerator
 						hasSurfaceFace = true;
 						continue;
 					}
-					
+
 					bool sameSurface;
 					bool sameBlock = surfaceBlock == blockFaceInfo.Block;
 

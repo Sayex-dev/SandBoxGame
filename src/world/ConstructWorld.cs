@@ -1,13 +1,11 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 [GlobalClass]
 public partial class ConstructWorld : Node3D, IWorldQuery
 {
 	private int seed;
-	private int moduleSize;
 	private Material moduleMaterial;
 	private List<Tuple<SimulationMode, float>> simulationModeDistances;
 
@@ -16,21 +14,16 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	private Vector3 lastCameraPos = Vector3I.Zero;
 
 	public void Initialize(
-		int seed,
-		int moduleSize,
-		Material moduleMaterial,
-		List<Tuple<SimulationMode, float>> simulationModeDistances
+		Material moduleMaterial
 	)
 	{
-		this.seed = seed;
-		this.moduleSize = moduleSize;
 		this.moduleMaterial = moduleMaterial;
-		this.simulationModeDistances = simulationModeDistances;
 	}
 
 	public override void _Ready()
 	{
 		constructTree = new ExpandingOctTree<Construct>(32, Vector3I.Zero);
+		GatherChildConstructs();
 	}
 
 	public Construct HasBlock(WorldGridPos worldPos)
@@ -56,7 +49,6 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		else
 			constructTree.Insert(construct);
 		constructs.Add(construct);
-		SetConstructSimulationState(construct, lastCameraPos);
 	}
 
 	public bool HasBlockAt(WorldGridPos worldPos)
@@ -74,27 +66,16 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		lastCameraPos = newPos;
 		foreach (var construct in constructs)
 		{
-			SetConstructSimulationState(construct, newPos);
+			construct.UpdateLoading((Vector3I)newPos);
 		}
 	}
 
-	private void SetConstructSimulationState(Construct construct, Vector3 newPos)
+	private void GatherChildConstructs()
 	{
-		WorldGridPos constPos = construct.Core.Data.GridTransform.WorldPos;
-		float dist = (newPos - (Vector3I)constPos).Length();
-		construct.ChangeSimulationState(GetSimulationMode(dist));
-	}
-
-	private SimulationMode GetSimulationMode(float dist)
-	{
-		SimulationMode resultMode = simulationModeDistances[0].Item1;
-		foreach ((var mode, var maxDist) in simulationModeDistances)
+		List<ConstructNode> childNodes = this.FindChildrenOfType<ConstructNode>();
+		foreach (var childNode in childNodes)
 		{
-			if (dist > maxDist)
-				return resultMode;
-			else
-				resultMode = mode;
+			AddConstruct(childNode.CreateConstruct(this, moduleMaterial, this, (Vector3I)lastCameraPos));
 		}
-		return resultMode;
 	}
 }

@@ -10,11 +10,10 @@ public class PresetConstructGenerator : ConstructGenerator
 	private HashSet<ModuleLocation> requiredModules = [];
 
 	public PresetConstructGenerator(
-		int moduleSize,
 		int seed,
 		Dictionary<Vector3I, Block> blocks,
 		Vector3I offset
-	) : base(moduleSize, seed)
+	) : base(seed)
 	{
 		this.blocks = blocks;
 		this.offset = offset;
@@ -23,7 +22,7 @@ public class PresetConstructGenerator : ConstructGenerator
 		foreach ((Vector3I pos, Block block) in blocks)
 		{
 			ConstructGridPos constructPos = new(new Vector3I(pos.X, pos.Y, pos.Z));
-			requiredModules.Add(constructPos.ToModuleLocation(moduleSize));
+			requiredModules.Add(constructPos.ToModuleLocation());
 		}
 	}
 
@@ -32,14 +31,14 @@ public class PresetConstructGenerator : ConstructGenerator
 		HashSet<ModuleLocation> prevLoaded = null
 	)
 	{
-		Module module = new Module(moduleSize);
+		Module module = new Module();
 
 		ModuleGridPos minPos = new(Vector3I.One * moduleSize);
 		ModuleGridPos maxPos = new(Vector3I.Zero);
 		foreach ((Vector3I pos, Block block) in blocks)
 		{
 			ConstructGridPos inConstructBlockPos = new ConstructGridPos(new Vector3I(pos.X, pos.Y, pos.Z) + offset);
-			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule(moduleSize);
+			ModuleGridPos inModuleBlockPos = inConstructBlockPos.ToModule();
 
 			minPos = new(minPos.Value.Min(inConstructBlockPos.Value));
 			maxPos = new(maxPos.Value.Max(inConstructBlockPos.Value));

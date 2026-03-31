@@ -4,11 +4,11 @@ using Godot;
 
 public partial class Module
 {
-	public int ModuleSize { get; private set; }
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
 	public SurfaceCacheController SurfaceCache;
+	private int moduleSize;
 	public Block[] BlocksArrayCopy
 	{
 		get
@@ -26,9 +26,9 @@ public partial class Module
 	private Block[] blocks = [];
 	private Vector3IBounds bounds;
 
-	public Module(int moduleSize, SurfaceCacheController surfaceCache = null)
+	public Module(SurfaceCacheController surfaceCache = null)
 	{
-		ModuleSize = moduleSize;
+		moduleSize = GameSettings.Instance.ModuleSize;
 		SurfaceCache = surfaceCache != null ? surfaceCache : new();
 
 		bounds = new Vector3IBounds(moduleSize);
@@ -135,22 +135,22 @@ public partial class Module
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
 	{
 		return modulePos.Value.X
-			 + modulePos.Value.Y * ModuleSize
-			 + modulePos.Value.Z * ModuleSize * ModuleSize;
+			 + modulePos.Value.Y * moduleSize
+			 + modulePos.Value.Z * moduleSize * moduleSize;
 	}
 
 	public ModuleGridPos ArrayToInModulePos(int index)
 	{
-		int x = index % ModuleSize;
-		int y = index / ModuleSize % ModuleSize;
-		int z = index / (ModuleSize * ModuleSize);
+		int x = index % moduleSize;
+		int y = index / moduleSize % moduleSize;
+		int z = index / (moduleSize * moduleSize);
 		return new(new(x, y, z));
 	}
 
 	public bool IsInModule(ConstructGridPos inConstructPos, ModuleLocation moduleLocation)
 	{
-		Vector3I minModuleWorldPos = moduleLocation.Value * ModuleSize;
-		Vector3I maxModuleWorldPos = (moduleLocation.Value + Vector3I.One) * ModuleSize;
+		Vector3I minModuleWorldPos = moduleLocation.Value * moduleSize;
+		Vector3I maxModuleWorldPos = (moduleLocation.Value + Vector3I.One) * moduleSize;
 		bool correctX = inConstructPos.Value.X >= minModuleWorldPos.X && inConstructPos.Value.X < maxModuleWorldPos.X;
 		bool correctY = inConstructPos.Value.Y >= minModuleWorldPos.Y && inConstructPos.Value.Y < maxModuleWorldPos.Y;
 		bool correctZ = inConstructPos.Value.Z >= minModuleWorldPos.Z && inConstructPos.Value.Z < maxModuleWorldPos.Z;

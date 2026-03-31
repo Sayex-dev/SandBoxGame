@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://q17ynxi7h2cn"]
+
+[ext_resource type="Script" uid="uid://1elxunjc4mgm" path="res://src/GameSettings.cs" id="1_b688h"]
+
+[node name="GameSettings" type="Node3D"]
+script = ExtResource("1_b688h")
+simulationModeDistances = Dictionary[int, float]({
+0: 160.0,
+1: 320.0,
+2: 3200.0
+})

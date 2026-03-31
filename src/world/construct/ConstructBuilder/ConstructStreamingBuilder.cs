@@ -31,7 +31,6 @@ public class ConstructStreamingBuilder
     private async Task BuildAround(WorldGridPos worldPos, int loadDistance)
     {
         var context = new ModuleBuildContext(
-            data.Modules.ModuleSize,
             data.ModuleMaterial,
             generator
         );

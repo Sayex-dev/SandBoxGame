@@ -11,6 +11,8 @@ public class ActiveState : SimulationState
     private IWorldQuery collisionQuery;
     private SecondOrderDynamicsSettings rotSodSettings;
     private SecondOrderDynamicsSettings moveSodSettings;
+    private ConstructGenerator generator;
+    private Node3D parent;
     private int moduleSize;
 
     public ActiveState(
@@ -18,12 +20,17 @@ public class ActiveState : SimulationState
         IWorldQuery collisionQuery,
         SecondOrderDynamicsSettings rotSodSettings,
         SecondOrderDynamicsSettings moveSodSettings,
-        int moduleSize) : base(core)
+        ConstructGenerator generator,
+        Node3D parent
+    ) : base(core)
     {
         this.collisionQuery = collisionQuery;
         this.rotSodSettings = rotSodSettings;
         this.moveSodSettings = moveSodSettings;
-        this.moduleSize = moduleSize;
+        this.generator = generator;
+        this.parent = parent;
+
+        moduleSize = GameSettings.Instance.ModuleSize;
     }
 
     public override void Enter()
@@ -36,9 +43,10 @@ public class ActiveState : SimulationState
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
         visuals = new ConstructVisualsController(moduleSize);
+        parent.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();
 
-        RebuildAllModules();
+        ConstructOneTimeBuilder.BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
     }
 
     public override void Exit()
@@ -60,10 +68,10 @@ public class ActiveState : SimulationState
     public override Vector3 GetPosition() => visualMotion.Position;
     public override Vector3 GetRotation() => visualMotion.Rotation;
 
-    public override void AddBlock(Block block, ConstructGridPos pos)
+    public override void SetBlock(Block block, ConstructGridPos pos)
     {
         core.Blocks.SetBlock(pos, block);
-        UpdateModuleMesh(pos.ToModuleLocation(moduleSize)).FireAndForget();
+        UpdateModuleMesh(pos.ToModuleLocation()).FireAndForget();
     }
 
     private async Task UpdateModuleMesh(ModuleLocation moduleLoc, Module module)

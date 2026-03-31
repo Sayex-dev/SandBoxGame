@@ -1,27 +1,27 @@
+using System.Collections.Generic;
 using Godot;
 
 public static class FindChildExtension
 {
-    public static T FindChildOfType<T>(this Node parent, int checkDepth) where T : Node
+    public static T FindChildOfType<T>(this Node parent) where T : Node
     {
-        if (parent == null || checkDepth < 0)
-            return null;
-
         foreach (Node child in parent.GetChildren())
         {
-            // Check current child
             if (child is T typedChild)
                 return typedChild;
-
-            // Recurse into children if depth allows
-            if (checkDepth > 0)
-            {
-                T result = child.FindChildOfType<T>(checkDepth - 1);
-                if (result != null)
-                    return result;
-            }
         }
 
         return null;
+    }
+
+    public static List<T> FindChildrenOfType<T>(this Node parent) where T : Node
+    {
+        List<T> children = [];
+        foreach (Node child in parent.GetChildren())
+        {
+            if (child is T typedChild)
+                children.Add(typedChild);
+        }
+        return children;
     }
 }
