@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 
 [GlobalClass]
@@ -8,7 +7,7 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	private int seed;
 	private ExpandingOctTree<Construct> constructTree;
 	private HashSet<Construct> constructs = [];
-	private Vector3 lastCameraPos = Vector3I.Zero;
+	private WorldGridPos lastCameraPos = Vector3I.Zero;
 
 	public override void _Ready()
 	{
@@ -40,6 +39,7 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		else
 			constructTree.Insert(construct);
 		constructs.Add(construct);
+		AddChild(construct);
 	}
 
 	public bool HasBlockAt(WorldGridPos worldPos)
@@ -52,12 +52,12 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		return constructTree.QueryBox(min.Value, max.Value);
 	}
 
-	public void CameraMoved(Vector3 newPos)
+	public void CameraMoved(WorldGridPos newPos)
 	{
 		lastCameraPos = newPos;
 		foreach (var construct in constructs)
 		{
-			construct.UpdateLoading((Vector3I)newPos);
+			construct.UpdateLoading(newPos);
 		}
 	}
 
@@ -66,7 +66,7 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 		List<ConstructNode> childNodes = this.FindChildrenOfType<ConstructNode>();
 		foreach (var childNode in childNodes)
 		{
-			AddConstruct(childNode.CreateConstruct(this, this, (Vector3I)lastCameraPos));
+			AddConstruct(childNode.CreateConstruct(this));
 		}
 	}
 }

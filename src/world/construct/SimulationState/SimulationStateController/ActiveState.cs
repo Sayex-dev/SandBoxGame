@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 public class ActiveState : SimulationState
@@ -13,8 +14,11 @@ public class ActiveState : SimulationState
     private SecondOrderDynamicsSettings rotSodSettings;
     private SecondOrderDynamicsSettings moveSodSettings;
     private ConstructGenerator generator;
-    private Node3D parent;
+    private Node3D constructNode;
     private int moduleSize;
+    private Vector3I prevModulePos;
+
+    private Action<WorldGridPos> updateLoading;
 
     public ActiveState(
         ConstructCore core,
@@ -22,16 +26,20 @@ public class ActiveState : SimulationState
         SecondOrderDynamicsSettings rotSodSettings,
         SecondOrderDynamicsSettings moveSodSettings,
         ConstructGenerator generator,
-        Node3D parent
+        Node3D constructNode,
+        Action<WorldGridPos> updateLoading
     ) : base(core)
     {
         this.collisionQuery = collisionQuery;
         this.rotSodSettings = rotSodSettings;
         this.moveSodSettings = moveSodSettings;
         this.generator = generator;
-        this.parent = parent;
+        this.constructNode = constructNode;
+        this.updateLoading = updateLoading;
 
         moduleSize = GameSettings.Instance.ModuleSize;
+
+        prevModulePos = Vector3I.Zero;
     }
 
     public override void Enter()
@@ -44,7 +52,7 @@ public class ActiveState : SimulationState
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
         visuals = new ConstructVisualsController(moduleSize);
-        parent.AddChild(visuals);
+        constructNode.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();
 
         if (core.Data.Modules.FullyLoaded)
@@ -59,7 +67,7 @@ public class ActiveState : SimulationState
 
     public override void Exit()
     {
-        parent.RemoveChild(visuals);
+        constructNode.RemoveChild(visuals);
         visuals?.Dispose();
         visuals = null;
         physics = null;
@@ -73,10 +81,18 @@ public class ActiveState : SimulationState
     {
         physics?.Update(delta);
         visualMotion?.Update(delta);
-    }
 
-    public override Vector3 GetPosition() => visualMotion.Position;
-    public override Vector3 GetRotation() => visualMotion.Rotation;
+        constructNode.Position = visualMotion.Position;
+        constructNode.Rotation = visualMotion.Rotation;
+
+        Vector3I newModulePos = (Vector3I)visualMotion.Position / moduleSize;
+
+        if (prevModulePos != newModulePos)
+        {
+            prevModulePos = newModulePos;
+            updateLoading.Invoke(newModulePos);
+        }
+    }
 
     public override void SetBlock(Block block, ConstructGridPos pos)
     {

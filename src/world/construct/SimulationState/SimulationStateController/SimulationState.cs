@@ -18,7 +18,4 @@ public abstract class SimulationState
     {
         return core.Blocks.TryGetBlock(pos, out block);
     }
-
-    public abstract Vector3 GetPosition();
-    public abstract Vector3 GetRotation();
 }

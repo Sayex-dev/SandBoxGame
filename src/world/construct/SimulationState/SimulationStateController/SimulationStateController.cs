@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class SimulationStateController : IStateController
+public class SimulationStateController : IConstructController
 {
     private ConstructCore core;
     private SimulationState currentState;
@@ -14,6 +14,7 @@ public class SimulationStateController : IStateController
     private ConstructGenerator generator;
     private Node3D parent;
     private List<Tuple<SimulationMode, float>> simulationModeDistances;
+    private int moduleSize;
 
     public SimulationStateController(
         ConstructCore core,
@@ -21,8 +22,7 @@ public class SimulationStateController : IStateController
         SecondOrderDynamicsSettings rotSodSettings,
         SecondOrderDynamicsSettings moveSodSettings,
         ConstructGenerator generator,
-        Node3D parent,
-        WorldGridPos loadPos)
+        Node3D parent)
     {
         this.core = core;
         this.collisionQuery = collisionQuery;
@@ -32,12 +32,13 @@ public class SimulationStateController : IStateController
         this.parent = parent;
 
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
+        moduleSize = GameSettings.Instance.ModuleSize;
     }
 
     public void UpdateLoading(WorldGridPos loadPos)
     {
         WorldGridPos constPos = core.Data.GridTransform.WorldPos;
-        float dist = (loadPos - (Vector3I)constPos).Length();
+        float dist = (loadPos - (Vector3I)constPos).Length() / moduleSize;
         SimulationMode newMode = GetSimulationMode(dist);
 
         if (currentMode == newMode && currentState != null)
@@ -48,7 +49,7 @@ public class SimulationStateController : IStateController
         currentState = newMode switch
         {
             SimulationMode.ACTIVE => new ActiveState(core, collisionQuery,
-                rotSodSettings, moveSodSettings, generator, parent),
+                rotSodSettings, moveSodSettings, generator, parent, UpdateLoading),
             SimulationMode.APPROXIMATED => new ApproximatedState(core),
             SimulationMode.FROZEN => new FrozenState(core),
             _ => throw new ArgumentException($"Unknown mode: {newMode}")
@@ -59,8 +60,6 @@ public class SimulationStateController : IStateController
     }
 
     public void Update(double delta) => currentState.Update(delta);
-    public Vector3 GetPosition() => currentState.GetPosition();
-    public Vector3 GetRotation() => currentState.GetRotation();
     public void SetBlock(Block block, ConstructGridPos pos) => currentState.SetBlock(block, pos);
     public void RemoveBlock(ConstructGridPos pos) => currentState.RemoveBlock(pos);
     public bool TryGetBlock(ConstructGridPos pos, out Block block) => currentState.TryGetBlock(pos, out block);

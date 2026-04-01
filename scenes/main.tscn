@@ -16,6 +16,7 @@ ambient_light_energy = 0.12
 tonemap_mode = 2
 glow_enabled = true
 glow_bloom = 0.12
+fog_enabled = true
 fog_mode = 1
 fog_light_color = Color(0.48666847, 0.59338796, 0.33708662, 1)
 fog_light_energy = 0.16
@@ -26,7 +27,7 @@ volumetric_fog_length = 0.01
 [node name="Node3D" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9529053, 0.30326816, 0, -0.30326816, 0.9529053, 0, 0.44963455, 2.642216)
+transform = Transform3D(1, 0, 0, 0, 0.9529053, 0.30326816, 0, -0.30326816, 0.9529053, 0, 0.44963455, 15.668827)
 environment = SubResource("Environment_np7kj")
 script = ExtResource("1_10v3s")
 
@@ -36,6 +37,7 @@ script = ExtResource("2_sugp2")
 CameraPosition = NodePath("../Camera3D")
 
 [node name="ConstructWorld" type="Node3D" parent="GameController"]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
 script = ExtResource("4_jyhfs")
 metadata/_custom_type_script = "uid://b16exedawhjdq"
 
@@ -46,6 +48,31 @@ settings = ExtResource("6_o6xl0")
 metadata/_custom_type_script = "uid://btb6ximycijlb"
 
 [node name="Thingy" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+script = ExtResource("5_tbgi4")
+settings = ExtResource("6_tefeu")
+metadata/_custom_type_script = "uid://btb6ximycijlb"
+
+[node name="Thingy2" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+script = ExtResource("5_tbgi4")
+settings = ExtResource("6_tefeu")
+metadata/_custom_type_script = "uid://btb6ximycijlb"
+
+[node name="Thingy3" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, 0)
+script = ExtResource("5_tbgi4")
+settings = ExtResource("6_tefeu")
+metadata/_custom_type_script = "uid://btb6ximycijlb"
+
+[node name="Thingy4" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
+script = ExtResource("5_tbgi4")
+settings = ExtResource("6_tefeu")
+metadata/_custom_type_script = "uid://btb6ximycijlb"
+
+[node name="Thingy5" type="Node3D" parent="GameController/ConstructWorld"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 script = ExtResource("5_tbgi4")
 settings = ExtResource("6_tefeu")
 metadata/_custom_type_script = "uid://btb6ximycijlb"

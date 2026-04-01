@@ -15,8 +15,6 @@ public partial class GameSettings : Node
     [Export] public int ModuleSize { get; private set; } = 32;
 
     // Simulation Settings
-    [Export] public int SimulationDistance { get; private set; } = 5;
-    [Export] public int RenderDistance { get; private set; } = 10;
     [Export] private Godot.Collections.Dictionary<SimulationMode, float> simulationModeDistances = [];
 
     public List<Tuple<SimulationMode, float>> SimulationModeDistances;

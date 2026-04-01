@@ -33,7 +33,7 @@ public partial class GameController : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        Vector3I cameraModulePos = (Vector3I)CameraPosition.Position / moduleSize;
+        Vector3I cameraModulePos = (Vector3I)CameraPosition.Position;
 
         if (cameraModulePos != prevCameraModulePos)
         {
@@ -47,7 +47,7 @@ public partial class GameController : Node3D
         foreach (var constructNode in GetChildren().OfType<ConstructNode>())
         {
             RemoveChild(constructNode);
-            Construct construct = constructNode.CreateConstruct(blockWorld, blockWorld, (Vector3I)CameraPosition.Position);
+            Construct construct = constructNode.CreateConstruct(blockWorld);
             blockWorld.AddConstruct(construct);
         }
     }

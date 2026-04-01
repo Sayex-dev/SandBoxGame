@@ -6,11 +6,9 @@ public partial class ConstructNode : Node3D
     [Export] private ConstructCreationSettings settings;
 
     public Construct CreateConstruct(
-        Node3D parent,
-        IWorldQuery collisionQuery,
-        WorldGridPos loadPos
+        IWorldQuery collisionQuery
     )
     {
-        return new Construct(settings, collisionQuery, parent, (Vector3I)Position, loadPos);
+        return Construct.GetInitializedConstruct(settings, collisionQuery, (Vector3I)Position);
     }
 }

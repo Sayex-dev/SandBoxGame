@@ -9,4 +9,5 @@ script = ExtResource("1_kd3km")
 ConstructGeneratorSettings = ExtResource("1_wyq28")
 MoveSodSettings = ExtResource("2_ru3gf")
 RotSodSettings = ExtResource("2_ru3gf")
+IsGlobal = true
 metadata/_custom_type_script = "uid://b1s725jv8rh00"

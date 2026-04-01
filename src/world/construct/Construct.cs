@@ -7,22 +7,17 @@ public partial class Construct : Node3D, IOctTreeObject
 
 	public ConstructCore Core { get; private set; }
 	public ConstructBlockService Blocks { get; private set; }
-	public ConstructVisualsController Visuals { get; private set; }
-	public ConstructModuleBuilder ModuleBuilder { get; private set; }
 
-	private ConstructPhysicsController physics;
-	private ConstructVisualMotionController visualMotion;
-	private ConstructMotionController motionController;
-	private IStateController sim;
+	private IConstructController sim;
 
-	public Construct(
+	public static Construct GetInitializedConstruct(
 		ConstructCreationSettings settings,
 		IWorldQuery collisionQuery,
-		Node3D parent,
-		WorldGridPos loadPos,
 		Vector3I initialPosition = default
 	)
 	{
+		Construct construct = new Construct();
+
 		int seed = GameSettings.Instance.Seed;
 		var transform = new ConstructGridTransform(initialPosition);
 		var modules = new ConstructModules();
@@ -35,24 +30,30 @@ public partial class Construct : Node3D, IOctTreeObject
 		};
 		var data = new ConstructData(physicsData, transform, modules, bounds);
 
-		data.GridTransform.Changed += OnSpatialChanged;
-		data.Bounds.Changed += OnSpatialChanged;
+		data.GridTransform.Changed += construct.OnSpatialChanged;
+		data.Bounds.Changed += construct.OnSpatialChanged;
 
-		motionController = new ConstructMotionController(data, collisionQuery);
-		physics = new ConstructPhysicsController(data, motionController);
+		ConstructMotionController motionController = new ConstructMotionController(data, collisionQuery);
+		var physics = new ConstructPhysicsController(data, motionController);
 
-		SecondOrderDynamics<float> rotSod = settings.RotSodSettings.GetInstance(0);
-		SecondOrderDynamics<Vector3> moveSod = settings.MoveSodSettings.GetInstance(initialPosition);
-		visualMotion = new ConstructVisualMotionController(data, moveSod, rotSod);
+		var rotSod = settings.RotSodSettings.GetInstance(0);
+		var moveSod = settings.MoveSodSettings.GetInstance(initialPosition);
+		var visualMotion = new ConstructVisualMotionController(data, moveSod, rotSod);
 
-		Visuals = new ConstructVisualsController();
-		ModuleBuilder = new ConstructModuleBuilder();
-
-		Blocks = new ConstructBlockService(data);
-
-		Core = new ConstructCore(data, Blocks, this);
+		construct.Blocks = new ConstructBlockService(data);
+		construct.Core = new ConstructCore(data, construct.Blocks, construct);
 		ConstructGenerator generator = settings.ConstructGeneratorSettings.CreateConstructGenerator(seed);
-		sim = new SimulationStateController(Core, collisionQuery, settings.RotSodSettings, settings.MoveSodSettings, generator, parent, loadPos);
+
+		if (settings.IsGlobal)
+		{
+			construct.sim = new GlobalConstructController(construct.Core, collisionQuery, generator, construct);
+		}
+		else
+		{
+			construct.sim = new SimulationStateController(construct.Core, collisionQuery, settings.RotSodSettings, settings.MoveSodSettings, generator, construct);
+		}
+
+		return construct;
 	}
 
 	public override void _PhysicsProcess(double delta)
