@@ -44,7 +44,7 @@ public class SurfaceCacheController
 
         int size = GameSettings.Instance.ModuleSize;
 
-        // Optimization: fully filled module
+        // Handle fully filled module
         if (module.BlockCount == Math.Pow(size, 3))
         {
             BuildFullModuleCaches(module, size);

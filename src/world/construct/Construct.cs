@@ -46,7 +46,7 @@ public partial class Construct : Node3D, IOctTreeObject
 
 		if (settings.IsGlobal)
 		{
-			construct.sim = new GlobalConstructController(construct.Core, collisionQuery, generator, construct);
+			construct.sim = new GlobalConstructController(construct.Core, generator, construct);
 		}
 		else
 		{

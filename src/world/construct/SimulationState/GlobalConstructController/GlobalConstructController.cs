@@ -7,7 +7,6 @@ public class GlobalConstructController : IConstructController
 {
     private ConstructCore core;
 
-    private IWorldQuery collisionQuery;
     private ConstructGenerator generator;
     private List<Tuple<SimulationMode, float>> simulationModeDistances;
 
@@ -16,12 +15,10 @@ public class GlobalConstructController : IConstructController
 
     public GlobalConstructController(
         ConstructCore core,
-        IWorldQuery collisionQuery,
         ConstructGenerator generator,
         Node3D parent)
     {
         this.core = core;
-        this.collisionQuery = collisionQuery;
         this.generator = generator;
 
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
@@ -38,10 +35,7 @@ public class GlobalConstructController : IConstructController
     {
         return core.Blocks.TryGetBlock(pos, out block);
     }
-    public void Update(double delta)
-    {
-
-    }
+    public void Update(double delta) {}
 
     public void UpdateLoading(WorldGridPos loadPos)
     {

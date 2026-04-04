@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -7,7 +8,8 @@ public partial class Module
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
-	public SurfaceCacheController SurfaceCache;
+	public SurfaceCacheController SurfaceCache = new SurfaceCacheController();
+	public Dictionary<ModelBlockDefault, HashSet<ModuleGridPos>> ModuleBlocks;
 	private int moduleSize;
 	public Block[] BlocksArrayCopy
 	{
@@ -26,10 +28,9 @@ public partial class Module
 	private Block[] blocks = [];
 	private Vector3IBounds bounds;
 
-	public Module(SurfaceCacheController surfaceCache = null)
+	public Module()
 	{
 		moduleSize = GameSettings.Instance.ModuleSize;
-		SurfaceCache = surfaceCache != null ? surfaceCache : new();
 
 		bounds = new Vector3IBounds(moduleSize);
 
@@ -80,6 +81,8 @@ public partial class Module
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
 				SurfaceCache.AddBlock(this, modulePos, block);
+				AddModuleBlock(modulePos, block);
+
 			}
 			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
@@ -87,6 +90,7 @@ public partial class Module
 				BlockCount--;
 				bounds.RemovePoint(modulePos.Value, BlockCount);
 				SurfaceCache.RemoveBlock(this, modulePos);
+				RemoveModuleBlock(modulePos, prevBlock);
 			}
 		}
 
@@ -114,12 +118,14 @@ public partial class Module
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modPos, BlockCount);
+				AddModuleBlock(modPos, newBlock);
 			}
 			else if (!oldBlock.IsEmpty && newBlock.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
 				bounds.RemovePoint(modPos, BlockCount);
+				RemoveModuleBlock(modPos, oldBlock);
 			}
 
 			blocks[i] = blockActionArray[i].Block;
@@ -176,5 +182,35 @@ public partial class Module
 	public bool IsBlockOnBoundary(ModuleGridPos modulePos)
 	{
 		return bounds.IsPointOnBoundary(modulePos.Value);
+	}
+
+	private void AddModuleBlock(ModuleGridPos modulePos, Block block)
+	{
+		BlockDefault blockDefault = BlockStore.Instance.GetBlockDefault(block);
+		if (blockDefault is ModelBlockDefault modelBlockDefault)
+		{
+			if (!ModuleBlocks.TryGetValue(modelBlockDefault, out var positions))
+			{
+				positions = new HashSet<ModuleGridPos>();
+				ModuleBlocks[modelBlockDefault] = positions;
+			}
+			positions.Add(modulePos);
+		}
+	}
+
+	private void RemoveModuleBlock(ModuleGridPos modulePos, Block block)
+	{
+		BlockDefault prevBlockDefault = BlockStore.Instance.GetBlockDefault(block);
+		if (prevBlockDefault is ModelBlockDefault prevModuleBlockDefault)
+		{
+			if (ModuleBlocks.TryGetValue(prevModuleBlockDefault, out var positions))
+			{
+				positions.Remove(modulePos);
+				if (positions.Count == 0)
+				{
+					ModuleBlocks.Remove(prevModuleBlockDefault);
+				}
+			}
+		}
 	}
 }
