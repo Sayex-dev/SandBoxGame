@@ -1,15 +1,16 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using Godot;
 
 
 public partial class Module
 {
+	public Action<BlockChange[]> OnSetBlock;
+
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
 	public SurfaceCacheController SurfaceCache = new SurfaceCacheController();
-	public Dictionary<ModelBlockDefault, HashSet<ModuleGridPos>> ModuleBlocks;
 	private int moduleSize;
 	public Block[] BlocksArrayCopy
 	{
@@ -72,6 +73,7 @@ public partial class Module
 	{
 		int index = InModuleToArrayPos(modulePos);
 		Block prevBlock = blocks[index];
+		BlockChange blockChange = default;
 
 		if (prevBlock != block)
 		{
@@ -81,8 +83,7 @@ public partial class Module
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
 				SurfaceCache.AddBlock(this, modulePos, block);
-				AddModuleBlock(modulePos, block);
-
+				blockChange = new BlockChange(BlockChangeAction.REPLACE, block);
 			}
 			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
@@ -90,45 +91,43 @@ public partial class Module
 				BlockCount--;
 				bounds.RemovePoint(modulePos.Value, BlockCount);
 				SurfaceCache.RemoveBlock(this, modulePos);
-				RemoveModuleBlock(modulePos, prevBlock);
+				blockChange = new BlockChange(BlockChangeAction.REMOVE, block);
 			}
 		}
 
-		blocks[index] = block;
+		if (blockChange != default)
+		{
+			blocks[index] = block;
+			OnSetBlock([blockChange]);
+		}
 	}
 
-	public void SetAllBlocks(BlockChange[] blockActionArray)
+	public void SetAllBlocks(ModuleBlockChange[] blockActionArray)
 	{
 		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
 
 		// Apply all block changes
-		for (int i = 0; i < blockActionArray.Length; i++)
+		foreach (var blockChange in blockActionArray)
 		{
-			if (blockActionArray[i].Action == BlockChangeAction.KEEP_PREVIOUS)
-			{
-				continue;
-			}
+			Block newBlock = blockChange.Block;
+			ModuleGridPos modPos = blockChange.Position;
+			int index = InModuleToArrayPos(modPos);
+			Block oldBlock = blocks[index];
 
-			Block newBlock = blockActionArray[i].Block;
-			Block oldBlock = blocks[i];
-
-			ModuleGridPos modPos = ArrayToInModulePos(i);
 			if (oldBlock.IsEmpty && !newBlock.IsEmpty)
 			{
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modPos, BlockCount);
-				AddModuleBlock(modPos, newBlock);
 			}
 			else if (!oldBlock.IsEmpty && newBlock.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
 				bounds.RemovePoint(modPos, BlockCount);
-				RemoveModuleBlock(modPos, oldBlock);
 			}
 
-			blocks[i] = blockActionArray[i].Block;
+			blocks[index] = blockActionArray[index].Block;
 		}
 		TimeTracker.End("Module Block put");
 
@@ -136,6 +135,8 @@ public partial class Module
 		TimeTracker.Start("Module Surface Cache generation", TimeTracker.TrackingType.Average);
 		SurfaceCache.RebuildModule(this);
 		TimeTracker.End("Module Surface Cache generation");
+
+		OnSetBlock(blockActionArray);
 	}
 
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
@@ -182,35 +183,5 @@ public partial class Module
 	public bool IsBlockOnBoundary(ModuleGridPos modulePos)
 	{
 		return bounds.IsPointOnBoundary(modulePos.Value);
-	}
-
-	private void AddModuleBlock(ModuleGridPos modulePos, Block block)
-	{
-		BlockDefault blockDefault = BlockStore.Instance.GetBlockDefault(block);
-		if (blockDefault is ModelBlockDefault modelBlockDefault)
-		{
-			if (!ModuleBlocks.TryGetValue(modelBlockDefault, out var positions))
-			{
-				positions = new HashSet<ModuleGridPos>();
-				ModuleBlocks[modelBlockDefault] = positions;
-			}
-			positions.Add(modulePos);
-		}
-	}
-
-	private void RemoveModuleBlock(ModuleGridPos modulePos, Block block)
-	{
-		BlockDefault prevBlockDefault = BlockStore.Instance.GetBlockDefault(block);
-		if (prevBlockDefault is ModelBlockDefault prevModuleBlockDefault)
-		{
-			if (ModuleBlocks.TryGetValue(prevModuleBlockDefault, out var positions))
-			{
-				positions.Remove(modulePos);
-				if (positions.Count == 0)
-				{
-					ModuleBlocks.Remove(prevModuleBlockDefault);
-				}
-			}
-		}
 	}
 }

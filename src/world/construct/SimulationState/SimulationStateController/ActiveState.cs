@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 public class ActiveState : SimulationState
 {
@@ -9,6 +10,7 @@ public class ActiveState : SimulationState
     private ConstructVisualMotionController visualMotion;
     private ConstructModuleBuilder moduleBuilder;
     private ConstructMotionController motionController;
+    private ConstructModelBlockController modelController;
 
     private IWorldQuery collisionQuery;
     private SecondOrderDynamicsSettings rotSodSettings;
@@ -52,6 +54,7 @@ public class ActiveState : SimulationState
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
         visuals = new ConstructVisualsController(moduleSize);
+        modelController = new ConstructModelBlockController(constructNode, core.Data);
         constructNode.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();
 
@@ -61,7 +64,7 @@ public class ActiveState : SimulationState
         }
         else
         {
-            ConstructOneTimeBuilder.BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
+            BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
         }
     }
 
@@ -94,15 +97,8 @@ public class ActiveState : SimulationState
         }
     }
 
-    public override void SetBlock(Block block, ConstructGridPos pos)
-    {
-        core.Blocks.SetBlock(pos, block);
-        UpdateModuleMesh(pos.ToModuleLocation()).FireAndForget();
-    }
-
     private async Task UpdateModuleMesh(ModuleLocation moduleLoc, Module module)
     {
-
         var context = new ModuleMeshGenerateContext(module, moduleLoc);
         var mesh = await moduleBuilder.GenerateModuleMesh(context);
         visuals.RemoveModule(moduleLoc);
@@ -123,5 +119,18 @@ public class ActiveState : SimulationState
         {
             UpdateModuleMesh(kvp.Key, kvp.Value).FireAndForget();
         }
+    }
+
+    public static async Task BuildAll(
+        ConstructData data,
+        ConstructModuleBuilder moduleBuilder,
+        ConstructVisualsController visuals,
+        ConstructGenerator generator)
+    {
+        var generationTasks = moduleBuilder.GenerateAllModules(generator);
+
+        await ModuleIntegrationHelper.IntegrateGeneratedModules(
+            generationTasks, data, visuals);
+        data.Modules.FullyLoaded = true;
     }
 }

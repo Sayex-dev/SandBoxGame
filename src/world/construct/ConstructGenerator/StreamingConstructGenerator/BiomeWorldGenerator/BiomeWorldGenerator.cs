@@ -55,7 +55,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 
 		int moduleSize2 = moduleSize * moduleSize;
 		int moduleSize3 = moduleSize2 * moduleSize;
-		BlockChange[] blockArray = new BlockChange[moduleSize3];
+		ModuleBlockChange[] blockArray = new ModuleBlockChange[moduleSize3];
 
 		Biome biome = biomes[0];
 
@@ -63,6 +63,7 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 		Vector3I worldPosVector = new Vector3I();
 		ConstructGridPos worldPos = new ConstructGridPos(worldPosVector);
 
+		int setSize = 0;
 		for (int x = 0; x < moduleSize; x++)
 		{
 			int worldX = moduleOffsetX + x;
@@ -83,8 +84,6 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 				if (maxY > maxMaxY)
 					maxMaxY = maxY;
 
-				int columnBaseIndex = x + z * moduleSize2;
-
 				worldPosVector.X = worldX;
 				worldPosVector.Z = worldZ;
 
@@ -93,7 +92,8 @@ public partial class BiomeWorldGenerator : ConstructGenerator
 					worldPosVector.Y = moduleOffsetY + y;
 
 					var block = biome.GetBlock(worldPos, groundHeight, seed);
-					blockArray[columnBaseIndex + y * moduleSize] = new BlockChange(BlockChangeAction.REPLACE, block);
+					blockArray[setSize] = new ModuleBlockChange(new ModuleGridPos(new(x, y, z)), BlockChangeAction.REPLACE, block);
+					setSize += 1;
 				}
 			}
 		}

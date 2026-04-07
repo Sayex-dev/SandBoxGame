@@ -60,10 +60,6 @@ public class SimulationStateController : IConstructController
     }
 
     public void Update(double delta) => currentState.Update(delta);
-    public void SetBlock(Block block, ConstructGridPos pos) => currentState.SetBlock(block, pos);
-    public void RemoveBlock(ConstructGridPos pos) => currentState.RemoveBlock(pos);
-    public bool TryGetBlock(ConstructGridPos pos, out Block block) => currentState.TryGetBlock(pos, out block);
-
 
     private SimulationMode GetSimulationMode(float dist)
     {
@@ -77,4 +73,5 @@ public class SimulationStateController : IConstructController
         }
         return resultMode;
     }
+
 }

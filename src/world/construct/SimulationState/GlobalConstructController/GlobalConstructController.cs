@@ -29,13 +29,13 @@ public class GlobalConstructController : IConstructController
     }
 
     public virtual void SetBlock(Block block, ConstructGridPos pos) => core.Blocks.SetBlock(pos, block);
-    public virtual void RemoveBlock(ConstructGridPos pos) => core.Blocks.SetBlock(pos, new Block());
+    public void SetBlocks(Block[] blocks, ConstructGridPos[] positions) => core.Blocks.SetBlocks(positions, blocks);
 
     public virtual bool TryGetBlock(ConstructGridPos pos, out Block block)
     {
         return core.Blocks.TryGetBlock(pos, out block);
     }
-    public void Update(double delta) {}
+    public void Update(double delta) { }
 
     public void UpdateLoading(WorldGridPos loadPos)
     {
@@ -53,4 +53,5 @@ public class GlobalConstructController : IConstructController
         ModuleIntegrationHelper.UnloadModules(
             generationResponse.ToUnload, core.Data, visuals);
     }
+
 }

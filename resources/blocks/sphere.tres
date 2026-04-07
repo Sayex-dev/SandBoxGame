@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ModelBlockDefault" load_steps=5 format=3 uid="uid://ddjwu8pn3biie"]
+
+[ext_resource type="Script" uid="uid://b3rywa4772x0a" path="res://src/world/blocks/ModelBlockDefault.cs" id="1_1y4yj"]
+[ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_ftjhi"]
+
+[sub_resource type="Resource" id="Resource_hqr6a"]
+script = ExtResource("1_ftjhi")
+metadata/_custom_type_script = "uid://bhkxb3jyj7ql"
+
+[sub_resource type="SphereMesh" id="SphereMesh_ndfi5"]
+
+[resource]
+script = ExtResource("1_1y4yj")
+LodBlockFace = SubResource("Resource_hqr6a")
+Mesh = SubResource("SphereMesh_ndfi5")
+Name = "Sphere"
+PassiveAbilities = null
+ActiveAbilities = null
+metadata/_custom_type_script = "uid://b3rywa4772x0a"

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 public partial class Construct : Node3D, IOctTreeObject
 {
@@ -63,8 +64,16 @@ public partial class Construct : Node3D, IOctTreeObject
 
 	public void UpdateLoading(WorldGridPos loadPos) => sim.UpdateLoading(loadPos);
 
-	public void SetBlock(WorldGridPos worldPos, Block block) => Blocks.SetBlock(worldPos, block);
-	public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks) => Blocks.SetBlocks(worldPositions, blocks);
+	public void SetBlock(WorldGridPos worldPos, Block block)
+	{
+		Blocks.SetBlock(worldPos.ToConstruct(Core.Data.GridTransform), block);
+	}
+	public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks)
+	{
+		ConstructGridPos[] constPositions = worldPositions
+			.Select(worldPos => worldPos.ToConstruct(Core.Data.GridTransform)).ToArray();
+		Blocks.SetBlocks(constPositions, blocks);
+	}
 	public bool TryGetBlock(WorldGridPos worldPos, out Block block) => Blocks.TryGetBlock(worldPos, out block);
 
 	public Vector3I GetRootPos() => Core.Data.GridTransform.WorldPos;

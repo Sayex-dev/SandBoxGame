@@ -1,15 +1,17 @@
+using System;
 using System.Collections.Generic;
 
 public partial class ConstructModules
 {
+    public Action<BlockChange[]> OnSetBlock;
     public bool FullyLoaded { get; set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 
-
     public void Add(ModuleLocation location, Module module)
     {
         Modules[location] = module;
+        module.OnSetBlock += OnSetBlock;
     }
 
     public bool Remove(ModuleLocation location, out Module module)
@@ -17,6 +19,7 @@ public partial class ConstructModules
         if (!Modules.TryGetValue(location, out module))
             return false;
 
+        module.OnSetBlock -= OnSetBlock;
         Modules.Remove(location);
         return true;
     }

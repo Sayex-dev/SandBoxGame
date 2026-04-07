@@ -1,13 +1,13 @@
 using System;
 using Godot;
 
-public readonly struct ModuleBlockChange
+public readonly struct ConstrucBlockChange
 {
-    public readonly ModuleGridPos Position;
+    public readonly ConstructGridPos Position;
     public readonly BlockChange Change;
 
-    public ModuleBlockChange(
-        ModuleGridPos pos,
+    public ConstrucBlockChange(
+        ConstructGridPos pos,
         BlockChangeAction action,
         Block block = default)
     {
