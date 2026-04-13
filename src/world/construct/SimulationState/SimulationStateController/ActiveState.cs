@@ -64,7 +64,7 @@ public class ActiveState : SimulationState
         }
         else
         {
-            BuildAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
+            GenerateAll(core.Data, moduleBuilder, visuals, generator).FireAndForget();
         }
     }
 
@@ -76,6 +76,7 @@ public class ActiveState : SimulationState
         physics = null;
         visualMotion = null;
         moduleBuilder = null;
+        modelController = null;
         motionController = null;
         Debug.WriteLine("Exited Active State");
     }
@@ -121,7 +122,7 @@ public class ActiveState : SimulationState
         }
     }
 
-    public static async Task BuildAll(
+    public static async Task GenerateAll(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
         ConstructVisualsController visuals,

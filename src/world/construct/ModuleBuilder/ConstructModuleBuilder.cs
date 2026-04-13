@@ -42,8 +42,8 @@ public class ConstructModuleBuilder : IDisposable
     public LoadAroundResponse GenerateModulesAround(
         WorldGridPos worldPos,
         int loadDistance,
-        ConstructGridTransform transform,
-        ConstructModules modules,
+        ConstructGridTransformData transform,
+        ConstructModulesData modules,
         ConstructGenerator generator)
     {
         var center = worldPos.ToModuleLocation(transform);

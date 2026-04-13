@@ -25,7 +25,6 @@ public static class ModuleIntegrationHelper
                 Module module = kvp.Value;
                 Mesh mesh = response.Meshes[moduleLocation];
 
-                // Update bounds
                 data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation));
                 data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation));
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class ConstructBounds
+public class ConstructBoundsData : IDisposable
 {
     public event Action Changed;
 
@@ -10,6 +10,14 @@ public class ConstructBounds
     public ConstructGridPos MaxPos { get; private set; }
 
     public bool HasAnyBlocks { get; private set; }
+
+    private ConstructModulesData modules;
+
+    public ConstructBoundsData(ConstructModulesData modules)
+    {
+        this.modules = modules;
+        modules.OnModuleChanged += OnModuleChanged;
+    }
 
     public void Clear()
     {
@@ -70,7 +78,7 @@ public class ConstructBounds
             Changed?.Invoke();
     }
 
-    public void CombineWith(ConstructBounds other)
+    public void CombineWith(ConstructBoundsData other)
     {
         if (!other.HasAnyBlocks)
             return;
@@ -84,5 +92,16 @@ public class ConstructBounds
         return pos.Value.X == MinPos.Value.X || pos.Value.X == MaxPos.Value.X ||
             pos.Value.Y == MinPos.Value.Y || pos.Value.Y == MaxPos.Value.Y ||
             pos.Value.Z == MinPos.Value.Z || pos.Value.Z == MaxPos.Value.Z;
+    }
+
+    public void Dispose()
+    {
+        modules.OnModuleChanged -= OnModuleChanged;
+    }
+
+    private void OnModuleChanged(ModuleLocation location, BlockChange[] changes)
+    {
+        AddPosition(modules.Modules[location].MinPos.ToConstruct(location));
+        AddPosition(modules.Modules[location].MaxPos.ToConstruct(location));
     }
 }

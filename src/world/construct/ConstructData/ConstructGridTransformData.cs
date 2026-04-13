@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class ConstructGridTransform
+public class ConstructGridTransformData
 {
     public event Action Changed;
 
@@ -40,7 +40,7 @@ public partial class ConstructGridTransform
         }
     }
 
-    public ConstructGridTransform(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
+    public ConstructGridTransformData(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
     {
         WorldPos = constructWorldPos;
         FacingDirection = FacingDir;

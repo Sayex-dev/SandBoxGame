@@ -20,9 +20,9 @@ public partial class Construct : Node3D, IOctTreeObject
 		Construct construct = new Construct();
 
 		int seed = GameSettings.Instance.Seed;
-		var transform = new ConstructGridTransform(initialPosition);
-		var modules = new ConstructModules();
-		var bounds = new ConstructBounds();
+		var transform = new ConstructGridTransformData(initialPosition);
+		var modules = new ConstructModulesData();
+		var bounds = new ConstructBoundsData(modules);
 
 		var physicsData = new ConstructPhysicsData()
 		{
@@ -42,7 +42,7 @@ public partial class Construct : Node3D, IOctTreeObject
 		var visualMotion = new ConstructVisualMotionController(data, moveSod, rotSod);
 
 		construct.Blocks = new ConstructBlockService(data);
-		construct.Core = new ConstructCore(data, construct.Blocks, construct);
+		construct.Core = new ConstructCore(data, construct.Blocks);
 		ConstructGenerator generator = settings.ConstructGeneratorSettings.CreateConstructGenerator(seed);
 
 		if (settings.IsGlobal)

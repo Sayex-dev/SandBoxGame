@@ -2,18 +2,18 @@ using Godot;
 
 public readonly record struct WorldGridPos(Vector3I Value)
 {
-    public ConstructGridPos ToConstruct(ConstructGridTransform transform)
+    public ConstructGridPos ToConstruct(ConstructGridTransformData transform)
     {
         float radRot = Mathf.DegToRad(transform.YRotation);
         return new((Vector3I)((Vector3)(Value - transform.WorldPos.Value)).Rotated(Vector3.Up, -radRot));
     }
 
-    public ModuleGridPos ToModule(ConstructGridTransform transform)
+    public ModuleGridPos ToModule(ConstructGridTransformData transform)
     {
         return ToConstruct(transform).ToModule();
     }
 
-    public ModuleLocation ToModuleLocation(ConstructGridTransform transform)
+    public ModuleLocation ToModuleLocation(ConstructGridTransformData transform)
     {
         return ToConstruct(transform).ToModuleLocation();
     }
@@ -32,7 +32,7 @@ public readonly record struct WorldGridPos(Vector3I Value)
 public readonly record struct ConstructGridPos(Vector3I Value)
 {
 
-    public WorldGridPos ToWorld(ConstructGridTransform transform)
+    public WorldGridPos ToWorld(ConstructGridTransformData transform)
     {
         Vector3I rotated = (Vector3I)((Vector3)Value).Rotated(Vector3.Up, transform.YRotation).Round();
         return new(transform.WorldPos.Value + rotated);
@@ -75,7 +75,7 @@ public readonly record struct ConstructGridPos(Vector3I Value)
 
 public readonly record struct ModuleLocation(Vector3I Value)
 {
-    public WorldGridPos ToWorld(int moduleSize, ConstructGridTransform transform)
+    public WorldGridPos ToWorld(int moduleSize, ConstructGridTransformData transform)
     {
         return ToConstruct(moduleSize).ToWorld(transform);
     }
@@ -99,7 +99,7 @@ public readonly record struct ModuleLocation(Vector3I Value)
 
 public readonly record struct ModuleGridPos(Vector3I Value)
 {
-    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransform transform)
+    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransformData transform)
     {
         return ToConstruct(moduleLocation).ToWorld(transform);
     }

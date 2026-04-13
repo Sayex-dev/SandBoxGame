@@ -3,15 +3,15 @@ using Godot;
 public class ConstructData
 {
     public ConstructPhysicsData PhysicsData { get; }
-    public ConstructGridTransform GridTransform { get; }
-    public ConstructModules Modules { get; }
-    public ConstructBounds Bounds { get; }
+    public ConstructGridTransformData GridTransform { get; }
+    public ConstructModulesData Modules { get; }
+    public ConstructBoundsData Bounds { get; }
 
     public ConstructData(
         ConstructPhysicsData physicsData,
-        ConstructGridTransform transform,
-        ConstructModules modules,
-        ConstructBounds bounds)
+        ConstructGridTransformData transform,
+        ConstructModulesData modules,
+        ConstructBoundsData bounds)
     {
         PhysicsData = physicsData;
         GridTransform = transform;

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://2g61uvgp3p65"]
+[gd_scene load_steps=8 format=3 uid="uid://dy2e5tk6j06ae"]
 
 [ext_resource type="Script" uid="uid://b7sju51se25of" path="res://src/CameraTemp.cs" id="1_10v3s"]
 [ext_resource type="Script" uid="uid://cwl7nkfesyskm" path="res://src/GameController.cs" id="2_sugp2"]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Godot;
 
@@ -17,20 +18,20 @@ public partial class ConstructModelBlockController : IDisposable
     {
         this.construct = construct;
         this.data = data;
-        data.Modules.OnSetBlock += OnSetBlock;
+        data.Modules.OnModuleChanged += OnSetBlock;
     }
 
-    private void OnSetBlock(BlockChange[] changes)
+    private void OnSetBlock(ModuleLocation location, BlockChange[] changes)
     {
         HashSet<ModuleLocation> changedModules = [];
         for (int i = 0; i < changes.Length; i++)
         {
             var change = changes[i];
-            var pos = changes[i].Position;
+            var pos = changes[i].Position.ToConstruct(location);
 
             switch (change.Action)
             {
-                case BlockChangeAction.REPLACE:
+                case BlockChangeAction.PLACE:
                     RemoveBlock(pos);
                     AddBlock(pos, change.Block);
                     changedModules.Add(pos.ToModuleLocation());
@@ -43,6 +44,11 @@ public partial class ConstructModelBlockController : IDisposable
         }
 
         UpdateAllMultiMeshes();
+    }
+
+    public void OnUpdatedModule(ModuleLocation location)
+    {
+
     }
 
     public void AddBlock(ConstructGridPos pos, Block block)
@@ -129,7 +135,7 @@ public partial class ConstructModelBlockController : IDisposable
     {
         if (data != null)
         {
-            data.Modules.OnSetBlock -= OnSetBlock;
+            data.Modules.OnModuleChanged -= OnSetBlock;
         }
 
         foreach (var meshData in modelMeshInstances.Values)

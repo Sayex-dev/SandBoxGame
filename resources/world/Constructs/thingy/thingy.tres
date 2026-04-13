@@ -18,15 +18,15 @@ metadata/_custom_type_script = "uid://bubb5jj376h8g"
 script = ExtResource("1_nj54m")
 metadata/_custom_type_script = "uid://bubb5jj376h8g"
 
+[sub_resource type="Resource" id="Resource_nj54m"]
+script = ExtResource("1_nj54m")
+BlockId = 3
+metadata/_custom_type_script = "uid://bubb5jj376h8g"
+
 [sub_resource type="Resource" id="Resource_gk7ju"]
 script = ExtResource("1_nj54m")
 BlockId = 2
 FaceDir = 0
-metadata/_custom_type_script = "uid://bubb5jj376h8g"
-
-[sub_resource type="Resource" id="Resource_nj54m"]
-script = ExtResource("1_nj54m")
-BlockId = 3
 metadata/_custom_type_script = "uid://bubb5jj376h8g"
 
 [resource]

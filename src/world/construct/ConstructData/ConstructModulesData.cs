@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-public partial class ConstructModules
+public class ConstructModulesData
 {
-    public Action<BlockChange[]> OnSetBlock;
+    public Action<ModuleLocation, BlockChange[]> OnModuleChanged;
+    public Action<ModuleLocation, Module> OnModuleAdded;
+    public Action<ModuleLocation, Module> OnModuleRemoved;
     public bool FullyLoaded { get; set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
@@ -11,7 +13,8 @@ public partial class ConstructModules
     public void Add(ModuleLocation location, Module module)
     {
         Modules[location] = module;
-        module.OnSetBlock += OnSetBlock;
+        module.OnModuleChanged += (blockChanges) => OnModuleChanged(location, blockChanges);
+        OnModuleAdded?.Invoke(location, module);
     }
 
     public bool Remove(ModuleLocation location, out Module module)
@@ -19,8 +22,9 @@ public partial class ConstructModules
         if (!Modules.TryGetValue(location, out module))
             return false;
 
-        module.OnSetBlock -= OnSetBlock;
+        module.OnModuleChanged -= (blockChanges) => OnModuleChanged(location, blockChanges);
         Modules.Remove(location);
+        OnModuleRemoved?.Invoke(location, module);
         return true;
     }
 

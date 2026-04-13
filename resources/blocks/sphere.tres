@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ModelBlockDefault" load_steps=5 format=3 uid="uid://ddjwu8pn3biie"]
+[gd_resource type="Resource" script_class="ModelBlockDefault" load_steps=5 format=3 uid="uid://dx1qpb34g51b5"]
 
 [ext_resource type="Script" uid="uid://b3rywa4772x0a" path="res://src/world/blocks/ModelBlockDefault.cs" id="1_1y4yj"]
 [ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_ftjhi"]

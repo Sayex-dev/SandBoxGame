@@ -24,7 +24,7 @@ public class GlobalConstructController : IConstructController
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
 
         moduleBuilder = new ConstructModuleBuilder();
-        visuals = new ConstructVisualsController();
+        visuals = new ConstructVisualsController(core.Data.Modules);
         parent.AddChild(visuals);
     }
 

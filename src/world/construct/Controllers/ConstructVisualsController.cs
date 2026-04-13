@@ -6,9 +6,14 @@ public partial class ConstructVisualsController : Node3D
     private float moduleSize;
     private Dictionary<ModuleLocation, MeshInstance3D> activeModules = new();
     private LinkedList<MeshInstance3D> modulePool = new();
+    private ConstructModulesData modules;
 
-    public ConstructVisualsController(int initialPoolSize = 0)
+    public ConstructVisualsController(ConstructModulesData modules, int initialPoolSize = 0)
     {
+        this.modules = modules;
+        modules.OnModuleAdded += OnModuleAdded;
+        modules.OnModuleRemoved += OnModuleRemoved;
+
         moduleSize = GameSettings.Instance.ModuleSize;
         for (int i = 0; i < initialPoolSize; i++)
         {
@@ -50,10 +55,25 @@ public partial class ConstructVisualsController : Node3D
         }
     }
 
+    public void OnTreeExiting()
+    {
+        modules.OnModuleChanged -= OnModuleChanged;
+    }
+
     private void ExtendModulePool()
     {
         MeshInstance3D newModule = new MeshInstance3D();
         modulePool.AddFirst(newModule);
         AddChild(newModule);
+    }
+
+    private void OnModuleAdded(ModuleLocation location, Module module)
+    {
+
+    }
+
+    private void OnModuleRemoved(ModuleLocation location, Module module)
+    {
+
     }
 }

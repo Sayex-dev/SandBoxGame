@@ -5,7 +5,7 @@ using Godot;
 
 public partial class Module
 {
-	public Action<BlockChange[]> OnSetBlock;
+	public Action<BlockChange[]> OnModuleChanged;
 
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
@@ -74,6 +74,7 @@ public partial class Module
 		int index = InModuleToArrayPos(modulePos);
 		Block prevBlock = blocks[index];
 		BlockChange blockChange = default;
+		bool blockChanged = false;
 
 		if (prevBlock != block)
 		{
@@ -83,7 +84,8 @@ public partial class Module
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
 				SurfaceCache.AddBlock(this, modulePos, block);
-				blockChange = new BlockChange(BlockChangeAction.REPLACE, block);
+				blockChange = new BlockChange(modulePos, BlockChangeAction.PLACE, block);
+				blockChanged = true;
 			}
 			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
@@ -91,18 +93,19 @@ public partial class Module
 				BlockCount--;
 				bounds.RemovePoint(modulePos.Value, BlockCount);
 				SurfaceCache.RemoveBlock(this, modulePos);
-				blockChange = new BlockChange(BlockChangeAction.REMOVE, block);
+				blockChange = new BlockChange(modulePos, BlockChangeAction.REMOVE, block);
+				blockChanged = true;
 			}
 		}
 
-		if (blockChange != default)
+		if (blockChanged)
 		{
 			blocks[index] = block;
-			OnSetBlock([blockChange]);
+			OnModuleChanged?.Invoke([blockChange]);
 		}
 	}
 
-	public void SetAllBlocks(ModuleBlockChange[] blockActionArray)
+	public void SetBlocks(BlockChange[] blockActionArray)
 	{
 		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
 
@@ -119,15 +122,15 @@ public partial class Module
 				// Adding a block
 				BlockCount++;
 				bounds.AddPoint(modPos, BlockCount);
+				blocks[index] = blockChange.Block;
 			}
 			else if (!oldBlock.IsEmpty && newBlock.IsEmpty)
 			{
 				// Removing a block
 				BlockCount--;
 				bounds.RemovePoint(modPos, BlockCount);
+				blocks[index] = default;
 			}
-
-			blocks[index] = blockActionArray[index].Block;
 		}
 		TimeTracker.End("Module Block put");
 
@@ -136,7 +139,7 @@ public partial class Module
 		SurfaceCache.RebuildModule(this);
 		TimeTracker.End("Module Surface Cache generation");
 
-		OnSetBlock(blockActionArray);
+		OnModuleChanged?.Invoke(blockActionArray);
 	}
 
 	public int InModuleToArrayPos(ModuleGridPos modulePos)
