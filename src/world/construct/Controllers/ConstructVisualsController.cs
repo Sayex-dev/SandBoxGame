@@ -23,7 +23,7 @@ public partial class ConstructVisualsController : Node3D
 
     public void AddModule(ModuleLocation loc, Mesh moduleMesh)
     {
-        RemoveModule(loc);
+        RemoveModule(loc); //TODO: raise instead of remove/replace
         if (modulePool.First == null)
             ExtendModulePool();
         var module = modulePool.First.Value;
@@ -57,7 +57,8 @@ public partial class ConstructVisualsController : Node3D
 
     public void OnTreeExiting()
     {
-        modules.OnModuleChanged -= OnModuleChanged;
+        modules.OnModuleAdded -= OnModuleAdded;
+        modules.OnModuleRemoved += OnModuleRemoved;
     }
 
     private void ExtendModulePool()

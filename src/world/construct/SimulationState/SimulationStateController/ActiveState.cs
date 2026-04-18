@@ -53,7 +53,7 @@ public class ActiveState : SimulationState
         var moveSod = moveSodSettings.GetInstance(core.Data.PhysicsData.PhysicsPosition);
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
-        visuals = new ConstructVisualsController(moduleSize);
+        visuals = new ConstructVisualsController(core.Data.Modules, moduleSize);
         modelController = new ConstructModelBlockController(constructNode, core.Data);
         constructNode.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();

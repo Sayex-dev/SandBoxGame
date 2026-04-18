@@ -11,14 +11,17 @@ public partial class Construct : Node3D, IOctTreeObject
 
 	private IConstructController sim;
 
+
 	public static Construct GetInitializedConstruct(
 		ConstructCreationSettings settings,
 		IWorldQuery collisionQuery,
 		Vector3I initialPosition = default
 	)
 	{
+		// Todo: Dependency Injection. Construct ohne 
 		Construct construct = new Construct();
 
+		//
 		int seed = GameSettings.Instance.Seed;
 		var transform = new ConstructGridTransformData(initialPosition);
 		var modules = new ConstructModulesData();
@@ -33,13 +36,6 @@ public partial class Construct : Node3D, IOctTreeObject
 
 		data.GridTransform.Changed += construct.OnSpatialChanged;
 		data.Bounds.Changed += construct.OnSpatialChanged;
-
-		ConstructMotionController motionController = new ConstructMotionController(data, collisionQuery);
-		var physics = new ConstructPhysicsController(data, motionController);
-
-		var rotSod = settings.RotSodSettings.GetInstance(0);
-		var moveSod = settings.MoveSodSettings.GetInstance(initialPosition);
-		var visualMotion = new ConstructVisualMotionController(data, moveSod, rotSod);
 
 		construct.Blocks = new ConstructBlockService(data);
 		construct.Core = new ConstructCore(data, construct.Blocks);
@@ -62,6 +58,13 @@ public partial class Construct : Node3D, IOctTreeObject
 		sim.Update(delta);
 	}
 
+	public override void _ExitTree()
+	{
+		Core.Data.GridTransform.Changed += OnSpatialChanged;
+		Core.Data.Bounds.Changed += OnSpatialChanged;
+	}
+
+
 	public void UpdateLoading(WorldGridPos loadPos) => sim.UpdateLoading(loadPos);
 
 	public void SetBlock(WorldGridPos worldPos, Block block)
@@ -77,6 +80,8 @@ public partial class Construct : Node3D, IOctTreeObject
 	public bool TryGetBlock(WorldGridPos worldPos, out Block block) => Blocks.TryGetBlock(worldPos, out block);
 
 	public Vector3I GetRootPos() => Core.Data.GridTransform.WorldPos;
+
+	//Todo: Cash this value
 	public Vector3I GetMin() => Core.Data.Bounds.MinPos.ToWorld(Core.Data.GridTransform);
 	public Vector3I GetMax() => Core.Data.Bounds.MaxPos.ToWorld(Core.Data.GridTransform);
 
