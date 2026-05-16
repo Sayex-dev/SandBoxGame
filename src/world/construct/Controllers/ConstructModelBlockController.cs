@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Godot;
 
@@ -12,16 +11,13 @@ public partial class ConstructModelBlockController : IDisposable
     private Dictionary<ConstructGridPos, ModelBlockDefault> positionToModel = new();
 
     private Node3D construct;
-    private ConstructData data;
 
-    public ConstructModelBlockController(Node3D construct, ConstructData data)
+    public ConstructModelBlockController(Node3D construct)
     {
         this.construct = construct;
-        this.data = data;
-        data.Modules.OnModuleChanged += OnSetBlock;
     }
 
-    private void OnSetBlock(ModuleLocation location, BlockChange[] changes)
+    public void SetBlock(ModuleLocation location, BlockChange[] changes)
     {
         HashSet<ModuleLocation> changedModules = [];
         for (int i = 0; i < changes.Length; i++)
@@ -133,11 +129,6 @@ public partial class ConstructModelBlockController : IDisposable
 
     public void Dispose()
     {
-        if (data != null)
-        {
-            data.Modules.OnModuleChanged -= OnSetBlock;
-        }
-
         foreach (var meshData in modelMeshInstances.Values)
         {
             meshData.Instance?.QueueFree();
@@ -146,6 +137,5 @@ public partial class ConstructModelBlockController : IDisposable
         modelMeshInstances.Clear();
         positionToModel.Clear();
         construct = null;
-        data = null;
     }
 }
