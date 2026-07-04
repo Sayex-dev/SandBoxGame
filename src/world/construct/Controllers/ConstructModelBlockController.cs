@@ -56,12 +56,19 @@ public partial class ConstructModelBlockController : IDisposable, IConstructBloc
         Block[] blockArray = module.GetBlockArray();
         for (int i = 0; i < blockArray.Length; i++)
         {
-            if (!blockArray[i].IsEmpty)
-            {
-                ModuleGridPos modulePos = module.ArrayToInModulePos(i);
-                ConstructGridPos constructPos = modulePos.ToConstruct(location);
-                AddBlock(constructPos, blockArray[i]);
-            }
+            Block block = blockArray[i];
+            if (block.IsEmpty)
+                continue;
+
+            // Skip non-model blocks early — avoids expensive positional math
+            // for voxel blocks that ModelBlockController doesn't render
+            BlockDefault bd = BlockStore.Instance.GetBlockDefault(block);
+            if (bd is not ModelBlockDefault)
+                continue;
+
+            ModuleGridPos modulePos = module.ArrayToInModulePos(i);
+            ConstructGridPos constructPos = modulePos.ToConstruct(location);
+            AddBlock(constructPos, block);
         }
     }
 
