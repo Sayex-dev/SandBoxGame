@@ -80,7 +80,7 @@ public class ActiveState : SimulationState
 
     public override void Exit()
     {
-        // Only remove visuals if we created them
+        // Only remove visuals if we created them (fallback path)
         if (ownsVisuals && visuals != null)
         {
             constructNode.RemoveChild(visuals);
@@ -88,18 +88,14 @@ public class ActiveState : SimulationState
             visuals = null;
         }
 
-        // Only dispose modelBlocks if we created them
-        if (!ownsVisuals)
+        // Only dispose modelBlocks if we created them (fallback path)
+        if (ownsVisuals && modelBlocks != null)
         {
-            // Controllers were passed in — don't dispose, they survive
-            modelBlocks = null;
-        }
-        else
-        {
-            modelBlocks?.Dispose();
+            modelBlocks.Dispose();
             modelBlocks = null;
         }
 
+        // State-specific resources — always cleaned up
         physics = null;
         visualMotion = null;
         moduleBuilder = null;
