@@ -56,7 +56,7 @@ public class ConstructBoundsData : IDisposable
             Changed?.Invoke();
     }
 
-    public void RemovePosition(ConstructGridPos pos, Dictionary<ModuleLocation, Module> modules)
+    public void RemovePosition(ConstructGridPos pos)
     {
         if (!IsOnBounds(pos))
             return;
@@ -66,7 +66,7 @@ public class ConstructBoundsData : IDisposable
 
         // Rebuild bounds
         Clear();
-        foreach (var kvp in modules)
+        foreach (var kvp in modules.Modules)
         {
             var moduleLocation = kvp.Key;
             var module = kvp.Value;

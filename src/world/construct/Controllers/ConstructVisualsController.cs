@@ -55,7 +55,7 @@ public partial class ConstructVisualsController : Node3D
         }
     }
 
-    public void OnTreeExiting()
+    public override void _ExitTree()
     {
         modules.OnModuleAdded -= OnModuleAdded;
         modules.OnModuleRemoved -= OnModuleRemoved;

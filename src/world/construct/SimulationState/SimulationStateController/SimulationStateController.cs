@@ -16,6 +16,11 @@ public class SimulationStateController : IConstructController
     private List<Tuple<SimulationMode, float>> simulationModeDistances;
     private int moduleSize;
 
+    // Controllers that survive state transitions
+    private ConstructVisualsController visuals;
+    private ConstructModelBlockController modelBlocks;
+    private bool controllersInitialized;
+
     public SimulationStateController(
         ConstructCore core,
         IWorldQuery collisionQuery,
@@ -46,12 +51,22 @@ public class SimulationStateController : IConstructController
 
         currentState?.Exit();
 
+        // Initialize shared controllers on first ActiveState entry
+        if (!controllersInitialized && newMode == SimulationMode.ACTIVE)
+        {
+            visuals = new ConstructVisualsController(core.Data.Modules);
+            modelBlocks = new ConstructModelBlockController(parent, core.Data);
+            parent.AddChild(visuals);
+            controllersInitialized = true;
+        }
+
         currentState = newMode switch
         {
             SimulationMode.ACTIVE => new ActiveState(core, collisionQuery,
-                rotSodSettings, moveSodSettings, generator, parent, UpdateLoading),
-            SimulationMode.APPROXIMATED => new ApproximatedState(core),
-            SimulationMode.FROZEN => new FrozenState(core),
+                rotSodSettings, moveSodSettings, generator, parent, UpdateLoading,
+                visuals, modelBlocks),
+            SimulationMode.APPROXIMATED => new ApproximatedState(core, visuals, modelBlocks),
+            SimulationMode.FROZEN => new FrozenState(core, visuals, modelBlocks),
             _ => throw new ArgumentException($"Unknown mode: {newMode}")
         };
 

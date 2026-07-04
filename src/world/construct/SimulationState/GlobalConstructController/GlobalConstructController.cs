@@ -12,6 +12,7 @@ public class GlobalConstructController : IConstructController
 
     private ConstructModuleBuilder moduleBuilder;
     private ConstructVisualsController visuals;
+    private ConstructModelBlockController modelBlocks;
 
     public GlobalConstructController(
         ConstructCore core,
@@ -25,15 +26,16 @@ public class GlobalConstructController : IConstructController
 
         moduleBuilder = new ConstructModuleBuilder();
         visuals = new ConstructVisualsController(core.Data.Modules);
+        modelBlocks = new ConstructModelBlockController(parent, core.Data);
         parent.AddChild(visuals);
     }
 
-    public virtual void SetBlock(Block block, ConstructGridPos pos) => core.Blocks.SetBlock(pos, block);
-    public void SetBlocks(Block[] blocks, ConstructGridPos[] positions) => core.Blocks.SetBlocks(positions, blocks);
+    public virtual void SetBlock(Block block, ConstructGridPos pos) => core.SetBlock(pos, block);
+    public void SetBlocks(Block[] blocks, ConstructGridPos[] positions) => core.SetBlocks(positions, blocks);
 
     public virtual bool TryGetBlock(ConstructGridPos pos, out Block block)
     {
-        return core.Blocks.TryGetBlock(pos, out block);
+        return core.TryGetBlock(pos, out block);
     }
     public void Update(double delta) { }
 

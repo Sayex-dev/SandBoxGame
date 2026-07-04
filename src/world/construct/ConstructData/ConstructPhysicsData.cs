@@ -1,10 +1,42 @@
+using System;
 using Godot;
 
 public class ConstructPhysicsData
 {
-    public float BlockMass { get; set; } = 0;
+    public event Action Changed;
 
-    public Vector3 Velocity = Vector3.Zero;
-    public Vector3 PhysicsPosition = Vector3.Zero;
+    private float blockMass;
+    public float BlockMass
+    {
+        get => blockMass;
+        set
+        {
+            blockMass = Math.Max(value, 0);
+            Changed?.Invoke();
+        }
+    }
+
+    private Vector3 velocity;
+    public Vector3 Velocity
+    {
+        get => velocity;
+        set
+        {
+            velocity = value;
+            Changed?.Invoke();
+        }
+    }
+
+    private Vector3 physicsPosition;
+    public Vector3 PhysicsPosition
+    {
+        get => physicsPosition;
+        set
+        {
+            physicsPosition = value;
+            Changed?.Invoke();
+        }
+    }
+
     public bool IsStatic;
 }

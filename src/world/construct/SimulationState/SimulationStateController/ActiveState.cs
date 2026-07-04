@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 public class ActiveState : SimulationState
 {
     private ConstructPhysicsController physics;
-    private ConstructVisualsController visuals;
     private ConstructVisualMotionController visualMotion;
     private ConstructModuleBuilder moduleBuilder;
     private ConstructMotionController motionController;
-    private ConstructModelBlockController modelController;
 
     private IWorldQuery collisionQuery;
     private SecondOrderDynamicsSettings rotSodSettings;
@@ -19,6 +17,7 @@ public class ActiveState : SimulationState
     private Node3D constructNode;
     private int moduleSize;
     private Vector3I prevModulePos;
+    private bool ownsVisuals;
 
     private Action<WorldGridPos> updateLoading;
 
@@ -29,8 +28,10 @@ public class ActiveState : SimulationState
         SecondOrderDynamicsSettings moveSodSettings,
         ConstructGenerator generator,
         Node3D constructNode,
-        Action<WorldGridPos> updateLoading
-    ) : base(core)
+        Action<WorldGridPos> updateLoading,
+        ConstructVisualsController visuals = null,
+        ConstructModelBlockController modelBlocks = null
+    ) : base(core, visuals, modelBlocks)
     {
         this.collisionQuery = collisionQuery;
         this.rotSodSettings = rotSodSettings;
@@ -40,7 +41,6 @@ public class ActiveState : SimulationState
         this.updateLoading = updateLoading;
 
         moduleSize = GameSettings.Instance.ModuleSize;
-
         prevModulePos = Vector3I.Zero;
     }
 
@@ -53,9 +53,19 @@ public class ActiveState : SimulationState
         var moveSod = moveSodSettings.GetInstance(core.Data.PhysicsData.PhysicsPosition);
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
-        visuals = new ConstructVisualsController(core.Data.Modules, moduleSize);
-        modelController = new ConstructModelBlockController(constructNode, core.Data);
-        constructNode.AddChild(visuals);
+        // Create visuals only if not provided by parent (first activation)
+        if (visuals == null)
+        {
+            visuals = new ConstructVisualsController(core.Data.Modules, moduleSize);
+            constructNode.AddChild(visuals);
+            ownsVisuals = true;
+        }
+
+        if (modelBlocks == null)
+        {
+            modelBlocks = new ConstructModelBlockController(constructNode, core.Data);
+        }
+
         moduleBuilder = new ConstructModuleBuilder();
 
         if (core.Data.Modules.FullyLoaded)
@@ -70,13 +80,29 @@ public class ActiveState : SimulationState
 
     public override void Exit()
     {
-        constructNode.RemoveChild(visuals);
-        visuals?.Dispose();
-        visuals = null;
+        // Only remove visuals if we created them
+        if (ownsVisuals && visuals != null)
+        {
+            constructNode.RemoveChild(visuals);
+            visuals.Dispose();
+            visuals = null;
+        }
+
+        // Only dispose modelBlocks if we created them
+        if (!ownsVisuals)
+        {
+            // Controllers were passed in — don't dispose, they survive
+            modelBlocks = null;
+        }
+        else
+        {
+            modelBlocks?.Dispose();
+            modelBlocks = null;
+        }
+
         physics = null;
         visualMotion = null;
         moduleBuilder = null;
-        modelController = null;
         motionController = null;
         Debug.WriteLine("Exited Active State");
     }

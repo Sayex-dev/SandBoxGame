@@ -7,7 +7,7 @@ public partial class ConstructWorld : Node3D, IWorldQuery
 	private int seed;
 	private ExpandingOctTree<Construct> constructTree;
 	private HashSet<Construct> constructs = [];
-	private WorldGridPos lastCameraPos = Vector3I.Zero;
+	private WorldGridPos lastCameraPos = (WorldGridPos)Vector3I.Zero;
 
 	public override void _Ready()
 	{

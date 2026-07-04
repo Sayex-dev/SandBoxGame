@@ -7,7 +7,6 @@ public partial class Construct : Node3D, IOctTreeObject
 	public event Action<IOctTreeObject> BoundsChanged;
 
 	public ConstructCore Core { get; private set; }
-	public ConstructBlockService Blocks { get; private set; }
 
 	private IConstructController sim;
 
@@ -18,12 +17,11 @@ public partial class Construct : Node3D, IOctTreeObject
 		Vector3I initialPosition = default
 	)
 	{
-		// Todo: Dependency Injection. Construct ohne 
+		// Todo: Dependency Injection.
 		Construct construct = new Construct();
 
-		//
 		int seed = GameSettings.Instance.Seed;
-		var transform = new ConstructGridTransformData(initialPosition);
+		var transform = new ConstructGridTransformData((WorldGridPos)initialPosition);
 		var modules = new ConstructModulesData();
 		var bounds = new ConstructBoundsData(modules);
 
@@ -37,8 +35,7 @@ public partial class Construct : Node3D, IOctTreeObject
 		data.GridTransform.Changed += construct.OnSpatialChanged;
 		data.Bounds.Changed += construct.OnSpatialChanged;
 
-		construct.Blocks = new ConstructBlockService(data);
-		construct.Core = new ConstructCore(data, construct.Blocks);
+		construct.Core = new ConstructCore(data);
 		ConstructGenerator generator = settings.ConstructGeneratorSettings.CreateConstructGenerator(seed);
 
 		if (settings.IsGlobal)
@@ -69,15 +66,15 @@ public partial class Construct : Node3D, IOctTreeObject
 
 	public void SetBlock(WorldGridPos worldPos, Block block)
 	{
-		Blocks.SetBlock(worldPos.ToConstruct(Core.Data.GridTransform), block);
+		Core.SetBlock(worldPos.ToConstruct(Core.Data.GridTransform), block);
 	}
 	public void SetBlocks(WorldGridPos[] worldPositions, Block[] blocks)
 	{
 		ConstructGridPos[] constPositions = worldPositions
 			.Select(worldPos => worldPos.ToConstruct(Core.Data.GridTransform)).ToArray();
-		Blocks.SetBlocks(constPositions, blocks);
+		Core.SetBlocks(constPositions, blocks);
 	}
-	public bool TryGetBlock(WorldGridPos worldPos, out Block block) => Blocks.TryGetBlock(worldPos, out block);
+	public bool TryGetBlock(WorldGridPos worldPos, out Block block) => Core.TryGetBlock(worldPos, out block);
 
 	public Vector3I GetRootPos() => Core.Data.GridTransform.WorldPos;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public partial class ConstructModelBlockController : IDisposable
+public partial class ConstructModelBlockController : IDisposable, IConstructBlockVisuals
 {
     private record MeshData(MultiMeshInstance3D Instance, HashSet<ConstructGridPos> Positions);
 
