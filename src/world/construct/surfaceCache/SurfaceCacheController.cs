@@ -290,7 +290,7 @@ public class SurfaceCacheController
             {
                 for (int v = 0; v < size; v++)
                 {
-                    Vector3I position = GetSurfacePosition(dir, u, v, size);
+                    ModuleGridPos position = new(GetSurfacePosition(dir, u, v, size));
                     Block block = module.GetBlock(position);
 
                     if (block.IsEmpty)

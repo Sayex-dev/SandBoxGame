@@ -99,7 +99,8 @@ public class ModuleMeshGenerator
 			// Find minimum position
 			for (int i = 0; i < moduleSizeSquared; i++)
 			{
-				Vector3I newPos = moveX ? minPos - locXMove : minPos - locYMove;
+				Vector3I rawPos = moveX ? minPos.Value - locXMove : minPos.Value - locYMove;
+				ModuleGridPos newPos = new(rawPos);
 
 				if (surfaceInfo.ContainsKey(newPos))
 				{
@@ -129,7 +130,7 @@ public class ModuleMeshGenerator
 
 				for (int x = 0; x <= xLimit; x++)
 				{
-					Vector3I np = minPos + locXMove * x + locYMove * y;
+					ModuleGridPos np = new(minPos.Value + locXMove * x + locYMove * y);
 					bool firstRow = maxX == -1;
 
 					if (!surfaceInfo.TryGetValue(np, out SurfaceCache<VoxelBlockDefault>.BlockSurfaceInfo blockFaceInfo))
@@ -199,8 +200,8 @@ public class ModuleMeshGenerator
 			{
 				for (int x = 0; x <= maxX; x++)
 				{
-					Vector3I rp = minPos + locXMove * x + locYMove * y;
-					surfaceInfo.Remove(rp);
+				ModuleGridPos rp = new(minPos.Value + locXMove * x + locYMove * y);
+				surfaceInfo.Remove(rp);
 				}
 			}
 

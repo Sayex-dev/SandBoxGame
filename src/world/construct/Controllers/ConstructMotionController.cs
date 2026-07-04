@@ -56,7 +56,8 @@ public class ConstructMotionController
         TimeTracker.Start("Take step time", TimeTracker.TrackingType.Average);
         if (CanStepIntoDir(dir))
         {
-            data.GridTransform.WorldPos += (Vector3I)DirectionTools.GetWorldDirVec(dir);
+            data.GridTransform.WorldPos = new WorldGridPos(
+                data.GridTransform.WorldPos.Value + (Vector3I)DirectionTools.GetWorldDirVec(dir));
             return true;
         }
         TimeTracker.End("Take step time");
@@ -80,7 +81,7 @@ public class ConstructMotionController
                 foreach (var facePos in module.SurfaceCache.CollisionCache.GetAllExposedSurfaces()[dir])
                 {
                     var faceWorldPos = facePos.ToWorld(moduleLocation, data.GridTransform);
-                    if (other.TryGetBlock(faceWorldPos + step, out _))
+                    if (other.TryGetBlock(new WorldGridPos(faceWorldPos.Value + step), out _))
                     {
                         return false;
                     }

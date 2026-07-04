@@ -120,7 +120,7 @@ public class ActiveState : SimulationState
         if (prevModulePos != newModulePos)
         {
             prevModulePos = newModulePos;
-            updateLoading.Invoke(newModulePos);
+            updateLoading.Invoke((WorldGridPos)newModulePos);
         }
     }
 

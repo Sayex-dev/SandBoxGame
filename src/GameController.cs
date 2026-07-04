@@ -38,7 +38,7 @@ public partial class GameController : Node3D
         if (cameraModulePos != prevCameraModulePos)
         {
             prevCameraModulePos = cameraModulePos;
-            blockWorld.CameraMoved(cameraModulePos);
+            blockWorld.CameraMoved((WorldGridPos)cameraModulePos);
         }
     }
 
