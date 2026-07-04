@@ -48,7 +48,7 @@ public static class ModuleIntegrationHelper
         bool needsBoundsRebuild = false;
         foreach (ModuleLocation moduleLocation in toUnload)
         {
-            // Remove from modules
+            // Remove from modules (fires OnModuleRemoved → visuals handled by event)
             if (data.Modules.Remove(moduleLocation, out Module module))
             {
                 // Update bounds if necessary
@@ -63,9 +63,6 @@ public static class ModuleIntegrationHelper
                     }
                 }
             }
-
-            // Remove visuals
-            visuals.RemoveModule(moduleLocation);
         }
 
         if (needsBoundsRebuild)

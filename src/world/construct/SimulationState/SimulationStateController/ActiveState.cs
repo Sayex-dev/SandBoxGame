@@ -54,7 +54,7 @@ public class ActiveState : SimulationState
         visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
 
         visuals = new ConstructVisualsController(core.Data.Modules, moduleSize);
-        modelController = new ConstructModelBlockController(constructNode);
+        modelController = new ConstructModelBlockController(constructNode, core.Data);
         constructNode.AddChild(visuals);
         moduleBuilder = new ConstructModuleBuilder();
 

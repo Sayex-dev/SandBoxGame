@@ -11,10 +11,16 @@ public partial class ConstructModelBlockController : IDisposable
     private Dictionary<ConstructGridPos, ModelBlockDefault> positionToModel = new();
 
     private Node3D construct;
+    private ConstructData data;
 
-    public ConstructModelBlockController(Node3D construct)
+    public ConstructModelBlockController(Node3D construct, ConstructData data)
     {
         this.construct = construct;
+        this.data = data;
+
+        data.Modules.OnModuleChanged += OnModulesChanged;
+        data.Modules.OnModuleAdded += OnModulesAdded;
+        data.Modules.OnModuleRemoved += OnModulesRemoved;
     }
 
     public void SetBlock(ModuleLocation location, BlockChange[] changes)
@@ -42,9 +48,30 @@ public partial class ConstructModelBlockController : IDisposable
         UpdateAllMultiMeshes();
     }
 
-    public void OnUpdatedModule(ModuleLocation location)
-    {
+    private void OnModulesChanged(ModuleLocation location, BlockChange[] changes) =>
+        SetBlock(location, changes);
 
+    private void OnModulesAdded(ModuleLocation location, Module module)
+    {
+        Block[] blockArray = module.GetBlockArray();
+        for (int i = 0; i < blockArray.Length; i++)
+        {
+            if (!blockArray[i].IsEmpty)
+            {
+                ModuleGridPos modulePos = module.ArrayToInModulePos(i);
+                ConstructGridPos constructPos = modulePos.ToConstruct(location);
+                AddBlock(constructPos, blockArray[i]);
+            }
+        }
+    }
+
+    private void OnModulesRemoved(ModuleLocation location, Module module)
+    {
+        var toRemove = positionToModel.Keys
+            .Where(p => p.ToModuleLocation() == location)
+            .ToList();
+        foreach (var pos in toRemove)
+            RemoveBlock(pos);
     }
 
     public void AddBlock(ConstructGridPos pos, Block block)
@@ -129,6 +156,10 @@ public partial class ConstructModelBlockController : IDisposable
 
     public void Dispose()
     {
+        data.Modules.OnModuleChanged -= OnModulesChanged;
+        data.Modules.OnModuleAdded -= OnModulesAdded;
+        data.Modules.OnModuleRemoved -= OnModulesRemoved;
+
         foreach (var meshData in modelMeshInstances.Values)
         {
             meshData.Instance?.QueueFree();

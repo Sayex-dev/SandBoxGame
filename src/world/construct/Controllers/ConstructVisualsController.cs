@@ -58,7 +58,7 @@ public partial class ConstructVisualsController : Node3D
     public void OnTreeExiting()
     {
         modules.OnModuleAdded -= OnModuleAdded;
-        modules.OnModuleRemoved += OnModuleRemoved;
+        modules.OnModuleRemoved -= OnModuleRemoved;
     }
 
     private void ExtendModulePool()
@@ -70,11 +70,13 @@ public partial class ConstructVisualsController : Node3D
 
     private void OnModuleAdded(ModuleLocation location, Module module)
     {
-
+        // Mesh generation requires async + ConstructModuleBuilder context.
+        // Modules are added via ModuleIntegrationHelper which calls AddModule
+        // directly with the generated mesh.
     }
 
     private void OnModuleRemoved(ModuleLocation location, Module module)
     {
-
+        RemoveModule(location);
     }
 }
