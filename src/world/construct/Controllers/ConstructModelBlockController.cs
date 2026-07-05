@@ -135,9 +135,11 @@ public partial class ConstructModelBlockController : IDisposable, IConstructBloc
         var positions = meshData.Positions.ToArray();
         meshData.Instance.Multimesh.InstanceCount = positions.Length;
 
+        var basis = Basis.Identity.Scaled(modelBlockDefault.Scale);
         for (int i = 0; i < positions.Length; i++)
         {
-            var transform = new Transform3D(Basis.Identity, (Vector3I)positions[i]);
+            var origin = (Vector3)(Vector3I)positions[i] + modelBlockDefault.Offset;
+            var transform = new Transform3D(basis, origin);
             meshData.Instance.Multimesh.SetInstanceTransform(i, transform);
         }
     }
