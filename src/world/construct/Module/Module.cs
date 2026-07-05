@@ -11,6 +11,7 @@ public partial class Module
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
 	public ModuleGridPos MinPos => new ModuleGridPos(bounds.MinPos);
 	public SurfaceCacheController SurfaceCache = new SurfaceCacheController();
+	public readonly HashSet<ModuleGridPos> ModelBlockPositions = new();
 	private int moduleSize;
 	public Block[] BlocksArrayCopy
 	{
@@ -86,6 +87,8 @@ public partial class Module
 				SurfaceCache.AddBlock(this, modulePos, block);
 				blockChange = new BlockChange(modulePos, BlockChangeAction.PLACE, block);
 				blockChanged = true;
+				if (BlockStore.Instance.GetBlockDefault(block) is ModelBlockDefault)
+					ModelBlockPositions.Add(modulePos);
 			}
 			else if (!prevBlock.IsEmpty && block.IsEmpty)
 			{
@@ -95,6 +98,7 @@ public partial class Module
 				SurfaceCache.RemoveBlock(this, modulePos);
 				blockChange = new BlockChange(modulePos, BlockChangeAction.REMOVE, block);
 				blockChanged = true;
+				ModelBlockPositions.Remove(modulePos);
 			}
 		}
 
@@ -123,6 +127,8 @@ public partial class Module
 				BlockCount++;
 				bounds.AddPoint(modPos, BlockCount);
 				blocks[index] = blockChange.Block;
+				if (BlockStore.Instance.GetBlockDefault(newBlock) is ModelBlockDefault)
+					ModelBlockPositions.Add(modPos);
 			}
 			else if (!oldBlock.IsEmpty && newBlock.IsEmpty)
 			{
@@ -130,6 +136,7 @@ public partial class Module
 				BlockCount--;
 				bounds.RemovePoint(modPos, BlockCount);
 				blocks[index] = default;
+				ModelBlockPositions.Remove(modPos);
 			}
 		}
 		TimeTracker.End("Module Block put");
