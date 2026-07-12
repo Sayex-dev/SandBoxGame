@@ -1,18 +1,21 @@
-[gd_resource type="Resource" script_class="ModelBlockDefault" load_steps=5 format=3 uid="uid://dx1qpb34g51b5"]
+[gd_resource type="Resource" script_class="ModelBlockDefault" load_steps=6 format=3 uid="uid://dx1qpb34g51b5"]
 
 [ext_resource type="Script" uid="uid://b3rywa4772x0a" path="res://src/world/blocks/ModelBlockDefault.cs" id="1_1y4yj"]
 [ext_resource type="Script" uid="uid://bhkxb3jyj7ql" path="res://src/world/blocks/BlockFaceResource.cs" id="1_ftjhi"]
+[ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="2_hqr6a"]
 
 [sub_resource type="Resource" id="Resource_hqr6a"]
 script = ExtResource("1_ftjhi")
 metadata/_custom_type_script = "uid://bhkxb3jyj7ql"
 
 [sub_resource type="SphereMesh" id="SphereMesh_ndfi5"]
+material = ExtResource("2_hqr6a")
 
 [resource]
 script = ExtResource("1_1y4yj")
 LodBlockFace = SubResource("Resource_hqr6a")
 Mesh = SubResource("SphereMesh_ndfi5")
+Offset = Vector3(0.5, 0.5, 0.5)
 Name = "Sphere"
 PassiveAbilities = null
 ActiveAbilities = null
