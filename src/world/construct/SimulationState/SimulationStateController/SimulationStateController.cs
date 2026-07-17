@@ -2,79 +2,64 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-public class SimulationStateController : IConstructController
+public class SimulationStateController : ConstructController
 {
-    private ConstructCore core;
     private SimulationState currentState;
     private SimulationMode currentMode;
 
-    private IWorldQuery collisionQuery;
-    private SecondOrderDynamicsSettings rotSodSettings;
-    private SecondOrderDynamicsSettings moveSodSettings;
-    private ConstructGenerator generator;
     private Node3D parent;
     private List<Tuple<SimulationMode, float>> simulationModeDistances;
     private int moduleSize;
 
-    // Controllers that survive state transitions
-    private ConstructVisualsController visuals;
-    private ConstructModelBlockController modelBlocks;
-    private bool controllersInitialized;
+    private Dictionary<SimulationMode, SimulationState> states;
 
     public SimulationStateController(
         ConstructCore core,
+        ConstructGenerator generator,
+        ConstructModuleBuilder moduleBuilder,
+        ConstructVoxelBlockVisualsController voxelVisuals,
+        ConstructModelBlockVisualsController modelVisuals,
+
         IWorldQuery collisionQuery,
         SecondOrderDynamicsSettings rotSodSettings,
-        SecondOrderDynamicsSettings moveSodSettings,
-        ConstructGenerator generator,
-        Node3D parent)
+        SecondOrderDynamicsSettings moveSodSettings
+        ) : base(core, generator, moduleBuilder, voxelVisuals, modelVisuals)
     {
         this.core = core;
-        this.collisionQuery = collisionQuery;
-        this.rotSodSettings = rotSodSettings;
-        this.moveSodSettings = moveSodSettings;
         this.generator = generator;
-        this.parent = parent;
 
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
         moduleSize = GameSettings.Instance.ModuleSize;
+
+        states[SimulationMode.ACTIVE] = new ActiveState(core, collisionQuery,
+                rotSodSettings, moveSodSettings, generator, parent, UpdateLoadingInternal,
+                voxelVisuals, modelVisuals);
+        states[SimulationMode.APPROXIMATED] = new ApproximatedState(core, voxelVisuals, modelVisuals);
+        states[SimulationMode.FROZEN] = new FrozenState(core, voxelVisuals, modelVisuals);
     }
 
-    public void UpdateLoading(WorldGridPos loadPos)
+    protected override void UpdateLoadingInternal(WorldGridPos loadPos)
     {
         WorldGridPos constPos = core.Data.GridTransform.WorldPos;
         float dist = (loadPos - (Vector3I)constPos).Length() / moduleSize;
         SimulationMode newMode = GetSimulationMode(dist);
+        SetMode(newMode);
+    }
 
+    private void SetMode(SimulationMode newMode)
+    {
         if (currentMode == newMode && currentState != null)
             return;
 
         currentState?.Exit();
 
-        // Initialize shared controllers on first ActiveState entry
-        if (!controllersInitialized && newMode == SimulationMode.ACTIVE)
-        {
-            visuals = new ConstructVisualsController(core.Data.Modules);
-            modelBlocks = new ConstructModelBlockController(parent, core.Data);
-            parent.AddChild(visuals);
-            controllersInitialized = true;
-        }
-
-        currentState = newMode switch
-        {
-            SimulationMode.ACTIVE => new ActiveState(core, collisionQuery,
-                rotSodSettings, moveSodSettings, generator, parent, UpdateLoading,
-                visuals, modelBlocks),
-            SimulationMode.APPROXIMATED => new ApproximatedState(core, visuals, modelBlocks),
-            SimulationMode.FROZEN => new FrozenState(core, visuals, modelBlocks),
-            _ => throw new ArgumentException($"Unknown mode: {newMode}")
-        };
+        currentMode = newMode;
+        currentState = states[newMode];
 
         currentState.Enter();
-        currentMode = newMode;
     }
 
-    public void Update(double delta) => currentState.Update(delta);
+    protected override void UpdateInternal(double delta) => currentState.Update(delta);
 
     private SimulationMode GetSimulationMode(float dist)
     {
@@ -88,5 +73,4 @@ public class SimulationStateController : IConstructController
         }
         return resultMode;
     }
-
 }

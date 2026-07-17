@@ -1,19 +1,29 @@
 using Godot;
 
-public readonly record struct WorldGridPos(Vector3I Value)
+public interface IGridPos
 {
-    public ConstructGridPos ToConstruct(ConstructGridTransformData transform)
+    Vector3I Value { get; }
+}
+
+/// <summary>
+/// Integer cell position in the global/world grid space.
+/// This is an absolute grid coordinate using world axes. Converting to a construct
+/// space subtracts the construct world origin and un-rotates by the construct Y rotation.
+/// </summary>
+public readonly record struct WorldGridPos(Vector3I Value) : IGridPos
+{
+    public ConstructGridPos ToConstruct(ConstructGridTransformController transform)
     {
         float radRot = Mathf.DegToRad(transform.YRotation);
         return new((Vector3I)((Vector3)(Value - transform.WorldPos.Value)).Rotated(Vector3.Up, -radRot));
     }
 
-    public ModuleGridPos ToModule(ConstructGridTransformData transform)
+    public ModuleGridPos ToModule(ConstructGridTransformController transform)
     {
         return ToConstruct(transform).ToModule();
     }
 
-    public ModuleLocation ToModuleLocation(ConstructGridTransformData transform)
+    public ModuleLocation ToModuleLocation(ConstructGridTransformController transform)
     {
         return ToConstruct(transform).ToModuleLocation();
     }
@@ -22,10 +32,16 @@ public readonly record struct WorldGridPos(Vector3I Value)
     public static implicit operator Vector3I(WorldGridPos value) => value.Value;
 }
 
-public readonly record struct ConstructGridPos(Vector3I Value)
+/// <summary>
+/// Integer cell position in a construct's local grid space.
+/// The origin is the construct's world grid position, and the axes are local to the
+/// construct before applying its world Y rotation. This space has the same cell size
+/// as the world grid, but is relative to one construct.
+/// </summary>
+public readonly record struct ConstructGridPos(Vector3I Value) : IGridPos
 {
 
-    public WorldGridPos ToWorld(ConstructGridTransformData transform)
+    public WorldGridPos ToWorld(ConstructGridTransformController transform)
     {
         Vector3I rotated = (Vector3I)((Vector3)Value).Rotated(Vector3.Up, transform.YRotation).Round();
         return new(transform.WorldPos.Value + rotated);
@@ -59,9 +75,15 @@ public readonly record struct ConstructGridPos(Vector3I Value)
     public static implicit operator Vector3I(ConstructGridPos value) => value.Value;
 }
 
-public readonly record struct ModuleLocation(Vector3I Value)
+/// <summary>
+/// Integer module/chunk coordinate within a construct's local grid space.
+/// Each step in this space represents one whole module of size ModuleSize.
+/// For example, ModuleLocation (1, 0, 0) starts at construct-grid cell
+/// (ModuleSize, 0, 0). Negative positions use floor division semantics.
+/// </summary>
+public readonly record struct ModuleLocation(Vector3I Value) : IGridPos
 {
-    public WorldGridPos ToWorld(int moduleSize, ConstructGridTransformData transform)
+    public WorldGridPos ToWorld(int moduleSize, ConstructGridTransformController transform)
     {
         return ToConstruct(moduleSize).ToWorld(transform);
     }
@@ -75,10 +97,15 @@ public readonly record struct ModuleLocation(Vector3I Value)
     public static implicit operator Vector3I(ModuleLocation value) => value.Value;
 }
 
-
-public readonly record struct ModuleGridPos(Vector3I Value)
+/// <summary>
+/// Integer cell offset inside a single module.
+/// Each component is the local position within that module, normally in the range
+/// [0, ModuleSize - 1]. This position is not globally unique without a
+/// corresponding ModuleLocation.
+/// </summary>
+public readonly record struct ModuleGridPos(Vector3I Value) : IGridPos
 {
-    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransformData transform)
+    public WorldGridPos ToWorld(ModuleLocation moduleLocation, ConstructGridTransformController transform)
     {
         return ToConstruct(moduleLocation).ToWorld(transform);
     }

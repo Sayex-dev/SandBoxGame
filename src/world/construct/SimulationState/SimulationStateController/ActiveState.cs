@@ -8,34 +8,24 @@ public class ActiveState : SimulationState
     private ConstructPhysicsController physics;
     private ConstructVisualMotionController visualMotion;
     private ConstructModuleBuilder moduleBuilder;
-    private ConstructMotionController motionController;
-
-    private IWorldQuery collisionQuery;
     private SecondOrderDynamicsSettings rotSodSettings;
     private SecondOrderDynamicsSettings moveSodSettings;
     private ConstructGenerator generator;
     private Node3D constructNode;
     private int moduleSize;
     private Vector3I prevModulePos;
-    private bool ownsVisuals;
 
     private Action<WorldGridPos> updateLoading;
 
     public ActiveState(
         ConstructCore core,
-        IWorldQuery collisionQuery,
-        SecondOrderDynamicsSettings rotSodSettings,
-        SecondOrderDynamicsSettings moveSodSettings,
         ConstructGenerator generator,
         Node3D constructNode,
         Action<WorldGridPos> updateLoading,
-        ConstructVisualsController visuals = null,
-        ConstructModelBlockController modelBlocks = null
+        ConstructVoxelBlockVisualsController visuals,
+        ConstructModelBlockVisualsController modelBlocks
     ) : base(core, visuals, modelBlocks)
     {
-        this.collisionQuery = collisionQuery;
-        this.rotSodSettings = rotSodSettings;
-        this.moveSodSettings = moveSodSettings;
         this.generator = generator;
         this.constructNode = constructNode;
         this.updateLoading = updateLoading;
@@ -46,27 +36,8 @@ public class ActiveState : SimulationState
 
     public override void Enter()
     {
-        motionController = new ConstructMotionController(core.Data, collisionQuery);
-        physics = new ConstructPhysicsController(core.Data, motionController);
-
         var rotSod = rotSodSettings.GetInstance(0);
         var moveSod = moveSodSettings.GetInstance(core.Data.PhysicsData.PhysicsPosition);
-        visualMotion = new ConstructVisualMotionController(core.Data, moveSod, rotSod);
-
-        // Create visuals only if not provided by parent (first activation)
-        if (visuals == null)
-        {
-            visuals = new ConstructVisualsController(core.Data.Modules, moduleSize);
-            constructNode.AddChild(visuals);
-            ownsVisuals = true;
-        }
-
-        if (modelBlocks == null)
-        {
-            modelBlocks = new ConstructModelBlockController(constructNode, core.Data);
-        }
-
-        moduleBuilder = new ConstructModuleBuilder();
 
         if (core.Data.Modules.FullyLoaded)
         {
@@ -80,26 +51,6 @@ public class ActiveState : SimulationState
 
     public override void Exit()
     {
-        // Only remove visuals if we created them (fallback path)
-        if (ownsVisuals && visuals != null)
-        {
-            constructNode.RemoveChild(visuals);
-            visuals.Dispose();
-            visuals = null;
-        }
-
-        // Only dispose modelBlocks if we created them (fallback path)
-        if (ownsVisuals && modelBlocks != null)
-        {
-            modelBlocks.Dispose();
-            modelBlocks = null;
-        }
-
-        // State-specific resources — always cleaned up
-        physics = null;
-        visualMotion = null;
-        moduleBuilder = null;
-        motionController = null;
         Debug.WriteLine("Exited Active State");
     }
 
@@ -147,7 +98,7 @@ public class ActiveState : SimulationState
     public static async Task GenerateAll(
         ConstructData data,
         ConstructModuleBuilder moduleBuilder,
-        ConstructVisualsController visuals,
+        ConstructVoxelBlockVisualsController visuals,
         ConstructGenerator generator)
     {
         var generationTasks = moduleBuilder.GenerateAllModules(generator);

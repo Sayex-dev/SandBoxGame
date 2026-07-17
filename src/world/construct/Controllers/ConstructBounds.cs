@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 
-public class ConstructBoundsData : IDisposable
+public class ConstructBoundsController : IDisposable
 {
     public event Action Changed;
 
@@ -11,9 +10,9 @@ public class ConstructBoundsData : IDisposable
 
     public bool HasAnyBlocks { get; private set; }
 
-    private ConstructModulesData modules;
+    private ConstructBlockController modules;
 
-    public ConstructBoundsData(ConstructModulesData modules)
+    public ConstructBoundsController(ConstructBlockController modules)
     {
         this.modules = modules;
         modules.OnModuleChanged += OnModuleChanged;
@@ -78,7 +77,7 @@ public class ConstructBoundsData : IDisposable
             Changed?.Invoke();
     }
 
-    public void CombineWith(ConstructBoundsData other)
+    public void CombineWith(ConstructBoundsController other)
     {
         if (!other.HasAnyBlocks)
             return;

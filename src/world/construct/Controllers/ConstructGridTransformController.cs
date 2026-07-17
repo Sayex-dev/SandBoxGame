@@ -1,9 +1,10 @@
 using Godot;
 using System;
 
-public class ConstructGridTransformData
+public class ConstructGridTransformController
 {
-    public event Action Changed;
+    public event Action<WorldGridPos> OnPositionChanged;
+    public event Action<Direction> OnFacingDirectionChanged;
 
     private WorldGridPos worldPos;
     public WorldGridPos WorldPos
@@ -14,7 +15,7 @@ public class ConstructGridTransformData
             if (worldPos.Value != value.Value)
             {
                 worldPos = value;
-                Changed?.Invoke();
+                OnPositionChanged?.Invoke(worldPos);
             }
         }
     }
@@ -36,11 +37,12 @@ public class ConstructGridTransformData
             if (value != Direction.UP && value != Direction.DOWN)
             {
                 facingDirection = value;
+                OnFacingDirectionChanged?.Invoke(facingDirection);
             }
         }
     }
 
-    public ConstructGridTransformData(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
+    public ConstructGridTransformController(WorldGridPos constructWorldPos, Direction FacingDir = Direction.FORWARD)
     {
         WorldPos = constructWorldPos;
         FacingDirection = FacingDir;

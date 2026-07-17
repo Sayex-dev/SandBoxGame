@@ -42,12 +42,12 @@ public class ConstructModuleBuilder : IDisposable
     public LoadAroundResponse GenerateModulesAround(
         WorldGridPos worldPos,
         int loadDistance,
-        ConstructGridTransformData transform,
-        ConstructModulesData modules,
+        ConstructGridTransformController transform,
+        ConstructBlockController blockController,
         ConstructGenerator generator)
     {
         var center = worldPos.ToModuleLocation(transform);
-        var diff = CalculateLoadSet(center, loadDistance, modules.Modules, generator);
+        var diff = CalculateLoadSet(center, loadDistance, blockController.Modules, generator);
 
         var genTaskHandles = GenerateModuleGenerationTasks(diff.ToLoad, generator);
         return new LoadAroundResponse()

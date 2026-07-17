@@ -1,23 +1,25 @@
 using System;
 using System.Collections.Generic;
 
-public class ConstructModulesData
+public class ConstructBlockController
 {
-    public Action<ModuleLocation, BlockChange[]> OnModuleChanged;
-    public Action<ModuleLocation, Module> OnModuleAdded;
-    public Action<ModuleLocation, Module> OnModuleRemoved;
+    public event Action<BlockChange<ConstructGridPos>> OnBlockChanged;
+
+    public event Action<ModuleLocation, BlockChange<ModuleGridPos>[]> OnModuleChanged;
+    public event Action<ModuleLocation, Module> OnModuleAdded;
+    public event Action<ModuleLocation, Module> OnModuleRemoved;
     public bool FullyLoaded { get; set; }
 
     public readonly Dictionary<ModuleLocation, Module> Modules = new();
 
-    public void Add(ModuleLocation location, Module module)
+    public void AddModule(ModuleLocation location, Module module)
     {
         Modules[location] = module;
         module.OnModuleChanged += (blockChanges) => OnModuleChanged(location, blockChanges);
         OnModuleAdded?.Invoke(location, module);
     }
 
-    public bool Remove(ModuleLocation location, out Module module)
+    public bool RemoveModule(ModuleLocation location, out Module module)
     {
         if (!Modules.TryGetValue(location, out module))
             return false;
@@ -28,7 +30,7 @@ public class ConstructModulesData
         return true;
     }
 
-    public bool TryGet(ModuleLocation location, out Module module)
+    public bool TryGetModule(ModuleLocation location, out Module module)
     {
         return Modules.TryGetValue(location, out module);
     }
@@ -62,12 +64,33 @@ public class ConstructModulesData
         if (!Modules.TryGetValue(moduleLoc, out var module))
         {
             module = new Module();
-            Add(moduleLoc, module);
+            AddModule(moduleLoc, module);
         }
+
+        OnBlockChanged?.Invoke(new BlockChange<ConstructGridPos>(pos, BlockChangeAction.PLACE, block));
 
         ModuleGridPos inModule = pos.ToModule();
         module.SetBlock(inModule, block);
         if (!module.HasBlocks)
             Modules.Remove(moduleLoc);
+    }
+
+    public bool TryRemoveBlock(
+        ConstructGridPos pos,
+        out Block block
+    )
+    {
+        block = default;
+
+        ModuleLocation moduleLoc = pos.ToModuleLocation();
+        if (Modules.TryGetValue(moduleLoc, out var module))
+        {
+            block = module.GetBlock(pos.ToModule());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

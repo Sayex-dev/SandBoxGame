@@ -13,8 +13,8 @@ public static class ModuleIntegrationHelper
     /// </summary>
     public static async Task IntegrateGeneratedModules(
         IEnumerable<Task<GenerateModulesResponse>> generationTasks,
-        ConstructData data,
-        ConstructVisualsController visuals)
+        ConstructBlockController blockController,
+        ConstructVoxelBlockVisualsController visuals)
     {
         foreach (Task<GenerateModulesResponse> task in generationTasks)
         {
@@ -25,13 +25,8 @@ public static class ModuleIntegrationHelper
                 Module module = kvp.Value;
                 Mesh mesh = response.Meshes[moduleLocation];
 
-                data.Bounds.AddPosition(module.MinPos.ToConstruct(moduleLocation));
-                data.Bounds.AddPosition(module.MaxPos.ToConstruct(moduleLocation));
-
                 // Update modules
-                data.Modules.Add(moduleLocation, module);
-
-                // Update visuals
+                blockController.AddModule(moduleLocation, module);
                 visuals.AddModule(moduleLocation, mesh);
             }
         }
@@ -42,8 +37,7 @@ public static class ModuleIntegrationHelper
     /// </summary>
     public static void UnloadModules(
         List<ModuleLocation> toUnload,
-        ConstructData data,
-        ConstructVisualsController visuals)
+        ConstructVoxelBlockVisualsController visuals)
     {
         bool needsBoundsRebuild = false;
         foreach (ModuleLocation moduleLocation in toUnload)
@@ -63,11 +57,6 @@ public static class ModuleIntegrationHelper
                     }
                 }
             }
-        }
-
-        if (needsBoundsRebuild)
-        {
-            RebuildBounds(data);
         }
     }
 

@@ -1,17 +1,15 @@
 using System.Collections.Generic;
 using Godot;
 
-public partial class ConstructVisualsController : Node3D
+public partial class ConstructVoxelBlockVisualsController : Node3D
 {
     private float moduleSize;
     private Dictionary<ModuleLocation, MeshInstance3D> activeModules = new();
     private LinkedList<MeshInstance3D> modulePool = new();
-    private ConstructModulesData modules;
 
-    public ConstructVisualsController(ConstructModulesData modules, int initialPoolSize = 0)
+    public ConstructVoxelBlockVisualsController(int initialPoolSize = 0)
     {
-        this.modules = modules;
-        modules.OnModuleAdded += OnModuleAdded;
+        modules.OnModuleAdded += OnModuleGenerated;
         modules.OnModuleRemoved += OnModuleRemoved;
 
         moduleSize = GameSettings.Instance.ModuleSize;
@@ -21,9 +19,9 @@ public partial class ConstructVisualsController : Node3D
         }
     }
 
-    public void AddModule(ModuleLocation loc, Mesh moduleMesh)
+    private void AddModule(ModuleLocation loc, Mesh moduleMesh)
     {
-        RemoveModule(loc); //TODO: raise instead of remove/replace
+        RemoveModule(loc);
         if (modulePool.First == null)
             ExtendModulePool();
         var module = modulePool.First.Value;
@@ -57,7 +55,7 @@ public partial class ConstructVisualsController : Node3D
 
     public override void _ExitTree()
     {
-        modules.OnModuleAdded -= OnModuleAdded;
+        modules.OnModuleAdded -= OnModuleGenerated;
         modules.OnModuleRemoved -= OnModuleRemoved;
     }
 
@@ -68,7 +66,7 @@ public partial class ConstructVisualsController : Node3D
         AddChild(newModule);
     }
 
-    private void OnModuleAdded(ModuleLocation location, Module module)
+    private void OnModuleGenerated(ModuleLocation location, Module module)
     {
         // Mesh generation requires async + ConstructModuleBuilder context.
         // Modules are added via ModuleIntegrationHelper which calls AddModule

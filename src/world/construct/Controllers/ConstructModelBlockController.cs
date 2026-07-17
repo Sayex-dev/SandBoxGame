@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public partial class ConstructModelBlockController : IDisposable, IConstructBlockVisuals
+public partial class ConstructModelBlockVisualsController : IDisposable, IConstructBlockVisuals
 {
     private record MeshData(MultiMeshInstance3D Instance, HashSet<ConstructGridPos> Positions);
 
@@ -11,19 +11,19 @@ public partial class ConstructModelBlockController : IDisposable, IConstructBloc
     private Dictionary<ConstructGridPos, ModelBlockDefault> positionToModel = new();
 
     private Node3D construct;
-    private ConstructData data;
+    private ConstructBlockController blockController;
 
-    public ConstructModelBlockController(Node3D construct, ConstructData data)
+    public ConstructModelBlockVisualsController(Node3D construct, ConstructBlockController blockController)
     {
         this.construct = construct;
-        this.data = data;
+        this.blockController = blockController;
 
-        data.Modules.OnModuleChanged += OnModulesChanged;
-        data.Modules.OnModuleAdded += OnModulesAdded;
-        data.Modules.OnModuleRemoved += OnModulesRemoved;
+        blockController.OnModuleChanged += OnModulesChanged;
+        blockController.OnModuleAdded += OnModulesAdded;
+        blockController.OnModuleRemoved += OnModulesRemoved;
     }
 
-    public void SetBlock(ModuleLocation location, BlockChange[] changes)
+    public void SetBlock(ModuleLocation location, BlockChange<ModuleGridPos>[] changes)
     {
         HashSet<ModuleLocation> changedModules = [];
         for (int i = 0; i < changes.Length; i++)
@@ -48,7 +48,7 @@ public partial class ConstructModelBlockController : IDisposable, IConstructBloc
         UpdateAllMultiMeshes();
     }
 
-    private void OnModulesChanged(ModuleLocation location, BlockChange[] changes) =>
+    private void OnModulesChanged(ModuleLocation location, BlockChange<ModuleGridPos>[] changes) =>
         SetBlock(location, changes);
 
     private void OnModulesAdded(ModuleLocation location, Module module)
@@ -154,9 +154,9 @@ public partial class ConstructModelBlockController : IDisposable, IConstructBloc
 
     public void Dispose()
     {
-        data.Modules.OnModuleChanged -= OnModulesChanged;
-        data.Modules.OnModuleAdded -= OnModulesAdded;
-        data.Modules.OnModuleRemoved -= OnModulesRemoved;
+        blockController.OnModuleChanged -= OnModulesChanged;
+        blockController.OnModuleAdded -= OnModulesAdded;
+        blockController.OnModuleRemoved -= OnModulesRemoved;
 
         foreach (var meshData in modelMeshInstances.Values)
         {

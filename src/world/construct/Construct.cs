@@ -6,8 +6,6 @@ public partial class Construct : Node3D, IOctTreeObject
 {
 	public event Action<IOctTreeObject> BoundsChanged;
 
-	public ConstructCore Core { get; private set; }
-
 	private IConstructController sim;
 
 
@@ -21,9 +19,9 @@ public partial class Construct : Node3D, IOctTreeObject
 		Construct construct = new Construct();
 
 		int seed = GameSettings.Instance.Seed;
-		var transform = new ConstructGridTransformData((WorldGridPos)initialPosition);
-		var modules = new ConstructModulesData();
-		var bounds = new ConstructBoundsData(modules);
+		var transform = new ConstructGridTransformController((WorldGridPos)initialPosition);
+		var modules = new ConstructBlockController();
+		var bounds = new ConstructBoundsController(modules);
 
 		var physicsData = new ConstructPhysicsData()
 		{

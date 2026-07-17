@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://q17ynxi7h2cn"]
 
-[ext_resource type="Script" uid="uid://1elxunjc4mgm" path="res://src/GameSettings.cs" id="1_b688h"]
+[ext_resource type="Script" path="res://src/GameSettings.cs" id="1_b688h"]
 [ext_resource type="Material" uid="uid://cuyyiwhax61n7" path="res://resources/textures/world_material.tres" id="2_bey1w"]
 
 [node name="GameSettings" type="Node3D"]

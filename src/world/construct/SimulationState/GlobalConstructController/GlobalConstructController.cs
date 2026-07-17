@@ -1,45 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Godot;
 
-public class GlobalConstructController : IConstructController
+public class GlobalConstructController : ConstructController
 {
-    private ConstructCore core;
-
-    private ConstructGenerator generator;
     private List<Tuple<SimulationMode, float>> simulationModeDistances;
-
-    private ConstructModuleBuilder moduleBuilder;
-    private ConstructVisualsController visuals;
-    private ConstructModelBlockController modelBlocks;
+    private ConstructBlockController blockController;
 
     public GlobalConstructController(
-        ConstructCore core,
+        ConstructGridTransformController transform,
+        ConstructBlockController blockController,
         ConstructGenerator generator,
-        Node3D parent)
+        ConstructModuleBuilder moduleBuilder,
+        ConstructVoxelBlockVisualsController voxelVisuals,
+        ConstructModelBlockVisualsController modelVisuals) : base(transform, generator, moduleBuilder, voxelVisuals, modelVisuals)
     {
-        this.core = core;
-        this.generator = generator;
-
         simulationModeDistances = GameSettings.Instance.SimulationModeDistances;
 
-        moduleBuilder = new ConstructModuleBuilder();
-        visuals = new ConstructVisualsController(core.Data.Modules);
-        modelBlocks = new ConstructModelBlockController(parent, core.Data);
-        parent.AddChild(visuals);
+        this.blockController = blockController;
     }
 
-    public virtual void SetBlock(Block block, ConstructGridPos pos) => core.SetBlock(pos, block);
-    public void SetBlocks(Block[] blocks, ConstructGridPos[] positions) => core.SetBlocks(positions, blocks);
+    protected override void UpdateInternal(double delta) { }
 
-    public virtual bool TryGetBlock(ConstructGridPos pos, out Block block)
-    {
-        return core.TryGetBlock(pos, out block);
-    }
-    public void Update(double delta) { }
-
-    public void UpdateLoading(WorldGridPos loadPos)
+    protected override void UpdateLoadingInternal(WorldGridPos loadPos)
     {
         BuildAround(loadPos, (int)simulationModeDistances[0].Item2).FireAndForget();
     }
@@ -47,13 +30,13 @@ public class GlobalConstructController : IConstructController
     private async Task BuildAround(WorldGridPos worldPos, int loadDistance)
     {
         var generationResponse = moduleBuilder.GenerateModulesAround(
-            worldPos, loadDistance, core.Data.GridTransform, core.Data.Modules, generator);
+            worldPos, loadDistance, transform, blockController, generator);
 
         await ModuleIntegrationHelper.IntegrateGeneratedModules(
-            generationResponse.GenerationTaskHandles, core.Data, visuals);
+            generationResponse.GenerationTaskHandles, core.Data, voxelVisuals);
 
         ModuleIntegrationHelper.UnloadModules(
-            generationResponse.ToUnload, core.Data, visuals);
+            generationResponse.ToUnload, core.Data, voxelVisuals);
     }
 
 }

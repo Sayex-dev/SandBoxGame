@@ -6,7 +6,7 @@ using Godot;
 
 public partial class Module
 {
-	public Action<BlockChange[]> OnModuleChanged;
+	public Action<BlockChange<ModuleGridPos>[]> OnModuleChanged;
 
 	public int BlockCount { get; private set; }
 	public ModuleGridPos MaxPos => new ModuleGridPos(bounds.MaxPos);
@@ -75,7 +75,7 @@ public partial class Module
 	{
 		int index = InModuleToArrayPos(modulePos);
 		Block prevBlock = blocks[index];
-		BlockChange blockChange = default;
+		BlockChange<ModuleGridPos> blockChange = default;
 		bool blockChanged = false;
 
 		if (prevBlock != block)
@@ -86,7 +86,7 @@ public partial class Module
 				BlockCount++;
 				bounds.AddPoint(modulePos.Value, BlockCount);
 				SurfaceCache.AddBlock(this, modulePos, block);
-				blockChange = new BlockChange(modulePos, BlockChangeAction.PLACE, block);
+				blockChange = new BlockChange<ModuleGridPos>(modulePos, BlockChangeAction.PLACE, block);
 				blockChanged = true;
 				if (BlockStore.Instance.GetBlockDefault(block) is ModelBlockDefault)
 					ModelBlockPositions.Add(modulePos);
@@ -97,7 +97,7 @@ public partial class Module
 				BlockCount--;
 				bounds.RemovePoint(modulePos.Value, BlockCount);
 				SurfaceCache.RemoveBlock(this, modulePos);
-				blockChange = new BlockChange(modulePos, BlockChangeAction.REMOVE, block);
+				blockChange = new BlockChange<ModuleGridPos>(modulePos, BlockChangeAction.REMOVE, block);
 				blockChanged = true;
 				ModelBlockPositions.Remove(modulePos);
 			}
@@ -110,7 +110,7 @@ public partial class Module
 		}
 	}
 
-	public void SetBlocks(BlockChange[] blockActionArray)
+	public void SetBlocks(BlockChange<ModuleGridPos>[] blockActionArray)
 	{
 		TimeTracker.Start("Module Block put", TimeTracker.TrackingType.Average);
 

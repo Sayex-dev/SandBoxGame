@@ -3,12 +3,12 @@ using Godot;
 public abstract class SimulationState
 {
     protected ConstructCore core;
-    protected ConstructVisualsController visuals;
-    protected ConstructModelBlockController modelBlocks;
+    protected ConstructVoxelBlockVisualsController visuals;
+    protected ConstructModelBlockVisualsController modelBlocks;
 
     public SimulationState(ConstructCore core,
-        ConstructVisualsController visuals = null,
-        ConstructModelBlockController modelBlocks = null)
+        ConstructVoxelBlockVisualsController visuals = null,
+        ConstructModelBlockVisualsController modelBlocks = null)
     {
         this.core = core;
         this.visuals = visuals;

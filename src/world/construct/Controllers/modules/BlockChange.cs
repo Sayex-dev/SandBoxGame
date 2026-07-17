@@ -7,15 +7,15 @@ public enum BlockChangeAction
     REMOVE
 }
 
-public readonly struct BlockChange
+public readonly struct BlockChange<T> where T : struct, IGridPos
 {
-    public readonly ModuleGridPos Position;
+    public readonly T Position;
     public readonly BlockChangeAction Action;
     public readonly Block Block;
 
     // Default constructor with optional parameters
     public BlockChange(
-        ModuleGridPos pos,
+        T pos,
         BlockChangeAction action,
         Block block = default)
     {
