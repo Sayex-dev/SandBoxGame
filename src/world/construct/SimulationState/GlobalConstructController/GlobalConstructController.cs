@@ -35,8 +35,36 @@ public class GlobalConstructController : ConstructController
         await ModuleIntegrationHelper.IntegrateGeneratedModules(
             generationResponse.GenerationTaskHandles, core.Data, voxelVisuals);
 
-        ModuleIntegrationHelper.UnloadModules(
-            generationResponse.ToUnload, core.Data, voxelVisuals);
+        UnloadModules(generationResponse.ToUnload, core.Data, voxelVisuals);
+    }
+
+
+    /// <summary>
+    /// Unloads modules and removes their visuals. Rebuilds bounds if necessary.
+    /// </summary>
+    public static void UnloadModules(
+        List<ModuleLocation> toUnload,
+        ConstructVoxelBlockVisualsController visuals)
+    {
+        bool needsBoundsRebuild = false;
+        foreach (ModuleLocation moduleLocation in toUnload)
+        {
+            // Remove from modules (fires OnModuleRemoved → visuals handled by event)
+            if (data.Modules.Remove(moduleLocation, out Module module))
+            {
+                // Update bounds if necessary
+                if (module.HasBlocks)
+                {
+                    ConstructGridPos minPos = module.MinPos.ToConstruct(moduleLocation);
+                    ConstructGridPos maxPos = module.MaxPos.ToConstruct(moduleLocation);
+
+                    if (data.Bounds.IsOnBounds(minPos) || data.Bounds.IsOnBounds(maxPos))
+                    {
+                        needsBoundsRebuild = true;
+                    }
+                }
+            }
+        }
     }
 
 }

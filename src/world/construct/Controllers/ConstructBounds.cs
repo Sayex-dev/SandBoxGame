@@ -98,7 +98,7 @@ public class ConstructBoundsController : IDisposable
         modules.OnModuleChanged -= OnModuleChanged;
     }
 
-    private void OnModuleChanged(ModuleLocation location, BlockChange[] changes)
+    private void OnModuleChanged(ModuleLocation location, BlockChange<ModuleGridPos>[] changes)
     {
         AddPosition(modules.Modules[location].MinPos.ToConstruct(location));
         AddPosition(modules.Modules[location].MaxPos.ToConstruct(location));
